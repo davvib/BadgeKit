@@ -1,0 +1,20 @@
+name: BadgeApp
+options:
+  bundleIdPrefix: com.example
+targets:
+  BadgeApp:
+    type: application
+    platform: macOS
+    sources:
+      - path: BadgeApp
+        includes:
+          - "*.swift"
+      - path: BadgeApp
+        includes:
+          - "*.entitlements"
+    settings:
+      PRODUCT_BUNDLE_IDENTIFIER: com.example.BadgeApp
+      GENERATE_INFOPLIST_FILE: YES
+      INFOPLIST_KEY_NSPrincipalClass: NSApplication
+      CODE_SIGN_ENTITLEMENTS: BadgeApp/BadgeApp.entitlements
+      ENABLE_APP_SANDBOX: YES
