@@ -2,6 +2,7 @@ import Cocoa
 import Darwin
 import QuickLookThumbnailing
 import UniformTypeIdentifiers
+import BadgeKit
 
 struct IconBackupRecord: Codable {
     let id: String

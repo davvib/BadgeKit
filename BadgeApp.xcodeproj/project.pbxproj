@@ -11,21 +11,34 @@
 		1EED79B5D20A4A6F9917442C /* Carpetas in Resources */ = {isa = PBXBuildFile; fileRef = E6B6F2C1E4694E97B108AA1E /* Carpetas */; };
 		323AAF3CA008E1622A98AF09 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0D1DA31EF7B93B039A2EBA38 /* main.swift */; };
 		3D8858C9BAB351A705ABDAFB /* DroppedItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC4A915536D5735AEA9042F1 /* DroppedItem.swift */; };
-		72D6D8C8797E4F72A4E47A21 /* FolderIconRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 31D2AA08F0A3477292168A8A /* FolderIconRenderer.swift */; };
 		AE01D87ED777FA1E17460A7C /* DropZoneView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20F97ADCD4A7D795A6CD2D9A /* DropZoneView.swift */; };
 		BC49A789C66E60045BDF57CA /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6062F70E1A545127650D288F /* ViewController.swift */; };
+		E87EB5522FB3828800C3982B /* BadgeKit.docc in Sources */ = {isa = PBXBuildFile; fileRef = E87EB5512FB3828800C3982B /* BadgeKit.docc */; };
+		E88E3C8E2FB39390008D1CEE /* BadgeKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E88E3C8D2FB39390008D1CEE /* BadgeKit.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		0D1DA31EF7B93B039A2EBA38 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
 		20F97ADCD4A7D795A6CD2D9A /* DropZoneView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DropZoneView.swift; sourceTree = "<group>"; };
-		31D2AA08F0A3477292168A8A /* FolderIconRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FolderIconRenderer.swift; sourceTree = "<group>"; };
 		6062F70E1A545127650D288F /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
 		66ACBA80B5F8D62F5A442CA6 /* BadgeApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BadgeApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		93AD2808C2EE791C3E76C7A0 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		E6B6F2C1E4694E97B108AA1E /* Carpetas */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Carpetas; sourceTree = "<group>"; };
+		E87EB5512FB3828800C3982B /* BadgeKit.docc */ = {isa = PBXFileReference; lastKnownFileType = folder.documentationcatalog; path = BadgeKit.docc; sourceTree = "<group>"; };
+		E88E3C8D2FB39390008D1CEE /* BadgeKit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = BadgeKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		EC4A915536D5735AEA9042F1 /* DroppedItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DroppedItem.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		E87EB5532FB3876800C3982B /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E88E3C8E2FB39390008D1CEE /* BadgeKit.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
 		1FA548F7D090D6B1163F4803 /* BadgeApp */ = {
@@ -33,7 +46,6 @@
 			children = (
 				93AD2808C2EE791C3E76C7A0 /* AppDelegate.swift */,
 				EC4A915536D5735AEA9042F1 /* DroppedItem.swift */,
-				31D2AA08F0A3477292168A8A /* FolderIconRenderer.swift */,
 				20F97ADCD4A7D795A6CD2D9A /* DropZoneView.swift */,
 				0D1DA31EF7B93B039A2EBA38 /* main.swift */,
 				6062F70E1A545127650D288F /* ViewController.swift */,
@@ -53,9 +65,19 @@
 			isa = PBXGroup;
 			children = (
 				1FA548F7D090D6B1163F4803 /* BadgeApp */,
+				E87EB5512FB3828800C3982B /* BadgeKit.docc */,
 				E6B6F2C1E4694E97B108AA1E /* Carpetas */,
+				E88E3C8C2FB39390008D1CEE /* Frameworks */,
 				733EE9FDD0C4A56DF4379490 /* Products */,
 			);
+			sourceTree = "<group>";
+		};
+		E88E3C8C2FB39390008D1CEE /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				E88E3C8D2FB39390008D1CEE /* BadgeKit.framework */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -67,6 +89,7 @@
 			buildPhases = (
 				2830AB32628B1402DC8D65A8 /* Sources */,
 				70E3CE99FEC84A5E8E2A5CA3 /* Resources */,
+				E87EB5532FB3876800C3982B /* Frameworks */,
 			);
 			buildRules = (
 			);
@@ -87,8 +110,6 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 1430;
-				TargetAttributes = {
-				};
 			};
 			buildConfigurationList = 374592D913CD5B121C7E6847 /* Build configuration list for PBXProject "BadgeApp" */;
 			developmentRegion = en;
@@ -128,8 +149,8 @@
 				04C7CE624A6761B239E365B7 /* AppDelegate.swift in Sources */,
 				AE01D87ED777FA1E17460A7C /* DropZoneView.swift in Sources */,
 				3D8858C9BAB351A705ABDAFB /* DroppedItem.swift in Sources */,
-				72D6D8C8797E4F72A4E47A21 /* FolderIconRenderer.swift in Sources */,
 				BC49A789C66E60045BDF57CA /* ViewController.swift in Sources */,
+				E87EB5522FB3828800C3982B /* BadgeKit.docc in Sources */,
 				323AAF3CA008E1622A98AF09 /* main.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

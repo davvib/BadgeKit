@@ -1,6 +1,9 @@
 import Cocoa
 
-final class FolderIconRenderer {
+public final class FolderIconRenderer {
+    
+    public init() { }
+    
     private struct FolderAsset {
         let directoryName: String
         let filePrefix: String
@@ -16,7 +19,7 @@ final class FolderIconRenderer {
     private var folderAssetImageCache: [String: NSImage] = [:]
     private var trimmedImageCache: [ObjectIdentifier: NSImage] = [:]
 
-    func renderFolderIcon(
+    public func renderFolderIcon(
         colorName: String?,
         fallbackColor: NSColor,
         symbolName: String?,
@@ -37,7 +40,7 @@ final class FolderIconRenderer {
         )
     }
 
-    func renderPreviewFolderIcon(
+    public func renderPreviewFolderIcon(
         colorName: String?,
         fallbackColor: NSColor,
         symbolName: String?,
@@ -58,7 +61,7 @@ final class FolderIconRenderer {
         )
     }
 
-    private func renderFolderIcon(
+    public func renderFolderIcon(
         colorName: String?,
         fallbackColor: NSColor,
         symbolName: String?,
@@ -91,7 +94,7 @@ final class FolderIconRenderer {
         return image
     }
 
-    func badgeRect(colorName: String?, badgeSize: NSSize, badgeOffset: NSPoint) -> NSRect {
+    public func badgeRect(colorName: String?, badgeSize: NSSize, badgeOffset: NSPoint) -> NSRect {
         let anchorRect = asset(for: colorName) == nil ? frontRect : assetFrontRect
         let badgeScale = min(anchorRect.width, anchorRect.height) / 48
         let size = NSSize(
@@ -107,7 +110,7 @@ final class FolderIconRenderer {
         )
     }
 
-    func badgeOffset(
+    public func badgeOffset(
         colorName: String?,
         badgeSize: NSSize,
         placingBadgeCenterAt center: NSPoint
