@@ -43,7 +43,6 @@ class ViewController: NSViewController, NSTextFieldDelegate {
     var badgeOffsetY: CGFloat = -4
     var customBadges: [(name: NSImage.Name, label: String, path: String)] = []
     var isPreviewSelected = false
-    private let folderIconRenderer = FolderIconRenderer()
     private let savedBadgePixelSize = 1024
     private let finderInfoHasCustomIconFlag: UInt16 = 0x0400
     private let finderInfoExtendedFlagsAreInvalidFlag: UInt16 = 0x8000
