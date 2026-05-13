@@ -59,6 +59,7 @@ class ViewController: NSViewController, NSTextFieldDelegate {
     private let badgePreviewGeometryCoordinator = BadgePreviewGeometryCoordinator()
     private let badgeFolderPreviewRenderer = BadgeFolderPreviewRenderer()
     private let badgePreviewCacheKeyBuilder = BadgePreviewCacheKeyBuilder()
+    private let badgePreviewIconRenderer = BadgePreviewIconRenderer()
 
     override func loadView() {
         self.view = NSView(frame: NSRect(x: 0, y: 0, width: 900, height: 650))
@@ -356,8 +357,24 @@ class ViewController: NSViewController, NSTextFieldDelegate {
         }
 
         let badgeSize = NSSize(width: appDelegate.badgeSize, height: appDelegate.badgeSize)
-        let previewIcon = customRenderedFolderPreview(for: item, badge: badge) ??
-            makeBadgedIcon(originalIcon: item.baseIconForPreview ?? item.icon, badge: badge, badgeSize: badgeSize)
+        let previewIcon = badgePreviewIconRenderer.renderPreviewIcon(
+            baseIcon: item.baseIconForPreview ?? item.icon,
+            folderColorName: item.folderColorName,
+            folderColor: item.folderColor,
+            folderSymbolName: item.folderSymbolName,
+            folderSymbolText: item.folderSymbolText,
+            badge: badge,
+            badgeSize: badgeSize,
+            badgeOffset: NSPoint(x: badgeOffsetX, y: badgeOffsetY),
+            fallbackRenderer: { [weak self] baseIcon, badge, badgeSize in
+                guard let self else { return baseIcon }
+                return self.makeBadgedIcon(
+                    originalIcon: baseIcon,
+                    badge: badge,
+                    badgeSize: badgeSize
+                )
+            }
+        )
         item.cachedPreviewKey = previewKey
         item.cachedPreviewIcon = previewIcon
 
