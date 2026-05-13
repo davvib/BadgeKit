@@ -58,6 +58,7 @@ class ViewController: NSViewController, NSTextFieldDelegate {
     private var previewMessageLabel: NSTextField?
     private var previewMessageTimer: Timer?
     private let badgePreviewGeometryCoordinator = BadgePreviewGeometryCoordinator()
+    private let badgeFolderPreviewRenderer = BadgeFolderPreviewRenderer()
 
     override func loadView() {
         self.view = NSView(frame: NSRect(x: 0, y: 0, width: 900, height: 650))
@@ -310,11 +311,9 @@ class ViewController: NSViewController, NSTextFieldDelegate {
     }
 
     private func customRenderedFolderIcon(for item: DroppedItem, badge: NSImage? = nil) -> NSImage? {
-        guard let color = item.folderColor else { return nil }
-
-        return folderIconRenderer.renderFolderIcon(
+        badgeFolderPreviewRenderer.renderIcon(
             colorName: item.folderColorName,
-            fallbackColor: color,
+            fallbackColor: item.folderColor,
             symbolName: item.folderSymbolName,
             symbolText: item.folderSymbolText,
             badge: badge,
@@ -324,11 +323,9 @@ class ViewController: NSViewController, NSTextFieldDelegate {
     }
 
     private func customRenderedFolderPreview(for item: DroppedItem, badge: NSImage? = nil) -> NSImage? {
-        guard let color = item.folderColor else { return nil }
-
-        return folderIconRenderer.renderPreviewFolderIcon(
+        badgeFolderPreviewRenderer.renderPreview(
             colorName: item.folderColorName,
-            fallbackColor: color,
+            fallbackColor: item.folderColor,
             symbolName: item.folderSymbolName,
             symbolText: item.folderSymbolText,
             badge: badge,
