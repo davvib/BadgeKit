@@ -1792,31 +1792,6 @@ class ViewController: NSViewController, NSTextFieldDelegate {
         )
     }
 
-    private func aspectFitRect(for image: NSImage, in bounds: NSRect) -> NSRect {
-        let imageSize = imagePixelSize(image)
-        guard imageSize.width > 0, imageSize.height > 0 else { return bounds }
-
-        let scale = min(bounds.width / imageSize.width, bounds.height / imageSize.height)
-        let fittedSize = NSSize(width: imageSize.width * scale, height: imageSize.height * scale)
-
-        return NSRect(
-            x: bounds.midX - fittedSize.width / 2,
-            y: bounds.midY - fittedSize.height / 2,
-            width: fittedSize.width,
-            height: fittedSize.height
-        )
-    }
-
-    private func imagePixelSize(_ image: NSImage) -> NSSize {
-        if let representation = image.representations.max(by: {
-            ($0.pixelsWide * $0.pixelsHigh) < ($1.pixelsWide * $1.pixelsHigh)
-        }), representation.pixelsWide > 0, representation.pixelsHigh > 0 {
-            return NSSize(width: representation.pixelsWide, height: representation.pixelsHigh)
-        }
-
-        return image.size
-    }
-
     @objc func removeBadge() {
         for item in items {
             if restoreOriginalIconStateIfAvailable(for: item.path) {
