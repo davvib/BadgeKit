@@ -1,4 +1,5 @@
 import Cocoa
+import BadgeKit
 
 class DropZoneView: NSView {
     weak var viewController: ViewController!

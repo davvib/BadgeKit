@@ -35,11 +35,6 @@ private struct FolderSymbolInfo {
     let text: String?
 }
 
-struct BadgeGeometry {
-    let logicalRect: NSRect
-    let visibleRect: NSRect
-}
-
 class ViewController: NSViewController, NSTextFieldDelegate {
     weak var appDelegate: AppDelegate!
     var dropZoneView: DropZoneView!
@@ -49,6 +44,7 @@ class ViewController: NSViewController, NSTextFieldDelegate {
     var customBadges: [(name: NSImage.Name, label: String, path: String)] = []
     var isPreviewSelected = false
     private let folderIconRenderer = FolderIconRenderer()
+    private let badgeFileGeometryCalculator = BadgeFileGeometryCalculator()
     private let savedBadgePixelSize = 1024
     private let finderInfoHasCustomIconFlag: UInt16 = 0x0400
     private let finderInfoExtendedFlagsAreInvalidFlag: UInt16 = 0x8000
@@ -388,8 +384,15 @@ class ViewController: NSViewController, NSTextFieldDelegate {
                 badgeSize: NSSize(width: appDelegate.badgeSize, height: appDelegate.badgeSize),
                 badgeOffset: NSPoint(x: badgeOffsetX, y: badgeOffsetY)
             ) :
-            fileBadgeRect(for: item)
-        let visibleRect = item.isDirectory ? logicalRect : visibleBadgeRect(for: badge, in: logicalRect)
+        badgeFileGeometryCalculator.badgeRect(
+            for: item.baseIconForPreview ?? item.icon,
+            badgeSize: NSSize(width: appDelegate.badgeSize, height: appDelegate.badgeSize),
+            badgeOffset: NSPoint(x: badgeOffsetX, y: badgeOffsetY)
+        )
+        let visibleRect = item.isDirectory ? logicalRect : badgeFileGeometryCalculator.visibleBadgeRect(
+            for: badge,
+            in: logicalRect
+        )
 
         return BadgeGeometry(logicalRect: logicalRect, visibleRect: visibleRect)
     }
@@ -401,11 +404,11 @@ class ViewController: NSViewController, NSTextFieldDelegate {
                 badgeSize: NSSize(width: appDelegate.badgeSize, height: appDelegate.badgeSize),
                 placingBadgeCenterAt: center
             ) :
-            fileBadgeOffset(
-                for: item,
-                badgeSize: NSSize(width: appDelegate.badgeSize, height: appDelegate.badgeSize),
-                placingBadgeCenterAt: center
-            )
+        badgeFileGeometryCalculator.badgeOffset(
+            for: item.baseIconForPreview ?? item.icon,
+            badgeSize: NSSize(width: appDelegate.badgeSize, height: appDelegate.badgeSize),
+            placingBadgeCenterAt: center
+        )
         badgeOffsetX = offset.x
         badgeOffsetY = offset.y
         item.showsBadgePreview = true
@@ -421,110 +424,21 @@ class ViewController: NSViewController, NSTextFieldDelegate {
             return
         }
 
-        let currentRect = fileBadgeRect(for: item)
-        let visibleRect = visibleBadgeRect(for: badge, in: currentRect)
+        let currentRect = badgeFileGeometryCalculator.badgeRect(
+            for: item.baseIconForPreview ?? item.icon,
+            badgeSize: NSSize(width: appDelegate.badgeSize, height: appDelegate.badgeSize),
+            badgeOffset: NSPoint(x: badgeOffsetX, y: badgeOffsetY)
+        )
+        let visibleRect = badgeFileGeometryCalculator.visibleBadgeRect(
+            for: badge,
+            in: currentRect
+        )
         let logicalCenter = NSPoint(
             x: center.x - (visibleRect.midX - currentRect.midX),
             y: center.y - (visibleRect.midY - currentRect.midY)
         )
 
         placePreviewBadgeCenter(logicalCenter, for: item)
-    }
-
-    private func fileBadgeRect(for item: DroppedItem) -> NSRect {
-        let canvasRect = NSRect(x: 0, y: 0, width: savedBadgePixelSize, height: savedBadgePixelSize)
-        let iconRect = aspectFitRect(for: item.baseIconForPreview ?? item.icon, in: canvasRect)
-        let badgeSize = NSSize(width: appDelegate.badgeSize, height: appDelegate.badgeSize)
-        let scale = min(iconRect.width, iconRect.height) / 48.0
-        let scaledBadgeSize = NSSize(width: badgeSize.width * scale, height: badgeSize.height * scale)
-
-        return NSRect(
-            x: iconRect.maxX - scaledBadgeSize.width + badgeOffsetX,
-            y: iconRect.minY + badgeOffsetY,
-            width: scaledBadgeSize.width,
-            height: scaledBadgeSize.height
-        )
-    }
-
-    private func fileBadgeOffset(
-        for item: DroppedItem,
-        badgeSize: NSSize,
-        placingBadgeCenterAt center: NSPoint
-    ) -> NSPoint {
-        let canvasRect = NSRect(x: 0, y: 0, width: savedBadgePixelSize, height: savedBadgePixelSize)
-        let iconRect = aspectFitRect(for: item.baseIconForPreview ?? item.icon, in: canvasRect)
-        let scale = min(iconRect.width, iconRect.height) / 48.0
-        let scaledBadgeSize = NSSize(width: badgeSize.width * scale, height: badgeSize.height * scale)
-
-        return NSPoint(
-            x: center.x - (iconRect.maxX - scaledBadgeSize.width / 2),
-            y: center.y - (iconRect.minY + scaledBadgeSize.height / 2)
-        )
-    }
-
-    private func visibleBadgeRect(for badge: NSImage, in rect: NSRect) -> NSRect {
-        guard let cgImage = badge.cgImage(forProposedRect: nil, context: nil, hints: nil),
-              let bounds = alphaBounds(in: cgImage) else {
-            return rect
-        }
-
-        let imageWidth = CGFloat(cgImage.width)
-        let imageHeight = CGFloat(cgImage.height)
-        guard imageWidth > 0, imageHeight > 0 else { return rect }
-
-        return NSRect(
-            x: rect.minX + CGFloat(bounds.minX) / imageWidth * rect.width,
-            y: rect.minY + (imageHeight - CGFloat(bounds.maxY)) / imageHeight * rect.height,
-            width: CGFloat(bounds.width) / imageWidth * rect.width,
-            height: CGFloat(bounds.height) / imageHeight * rect.height
-        )
-    }
-
-    private func alphaBounds(in image: CGImage) -> CGRect? {
-        let width = image.width
-        let height = image.height
-        var pixels = [UInt8](repeating: 0, count: width * height * 4)
-
-        guard let context = CGContext(
-            data: &pixels,
-            width: width,
-            height: height,
-            bitsPerComponent: 8,
-            bytesPerRow: width * 4,
-            space: CGColorSpaceCreateDeviceRGB(),
-            bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue
-        ) else {
-            return nil
-        }
-
-        context.draw(image, in: CGRect(x: 0, y: 0, width: width, height: height))
-
-        var minX = width
-        var minY = height
-        var maxX = 0
-        var maxY = 0
-        var foundPixel = false
-
-        for y in 0..<height {
-            for x in 0..<width {
-                let alpha = pixels[(y * width + x) * 4 + 3]
-                guard alpha > 8 else { continue }
-
-                foundPixel = true
-                minX = min(minX, x)
-                minY = min(minY, y)
-                maxX = max(maxX, x)
-                maxY = max(maxY, y)
-            }
-        }
-
-        guard foundPixel else { return nil }
-        return CGRect(
-            x: CGFloat(minX),
-            y: CGFloat(minY),
-            width: CGFloat(maxX - minX + 1),
-            height: CGFloat(maxY - minY + 1)
-        )
     }
 
     private func refreshRestoredVisualState(for item: DroppedItem) {
