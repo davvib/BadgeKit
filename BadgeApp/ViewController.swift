@@ -429,13 +429,11 @@ class ViewController: NSViewController, NSTextFieldDelegate {
             badgeSize: NSSize(width: appDelegate.badgeSize, height: appDelegate.badgeSize),
             badgeOffset: NSPoint(x: badgeOffsetX, y: badgeOffsetY)
         )
-        let visibleRect = badgeFileGeometryCalculator.visibleBadgeRect(
-            for: badge,
-            in: currentRect
-        )
-        let logicalCenter = NSPoint(
-            x: center.x - (visibleRect.midX - currentRect.midX),
-            y: center.y - (visibleRect.midY - currentRect.midY)
+        
+        let logicalCenter = badgeFileGeometryCalculator.logicalCenter(
+            forVisibleCenter: center,
+            badge: badge,
+            currentRect: currentRect
         )
 
         placePreviewBadgeCenter(logicalCenter, for: item)

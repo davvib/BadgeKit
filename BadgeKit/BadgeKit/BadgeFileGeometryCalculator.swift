@@ -9,6 +9,22 @@ import Cocoa
 
 public final class BadgeFileGeometryCalculator {
     private let canvasSize: CGFloat
+    
+    public func logicalCenter(
+        forVisibleCenter visibleCenter: NSPoint,
+        badge: NSImage,
+        currentRect: NSRect
+    ) -> NSPoint {
+        let visibleRect = visibleBadgeRect(
+            for: badge,
+            in: currentRect
+        )
+
+        return NSPoint(
+            x: visibleCenter.x - (visibleRect.midX - currentRect.midX),
+            y: visibleCenter.y - (visibleRect.midY - currentRect.midY)
+        )
+    }
 
     public init(canvasSize: CGFloat = 1024) {
         self.canvasSize = canvasSize
