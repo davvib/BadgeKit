@@ -44,7 +44,6 @@ class ViewController: NSViewController, NSTextFieldDelegate {
     var customBadges: [(name: NSImage.Name, label: String, path: String)] = []
     var isPreviewSelected = false
     private let folderIconRenderer = FolderIconRenderer()
-    private let badgeFileGeometryCalculator = BadgeFileGeometryCalculator()
     private let savedBadgePixelSize = 1024
     private let finderInfoHasCustomIconFlag: UInt16 = 0x0400
     private let finderInfoExtendedFlagsAreInvalidFlag: UInt16 = 0x8000
@@ -390,14 +389,10 @@ class ViewController: NSViewController, NSTextFieldDelegate {
     }
 
     func placePreviewBadgeCenter(_ center: NSPoint, for item: DroppedItem) {
-        let offset = item.isDirectory ?
-            folderIconRenderer.badgeOffset(
-                colorName: item.folderColorName,
-                badgeSize: NSSize(width: appDelegate.badgeSize, height: appDelegate.badgeSize),
-                placingBadgeCenterAt: center
-            ) :
-        badgeFileGeometryCalculator.badgeOffset(
-            for: item.baseIconForPreview ?? item.icon,
+        let offset = badgePreviewGeometryCoordinator.offset(
+            isDirectory: item.isDirectory,
+            folderColorName: item.folderColorName,
+            icon: item.baseIconForPreview ?? item.icon,
             badgeSize: NSSize(width: appDelegate.badgeSize, height: appDelegate.badgeSize),
             placingBadgeCenterAt: center
         )
@@ -410,22 +405,18 @@ class ViewController: NSViewController, NSTextFieldDelegate {
     }
 
     func placePreviewBadgeVisibleCenter(_ center: NSPoint, for item: DroppedItem) {
-        guard !item.isDirectory,
-              let badge = appDelegate.selectedBadge else {
+        guard let badge = appDelegate.selectedBadge else {
             placePreviewBadgeCenter(center, for: item)
             return
         }
 
-        let currentRect = badgeFileGeometryCalculator.badgeRect(
-            for: item.baseIconForPreview ?? item.icon,
+        let logicalCenter = badgePreviewGeometryCoordinator.logicalCenter(
+            forVisibleCenter: center,
+            isDirectory: item.isDirectory,
+            icon: item.baseIconForPreview ?? item.icon,
+            badge: badge,
             badgeSize: NSSize(width: appDelegate.badgeSize, height: appDelegate.badgeSize),
             badgeOffset: NSPoint(x: badgeOffsetX, y: badgeOffsetY)
-        )
-        
-        let logicalCenter = badgeFileGeometryCalculator.logicalCenter(
-            forVisibleCenter: center,
-            badge: badge,
-            currentRect: currentRect
         )
 
         placePreviewBadgeCenter(logicalCenter, for: item)

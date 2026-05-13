@@ -56,5 +56,52 @@ public final class BadgePreviewGeometryCoordinator {
         )
     }
     
+    public func offset(
+        isDirectory: Bool,
+        folderColorName: String?,
+        icon: NSImage,
+        badgeSize: NSSize,
+        placingBadgeCenterAt center: NSPoint
+    ) -> NSPoint {
+        if isDirectory {
+            return folderRenderer.badgeOffset(
+                colorName: folderColorName,
+                badgeSize: badgeSize,
+                placingBadgeCenterAt: center
+            )
+        }
+
+        return fileGeometryCalculator.badgeOffset(
+            for: icon,
+            badgeSize: badgeSize,
+            placingBadgeCenterAt: center
+        )
+    }
+    
+    public func logicalCenter(
+        forVisibleCenter visibleCenter: NSPoint,
+        isDirectory: Bool,
+        icon: NSImage,
+        badge: NSImage,
+        badgeSize: NSSize,
+        badgeOffset: NSPoint
+    ) -> NSPoint {
+        guard !isDirectory else {
+            return visibleCenter
+        }
+
+        let currentRect = fileGeometryCalculator.badgeRect(
+            for: icon,
+            badgeSize: badgeSize,
+            badgeOffset: badgeOffset
+        )
+
+        return fileGeometryCalculator.logicalCenter(
+            forVisibleCenter: visibleCenter,
+            badge: badge,
+            currentRect: currentRect
+        )
+    }
+    
 }
 
