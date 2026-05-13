@@ -58,6 +58,7 @@ class ViewController: NSViewController, NSTextFieldDelegate {
     private var previewMessageView: NSView?
     private var previewMessageLabel: NSTextField?
     private var previewMessageTimer: Timer?
+    private let badgePreviewGeometryCoordinator = BadgePreviewGeometryCoordinator()
 
     override func loadView() {
         self.view = NSView(frame: NSRect(x: 0, y: 0, width: 900, height: 650))
@@ -378,23 +379,14 @@ class ViewController: NSViewController, NSTextFieldDelegate {
             return nil
         }
 
-        let logicalRect = item.isDirectory ?
-            folderIconRenderer.badgeRect(
-                colorName: item.folderColorName,
-                badgeSize: NSSize(width: appDelegate.badgeSize, height: appDelegate.badgeSize),
-                badgeOffset: NSPoint(x: badgeOffsetX, y: badgeOffsetY)
-            ) :
-        badgeFileGeometryCalculator.badgeRect(
-            for: item.baseIconForPreview ?? item.icon,
+        return badgePreviewGeometryCoordinator.geometry(
+            isDirectory: item.isDirectory,
+            folderColorName: item.folderColorName,
+            icon: item.baseIconForPreview ?? item.icon,
+            badge: badge,
             badgeSize: NSSize(width: appDelegate.badgeSize, height: appDelegate.badgeSize),
             badgeOffset: NSPoint(x: badgeOffsetX, y: badgeOffsetY)
         )
-        let visibleRect = item.isDirectory ? logicalRect : badgeFileGeometryCalculator.visibleBadgeRect(
-            for: badge,
-            in: logicalRect
-        )
-
-        return BadgeGeometry(logicalRect: logicalRect, visibleRect: visibleRect)
     }
 
     func placePreviewBadgeCenter(_ center: NSPoint, for item: DroppedItem) {
