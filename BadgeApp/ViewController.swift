@@ -60,6 +60,7 @@ class ViewController: NSViewController, NSTextFieldDelegate {
     private let badgeFolderPreviewRenderer = BadgeFolderPreviewRenderer()
     private let badgePreviewCacheKeyBuilder = BadgePreviewCacheKeyBuilder()
     private let badgePreviewIconRenderer = BadgePreviewIconRenderer()
+    private let badgeIconComposer = BadgeIconComposer()
 
     override func loadView() {
         self.view = NSView(frame: NSRect(x: 0, y: 0, width: 900, height: 650))
@@ -1883,62 +1884,12 @@ class ViewController: NSViewController, NSTextFieldDelegate {
     }
 
     private func makeBadgedIcon(originalIcon: NSImage, badge: NSImage, badgeSize: NSSize) -> NSImage {
-        let iconSizes = [16, 32, 64, 128, 256, 512, 1024]
-        let newIcon = NSImage(size: NSSize(width: 1024, height: 1024))
-
-        for iconSize in iconSizes {
-            guard let bitmap = NSBitmapImageRep(
-                bitmapDataPlanes: nil,
-                pixelsWide: iconSize,
-                pixelsHigh: iconSize,
-                bitsPerSample: 8,
-                samplesPerPixel: 4,
-                hasAlpha: true,
-                isPlanar: false,
-                colorSpaceName: .deviceRGB,
-                bytesPerRow: 0,
-                bitsPerPixel: 0
-            ), let context = NSGraphicsContext(bitmapImageRep: bitmap) else {
-                continue
-            }
-
-            let iconSize = CGFloat(iconSize)
-            let canvasSize = NSSize(width: iconSize, height: iconSize)
-            bitmap.size = canvasSize
-
-            NSGraphicsContext.saveGraphicsState()
-            NSGraphicsContext.current = context
-            context.cgContext.clear(CGRect(origin: .zero, size: canvasSize))
-            context.imageInterpolation = .high
-            context.shouldAntialias = true
-
-            let iconRect = aspectFitRect(for: originalIcon, in: NSRect(origin: .zero, size: canvasSize))
-            originalIcon.draw(
-                in: iconRect,
-                from: .zero,
-                operation: .copy,
-                fraction: 1.0
-            )
-
-            let scale = min(iconRect.width, iconRect.height) / 48.0
-            let canvasScale = min(canvasSize.width, canvasSize.height) / CGFloat(savedBadgePixelSize)
-            let scaledBadgeSize = NSSize(width: badgeSize.width * scale, height: badgeSize.height * scale)
-            let offsetX = badgeOffsetX * canvasScale
-            let offsetY = badgeOffsetY * canvasScale
-            let badgeRect = NSRect(
-                x: iconRect.maxX - scaledBadgeSize.width + offsetX,
-                y: iconRect.minY + offsetY,
-                width: scaledBadgeSize.width,
-                height: scaledBadgeSize.height
-            )
-
-            badge.draw(in: badgeRect, from: .zero, operation: .sourceOver, fraction: 1.0)
-            NSGraphicsContext.restoreGraphicsState()
-
-            newIcon.addRepresentation(bitmap)
-        }
-
-        return newIcon
+        badgeIconComposer.makeBadgedIcon(
+            originalIcon: originalIcon,
+            badge: badge,
+            badgeSize: badgeSize,
+            badgeOffset: NSPoint(x: badgeOffsetX, y: badgeOffsetY)
+        )
     }
 
     private func aspectFitRect(for image: NSImage, in bounds: NSRect) -> NSRect {
