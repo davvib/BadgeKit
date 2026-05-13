@@ -61,6 +61,7 @@ class ViewController: NSViewController, NSTextFieldDelegate {
     private let badgePreviewCacheKeyBuilder = BadgePreviewCacheKeyBuilder()
     private let badgePreviewIconRenderer = BadgePreviewIconRenderer()
     private let badgeIconComposer = BadgeIconComposer()
+    private let badgeImageNormalizer = BadgeImageNormalizer()
 
     override func loadView() {
         self.view = NSView(frame: NSRect(x: 0, y: 0, width: 900, height: 650))
@@ -1059,51 +1060,14 @@ class ViewController: NSViewController, NSTextFieldDelegate {
     }
 
     private func renderBadgeImage(_ image: NSImage) -> (image: NSImage, pngData: Data)? {
-        guard let source = image.cgImage(forProposedRect: nil, context: nil, hints: nil),
-              let bitmap = NSBitmapImageRep(
-                bitmapDataPlanes: nil,
-                pixelsWide: savedBadgePixelSize,
-                pixelsHigh: savedBadgePixelSize,
-                bitsPerSample: 8,
-                samplesPerPixel: 4,
-                hasAlpha: true,
-                isPlanar: false,
-                colorSpaceName: .deviceRGB,
-                bytesPerRow: 0,
-                bitsPerPixel: 0
-              ) else {
+        guard let normalizedBadge = badgeImageNormalizer.normalize(image) else {
             return nil
         }
 
-        bitmap.size = NSSize(width: savedBadgePixelSize, height: savedBadgePixelSize)
-
-        guard let context = NSGraphicsContext(bitmapImageRep: bitmap) else { return nil }
-
-        NSGraphicsContext.saveGraphicsState()
-        NSGraphicsContext.current = context
-        context.cgContext.clear(CGRect(x: 0, y: 0, width: savedBadgePixelSize, height: savedBadgePixelSize))
-        context.imageInterpolation = .high
-        context.shouldAntialias = true
-
-        let sourceSize = NSSize(width: source.width, height: source.height)
-        let targetSize = NSSize(width: savedBadgePixelSize, height: savedBadgePixelSize)
-        let scale = min(targetSize.width / sourceSize.width, targetSize.height / sourceSize.height)
-        let drawSize = NSSize(width: sourceSize.width * scale, height: sourceSize.height * scale)
-        let drawRect = NSRect(
-            x: (targetSize.width - drawSize.width) / 2,
-            y: (targetSize.height - drawSize.height) / 2,
-            width: drawSize.width,
-            height: drawSize.height
+        return (
+            image: normalizedBadge.image,
+            pngData: normalizedBadge.pngData
         )
-
-        NSImage(cgImage: source, size: sourceSize).draw(in: drawRect, from: .zero, operation: .copy, fraction: 1.0)
-        NSGraphicsContext.restoreGraphicsState()
-
-        guard let pngData = bitmap.representation(using: .png, properties: [:]) else { return nil }
-
-        let renderedImage = NSImage(size: targetSize)
-        renderedImage.addRepresentation(bitmap)
-        return (renderedImage, pngData)
     }
 
     private func colorizedBitmap(from image: NSImage, size: Int, color: NSColor) -> NSBitmapImageRep? {
