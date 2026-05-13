@@ -8,6 +8,8 @@ struct IconBackupRecord: Codable {
     let id: String
     let originalPath: String
     let bookmarkData: Data
+    let createdAt: Date?
+    let originalResourceIdentifier: String?
     let hadCustomIcon: Bool
     let iconFileName: String?
     let previewIconFileName: String?
@@ -33,12 +35,6 @@ private struct FolderSymbolInfo {
     let text: String?
 }
 
-private struct CachedIconBackupRecord {
-    let record: IconBackupRecord
-    let resolvedURL: URL
-    let resolvedIdentifier: NSObject?
-}
-
 struct BadgeGeometry {
     let logicalRect: NSRect
     let visibleRect: NSRect
@@ -61,9 +57,8 @@ class ViewController: NSViewController, NSTextFieldDelegate {
     private let folderIconRenderSizes = [16, 32, 64, 128, 256, 512, 1024]
     private let badgeAppFolderMetadataXattr = "com.badgeapp.folderMetadata"
     private let badgeAppBadgeStateXattr = "com.badgeapp.badgeState"
+    private let badgeAppBackupIDXattr = "com.badgeapp.backupID"
     private let metadataQueue = DispatchQueue(label: "com.badgeapp.metadata", qos: .userInitiated)
-    private let iconBackupCacheLock = NSLock()
-    private var cachedIconBackupRecords: [CachedIconBackupRecord]?
     private var previewMessageView: NSView?
     private var previewMessageLabel: NSTextField?
     private var previewMessageTimer: Timer?
@@ -76,6 +71,9 @@ class ViewController: NSViewController, NSTextFieldDelegate {
         super.viewDidLoad()
         loadCustomBadges()
         setupUI()
+        metadataQueue.async { [weak self] in
+            self?.cleanupStoredIconBackups()
+        }
     }
 
     func loadCustomBadges() {
@@ -137,50 +135,6 @@ class ViewController: NSViewController, NSTextFieldDelegate {
 
     private func iconBackupRecordURL(for id: String) -> URL? {
         iconBackupRecordsDirectory()?.appendingPathComponent(id).appendingPathExtension("json")
-    }
-
-    private func invalidateIconBackupCache() {
-        iconBackupCacheLock.lock()
-        cachedIconBackupRecords = nil
-        iconBackupCacheLock.unlock()
-    }
-
-    private func iconBackupRecords() -> [CachedIconBackupRecord] {
-        iconBackupCacheLock.lock()
-        if let cachedIconBackupRecords {
-            iconBackupCacheLock.unlock()
-            return cachedIconBackupRecords
-        }
-        iconBackupCacheLock.unlock()
-
-        guard let recordsDir = iconBackupRecordsDirectory(),
-              let recordURLs = try? FileManager.default.contentsOfDirectory(
-                at: recordsDir,
-                includingPropertiesForKeys: nil
-              ) else {
-            return []
-        }
-
-        let records = recordURLs.compactMap { recordURL -> CachedIconBackupRecord? in
-            guard recordURL.pathExtension == "json",
-                  let data = try? Data(contentsOf: recordURL),
-                  let record = try? JSONDecoder().decode(IconBackupRecord.self, from: data),
-                  let resolvedURL = resolvedBookmarkURL(from: record.bookmarkData) else {
-                return nil
-            }
-
-            return CachedIconBackupRecord(
-                record: record,
-                resolvedURL: resolvedURL.standardizedFileURL,
-                resolvedIdentifier: fileResourceIdentifier(for: resolvedURL)
-            )
-        }
-
-        iconBackupCacheLock.lock()
-        cachedIconBackupRecords = records
-        iconBackupCacheLock.unlock()
-
-        return records
     }
 
     private func backedUpIcon(for path: String) -> NSImage? {
@@ -607,8 +561,13 @@ class ViewController: NSViewController, NSTextFieldDelegate {
     }
 
     private func saveOriginalIconStateIfNeeded(for path: String) {
-        guard iconBackupRecord(for: path) == nil,
-              let backupsDir = iconBackupsDirectory(),
+        if iconBackupRecord(for: path) != nil {
+            return
+        }
+
+        removeBadgeAppBackupID(at: path)
+
+        guard let backupsDir = iconBackupsDirectory(),
               let recordsDir = iconBackupRecordsDirectory(),
               let imagesDir = iconBackupImagesDirectory() else { return }
 
@@ -644,6 +603,8 @@ class ViewController: NSViewController, NSTextFieldDelegate {
                 id: id,
                 originalPath: path,
                 bookmarkData: bookmarkData,
+                createdAt: Date(),
+                originalResourceIdentifier: fileResourceIdentifierString(for: url),
                 hadCustomIcon: shouldBackupIconImage,
                 iconFileName: iconFileName,
                 previewIconFileName: previewIconFileName,
@@ -652,7 +613,7 @@ class ViewController: NSViewController, NSTextFieldDelegate {
             )
             let data = try JSONEncoder().encode(record)
             try data.write(to: iconBackupRecordURL(for: id)!)
-            invalidateIconBackupCache()
+            writeBadgeAppBackupID(id, at: path)
         } catch {
             print("Error backing up original icon state: \(error)")
         }
@@ -680,6 +641,7 @@ class ViewController: NSViewController, NSTextFieldDelegate {
             restoreFinderInfo(record.finderInfoData, to: path)
             removeBadgeAppFolderMetadata(at: path)
             removeBadgeAppBadgeState(at: path)
+            removeBadgeAppBackupID(at: path)
             try? FileManager.default.removeItem(at: recordURL)
             if let iconFileName = record.iconFileName,
                let imagesDir = iconBackupImagesDirectory() {
@@ -689,46 +651,160 @@ class ViewController: NSViewController, NSTextFieldDelegate {
                let imagesDir = iconBackupImagesDirectory() {
                 try? FileManager.default.removeItem(at: imagesDir.appendingPathComponent(previewIconFileName))
             }
-            invalidateIconBackupCache()
             NSWorkspace.shared.noteFileSystemChanged(path)
         }
 
         return didRestore
     }
 
-    private func iconBackupRecord(for path: String) -> IconBackupRecord? {
-        let targetURL = URL(fileURLWithPath: path).standardizedFileURL
-        let targetIdentifier = fileResourceIdentifier(for: targetURL)
+    private func cleanupStoredIconBackups() {
+        guard let recordsDir = iconBackupRecordsDirectory(),
+              let recordURLs = try? FileManager.default.contentsOfDirectory(
+                at: recordsDir,
+                includingPropertiesForKeys: nil
+              ) else {
+            return
+        }
 
-        for cachedRecord in iconBackupRecords() {
-            if let targetIdentifier,
-               let resolvedIdentifier = cachedRecord.resolvedIdentifier,
-               resolvedIdentifier == targetIdentifier {
-                return cachedRecord.record
+        for recordURL in recordURLs where recordURL.pathExtension == "json" {
+            guard let data = try? Data(contentsOf: recordURL),
+                  let record = try? JSONDecoder().decode(IconBackupRecord.self, from: data) else {
+                continue
             }
 
-            if targetIdentifier == nil,
-               cachedRecord.resolvedIdentifier == nil,
-               cachedRecord.resolvedURL == targetURL {
-                return cachedRecord.record
+            if shouldKeepStoredIconBackup(record) {
+                continue
+            }
+
+            deleteIconBackupFiles(for: record, recordURL: recordURL)
+        }
+    }
+
+    private func shouldKeepStoredIconBackup(_ record: IconBackupRecord) -> Bool {
+        if let resolved = resolvedBookmark(from: record.bookmarkData, allowingStale: true) {
+            return fileExistsOrIsInTrash(at: resolved.url)
+        }
+
+        if FileManager.default.fileExists(atPath: record.originalPath) {
+            return true
+        }
+
+        return trashContainsItemNamed((record.originalPath as NSString).lastPathComponent)
+    }
+
+    private func fileExistsOrIsInTrash(at url: URL) -> Bool {
+        if FileManager.default.fileExists(atPath: url.path) {
+            return true
+        }
+
+        return url.standardizedFileURL.pathComponents.contains(".Trash") ||
+            url.standardizedFileURL.pathComponents.contains(".Trashes")
+    }
+
+    private func trashContainsItemNamed(_ name: String) -> Bool {
+        guard !name.isEmpty else { return false }
+
+        for trashDirectory in trashSearchDirectories() {
+            guard let enumerator = FileManager.default.enumerator(
+                at: trashDirectory,
+                includingPropertiesForKeys: [.isRegularFileKey, .isDirectoryKey],
+                options: [.skipsHiddenFiles, .skipsPackageDescendants]
+            ) else {
+                continue
+            }
+
+            for case let itemURL as URL in enumerator where itemURL.lastPathComponent == name {
+                return true
             }
         }
 
-        return nil
+        return false
     }
 
-    private func resolvedBookmarkURL(from bookmarkData: Data) -> URL? {
+    private func trashSearchDirectories() -> [URL] {
+        var directories = [
+            FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent(".Trash")
+        ]
+
+        let volumesURL = URL(fileURLWithPath: "/Volumes", isDirectory: true)
+        if let volumeURLs = try? FileManager.default.contentsOfDirectory(
+            at: volumesURL,
+            includingPropertiesForKeys: nil,
+            options: [.skipsHiddenFiles]
+        ) {
+            let uid = String(getuid())
+            directories += volumeURLs.map {
+                $0.appendingPathComponent(".Trashes").appendingPathComponent(uid)
+            }
+        }
+
+        return directories
+    }
+
+    private func deleteIconBackupFiles(for record: IconBackupRecord, recordURL: URL) {
+        try? FileManager.default.removeItem(at: recordURL)
+
+        guard let imagesDir = iconBackupImagesDirectory() else { return }
+        if let iconFileName = record.iconFileName {
+            try? FileManager.default.removeItem(at: imagesDir.appendingPathComponent(iconFileName))
+        }
+        if let previewIconFileName = record.previewIconFileName {
+            try? FileManager.default.removeItem(at: imagesDir.appendingPathComponent(previewIconFileName))
+        }
+    }
+
+    private func iconBackupRecord(for path: String) -> IconBackupRecord? {
+        guard let backupID = badgeAppBackupID(at: path),
+              let record = iconBackupRecord(withID: backupID),
+              iconBackupRecord(record, belongsTo: path) else {
+            return nil
+        }
+
+        return record
+    }
+
+    private func iconBackupRecord(withID id: String) -> IconBackupRecord? {
+        guard let recordURL = iconBackupRecordURL(for: id),
+              let data = try? Data(contentsOf: recordURL) else {
+            return nil
+        }
+
+        return try? JSONDecoder().decode(IconBackupRecord.self, from: data)
+    }
+
+    private func iconBackupRecord(_ record: IconBackupRecord, belongsTo path: String) -> Bool {
+        let targetURL = URL(fileURLWithPath: path).standardizedFileURL
+
+        if let originalResourceIdentifier = record.originalResourceIdentifier,
+           let targetIdentifier = fileResourceIdentifierString(for: targetURL) {
+            return originalResourceIdentifier == targetIdentifier
+        }
+
+        return record.originalPath == path
+    }
+
+    private func resolvedBookmark(from bookmarkData: Data, allowingStale: Bool = false) -> (url: URL, isStale: Bool)? {
         var isStale = false
-        guard let url = try? URL(
+        if let url = try? URL(
             resolvingBookmarkData: bookmarkData,
             options: [.withSecurityScope],
             relativeTo: nil,
             bookmarkDataIsStale: &isStale
-        ) else {
-            return nil
+        ), allowingStale || !isStale {
+            return (url, isStale)
         }
 
-        return url
+        isStale = false
+        if let url = try? URL(
+            resolvingBookmarkData: bookmarkData,
+            options: [],
+            relativeTo: nil,
+            bookmarkDataIsStale: &isStale
+        ), allowingStale || !isStale {
+            return (url, isStale)
+        }
+
+        return nil
     }
 
     private func fileResourceIdentifier(for url: URL) -> NSObject? {
@@ -737,6 +813,14 @@ class ViewController: NSViewController, NSTextFieldDelegate {
         }
 
         return identifier as? NSObject
+    }
+
+    private func fileResourceIdentifierString(for url: URL) -> String? {
+        guard let identifier = fileResourceIdentifier(for: url) else { return nil }
+        if let data = identifier as? Data {
+            return data.base64EncodedString()
+        }
+        return String(describing: identifier)
     }
 
     private func hasCustomFinderIcon(at path: String) -> Bool {
@@ -882,6 +966,11 @@ class ViewController: NSViewController, NSTextFieldDelegate {
         return try? JSONDecoder().decode(BadgeAppBadgeState.self, from: data)
     }
 
+    private func badgeAppBackupID(at path: String) -> String? {
+        guard let data = xattrData(named: badgeAppBackupIDXattr, at: path) else { return nil }
+        return String(data: data, encoding: .utf8)
+    }
+
     private func hasBadgeAppliedByBadgeApp(at path: String) -> Bool {
         badgeAppBadgeState(at: path) != nil ||
         (iconBackupRecord(for: path) != nil && hasCustomFinderIcon(at: path))
@@ -924,6 +1013,17 @@ class ViewController: NSViewController, NSTextFieldDelegate {
     private func removeBadgeAppBadgeState(at path: String) {
         path.withCString { pathPointer in
             _ = removexattr(pathPointer, badgeAppBadgeStateXattr, 0)
+        }
+    }
+
+    private func writeBadgeAppBackupID(_ id: String, at path: String) {
+        guard let data = id.data(using: .utf8) else { return }
+        setXattrData(data, named: badgeAppBackupIDXattr, at: path)
+    }
+
+    private func removeBadgeAppBackupID(at path: String) {
+        path.withCString { pathPointer in
+            _ = removexattr(pathPointer, badgeAppBackupIDXattr, 0)
         }
     }
 
@@ -975,6 +1075,7 @@ class ViewController: NSViewController, NSTextFieldDelegate {
 
         removeBadgeAppFolderMetadata(at: path)
         removeBadgeAppBadgeState(at: path)
+        removeBadgeAppBackupID(at: path)
         NSWorkspace.shared.noteFileSystemChanged(path)
         NSWorkspace.shared.noteFileSystemChanged((path as NSString).deletingLastPathComponent)
 
@@ -1967,6 +2068,7 @@ class ViewController: NSViewController, NSTextFieldDelegate {
                 NSWorkspace.shared.setIcon(nil, forFile: item.path, options: [])
                 NSWorkspace.shared.noteFileSystemChanged(item.path)
                 removeBadgeAppBadgeState(at: item.path)
+                removeBadgeAppBackupID(at: item.path)
                 item.folderColorName = nil
                 item.folderColor = nil
                 item.folderSymbolName = nil
