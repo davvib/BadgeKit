@@ -41,7 +41,7 @@ class ViewController: NSViewController, NSTextFieldDelegate {
     var items: [DroppedItem] = []
     var badgeOffsetX: CGFloat = 4
     var badgeOffsetY: CGFloat = -4
-    var customBadges: [(name: NSImage.Name, label: String, path: String)] = []
+    var customBadges: [CustomBadgeRecord] = []
     var isPreviewSelected = false
     private let savedBadgePixelSize = 1024
     private let finderInfoHasCustomIconFlag: UInt16 = 0x0400
@@ -88,7 +88,13 @@ class ViewController: NSViewController, NSTextFieldDelegate {
                 if let image = NSImage(contentsOfFile: file.path) {
                     let name = NSImage.Name(file.deletingPathExtension().lastPathComponent)
                     image.setName(name)
-                    customBadges.append((name: name, label: file.deletingPathExtension().lastPathComponent, path: file.path))
+                    customBadges.append(
+                        CustomBadgeRecord(
+                            name: name,
+                            label: file.deletingPathExtension().lastPathComponent,
+                            path: file.path
+                        )
+                    )
                 }
             }
         } catch {
@@ -110,7 +116,13 @@ class ViewController: NSViewController, NSTextFieldDelegate {
             try pngData.write(to: fileURL)
             let customName = NSImage.Name(name)
             renderedBadge.image.setName(customName)
-            customBadges.append((name: customName, label: name, path: fileURL.path))
+            customBadges.append(
+                CustomBadgeRecord(
+                    name: customName,
+                    label: name,
+                    path: fileURL.path
+                )
+            )
             return true
         } catch {
             print("Error saving custom badge: \(error)")
