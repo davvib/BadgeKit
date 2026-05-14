@@ -95,4 +95,14 @@ final class CustomBadgeStore {
             return nil
         }
     }
+    
+    func deleteBadge(_ badge: CustomBadgeRecord) -> Bool {
+        do {
+            try fileManager.removeItem(atPath: badge.path)
+            return true
+        } catch {
+            print("Error deleting custom badge: \(error)")
+            return false
+        }
+    }
 }

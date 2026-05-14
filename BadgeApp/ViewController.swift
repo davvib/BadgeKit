@@ -1052,15 +1052,17 @@ class ViewController: NSViewController, NSTextFieldDelegate {
     }
 
     func deleteCustomBadge(at index: Int) {
-        guard index < customBadges.count else { return }
-        let badge = customBadges[index]
-        let fm = FileManager.default
-        do {
-            try fm.removeItem(atPath: badge.path)
-            customBadges.remove(at: index)
-        } catch {
-            print("Error deleting custom badge: \(error)")
+        guard index < customBadges.count else {
+            return
         }
+
+        let badge = customBadges[index]
+
+        guard customBadgeStore.deleteBadge(badge) else {
+            return
+        }
+
+        customBadges.remove(at: index)
     }
 
     func setupUI() {
