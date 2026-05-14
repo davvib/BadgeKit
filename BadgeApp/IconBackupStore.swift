@@ -60,4 +60,27 @@ final class IconBackupStore {
 
         return NSImage(contentsOf: imagesDir.appendingPathComponent(iconFileName))
     }
+    
+    func prepareStorageDirectories() throws -> (backupsDir: URL, recordsDir: URL, imagesDir: URL) {
+        guard let backupsDir = backupsDirectory(),
+              let recordsDir = recordsDirectory(),
+              let imagesDir = imagesDirectory() else {
+            throw CocoaError(.fileNoSuchFile)
+        }
+
+        try fileManager.createDirectory(at: backupsDir, withIntermediateDirectories: true)
+        try fileManager.createDirectory(at: recordsDir, withIntermediateDirectories: true)
+        try fileManager.createDirectory(at: imagesDir, withIntermediateDirectories: true)
+
+        return (backupsDir, recordsDir, imagesDir)
+    }
+
+    func writeRecord(_ record: IconBackupRecord) throws {
+        guard let recordURL = recordURL(for: record.id) else {
+            throw CocoaError(.fileNoSuchFile)
+        }
+
+        let data = try JSONEncoder().encode(record)
+        try data.write(to: recordURL)
+    }
 }

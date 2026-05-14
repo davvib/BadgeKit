@@ -446,10 +446,16 @@ class ViewController: NSViewController, NSTextFieldDelegate {
 
         removeBadgeAppBackupID(at: path)
 
-        guard let backupsDir = iconBackupsDirectory(),
-              let recordsDir = iconBackupRecordsDirectory(),
-              let imagesDir = iconBackupImagesDirectory() else { return }
+        let storageDirectories: (backupsDir: URL, recordsDir: URL, imagesDir: URL)
 
+        do {
+            storageDirectories = try iconBackupStore.prepareStorageDirectories()
+        } catch {
+            print("Error preparing icon backup storage: \(error)")
+            return
+        }
+
+        let imagesDir = storageDirectories.imagesDir
         let url = URL(fileURLWithPath: path)
         let visualCustomizationXattrs = folderVisualCustomizationXattrs(at: path)
         let hasCustomIcon = hasCustomFinderIcon(at: path)
@@ -460,10 +466,6 @@ class ViewController: NSViewController, NSTextFieldDelegate {
         let previewIconFileName = "\(id)-preview.tiff"
 
         do {
-            try FileManager.default.createDirectory(at: backupsDir, withIntermediateDirectories: true)
-            try FileManager.default.createDirectory(at: recordsDir, withIntermediateDirectories: true)
-            try FileManager.default.createDirectory(at: imagesDir, withIntermediateDirectories: true)
-
             if let tiffData = NSWorkspace.shared.icon(forFile: path).tiffRepresentation {
                 try tiffData.write(to: imagesDir.appendingPathComponent(previewIconFileName))
             }
@@ -478,6 +480,7 @@ class ViewController: NSViewController, NSTextFieldDelegate {
                 includingResourceValuesForKeys: nil,
                 relativeTo: nil
             )
+
             let record = IconBackupRecord(
                 id: id,
                 originalPath: path,
@@ -490,8 +493,8 @@ class ViewController: NSViewController, NSTextFieldDelegate {
                 visualCustomizationXattrs: visualCustomizationXattrs.isEmpty ? nil : visualCustomizationXattrs,
                 finderInfoData: finderInfoData
             )
-            let data = try JSONEncoder().encode(record)
-            try data.write(to: iconBackupRecordURL(for: id)!)
+
+            try iconBackupStore.writeRecord(record)
             writeBadgeAppBackupID(id, at: path)
         } catch {
             print("Error backing up original icon state: \(error)")
