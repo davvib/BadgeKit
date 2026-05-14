@@ -446,16 +446,13 @@ class ViewController: NSViewController, NSTextFieldDelegate {
 
         removeBadgeAppBackupID(at: path)
 
-        let storageDirectories: (backupsDir: URL, recordsDir: URL, imagesDir: URL)
-
         do {
-            storageDirectories = try iconBackupStore.prepareStorageDirectories()
+            _ = try iconBackupStore.prepareStorageDirectories()
         } catch {
             print("Error preparing icon backup storage: \(error)")
             return
         }
 
-        let imagesDir = storageDirectories.imagesDir
         let url = URL(fileURLWithPath: path)
         let visualCustomizationXattrs = folderVisualCustomizationXattrs(at: path)
         let hasCustomIcon = hasCustomFinderIcon(at: path)
@@ -466,13 +463,18 @@ class ViewController: NSViewController, NSTextFieldDelegate {
         let previewIconFileName = "\(id)-preview.tiff"
 
         do {
-            if let tiffData = NSWorkspace.shared.icon(forFile: path).tiffRepresentation {
-                try tiffData.write(to: imagesDir.appendingPathComponent(previewIconFileName))
-            }
+            let workspaceIcon = NSWorkspace.shared.icon(forFile: path)
 
-            if let iconFileName,
-               let tiffData = NSWorkspace.shared.icon(forFile: path).tiffRepresentation {
-                try tiffData.write(to: imagesDir.appendingPathComponent(iconFileName))
+            try iconBackupStore.writeTIFFIcon(
+                workspaceIcon,
+                fileName: previewIconFileName
+            )
+
+            if let iconFileName {
+                try iconBackupStore.writeTIFFIcon(
+                    workspaceIcon,
+                    fileName: iconFileName
+                )
             }
 
             let bookmarkData = try url.bookmarkData(

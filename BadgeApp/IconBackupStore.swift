@@ -83,4 +83,13 @@ final class IconBackupStore {
         let data = try JSONEncoder().encode(record)
         try data.write(to: recordURL)
     }
+    
+    func writeTIFFIcon(_ icon: NSImage, fileName: String) throws {
+        guard let imagesDir = imagesDirectory(),
+              let tiffData = icon.tiffRepresentation else {
+            return
+        }
+
+        try tiffData.write(to: imagesDir.appendingPathComponent(fileName))
+    }
 }
