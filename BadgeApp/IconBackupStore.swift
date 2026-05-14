@@ -92,4 +92,14 @@ final class IconBackupStore {
 
         try tiffData.write(to: imagesDir.appendingPathComponent(fileName))
     }
+    
+    func originalIcon(for record: IconBackupRecord) -> NSImage? {
+        guard record.hadCustomIcon,
+              let iconFileName = record.iconFileName,
+              let imagesDir = imagesDirectory() else {
+            return nil
+        }
+
+        return NSImage(contentsOf: imagesDir.appendingPathComponent(iconFileName))
+    }
 }

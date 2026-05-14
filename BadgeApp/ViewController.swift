@@ -511,10 +511,7 @@ class ViewController: NSViewController, NSTextFieldDelegate {
 
         var didRestore = false
 
-        if record.hadCustomIcon,
-           let iconFileName = record.iconFileName,
-           let imagesDir = iconBackupImagesDirectory(),
-           let originalIcon = NSImage(contentsOf: imagesDir.appendingPathComponent(iconFileName)) {
+        if let originalIcon = iconBackupStore.originalIcon(for: record) {
             didRestore = NSWorkspace.shared.setIcon(originalIcon, forFile: path, options: [])
         } else {
             didRestore = NSWorkspace.shared.setIcon(nil, forFile: path, options: [])
