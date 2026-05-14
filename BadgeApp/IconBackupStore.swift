@@ -130,6 +130,26 @@ final class IconBackupStore {
             )
         }
     }
+    
+    func deleteBackupFiles(for record: IconBackupRecord) {
+        if let recordURL = recordURL(for: record.id) {
+            try? fileManager.removeItem(at: recordURL)
+        }
+
+        if let iconFileName = record.iconFileName,
+           let imagesDir = imagesDirectory() {
+            try? fileManager.removeItem(
+                at: imagesDir.appendingPathComponent(iconFileName)
+            )
+        }
+
+        if let previewIconFileName = record.previewIconFileName,
+           let imagesDir = imagesDirectory() {
+            try? fileManager.removeItem(
+                at: imagesDir.appendingPathComponent(previewIconFileName)
+            )
+        }
+    }
 }
 
 

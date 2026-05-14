@@ -504,8 +504,7 @@ class ViewController: NSViewController, NSTextFieldDelegate {
     }
 
     private func restoreOriginalIconStateIfAvailable(for path: String) -> Bool {
-        guard let record = iconBackupRecord(for: path),
-              let recordURL = iconBackupRecordURL(for: record.id) else {
+        guard let record = iconBackupRecord(for: path) else {
             return false
         }
 
@@ -523,15 +522,7 @@ class ViewController: NSViewController, NSTextFieldDelegate {
             removeBadgeAppFolderMetadata(at: path)
             removeBadgeAppBadgeState(at: path)
             removeBadgeAppBackupID(at: path)
-            try? FileManager.default.removeItem(at: recordURL)
-            if let iconFileName = record.iconFileName,
-               let imagesDir = iconBackupImagesDirectory() {
-                try? FileManager.default.removeItem(at: imagesDir.appendingPathComponent(iconFileName))
-            }
-            if let previewIconFileName = record.previewIconFileName,
-               let imagesDir = iconBackupImagesDirectory() {
-                try? FileManager.default.removeItem(at: imagesDir.appendingPathComponent(previewIconFileName))
-            }
+            iconBackupStore.deleteBackupFiles(for: record)
             NSWorkspace.shared.noteFileSystemChanged(path)
         }
 
