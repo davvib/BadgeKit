@@ -50,6 +50,7 @@ class ViewController: NSViewController, NSTextFieldDelegate {
     private let badgeIconComposer = BadgeIconComposer()
     private let badgeImageNormalizer = BadgeImageNormalizer()
     private let customBadgeStore = CustomBadgeStore()
+    private let iconBackupStore = IconBackupStore()
 
     override func loadView() {
         self.view = NSView(frame: NSRect(x: 0, y: 0, width: 900, height: 650))
@@ -82,22 +83,19 @@ class ViewController: NSViewController, NSTextFieldDelegate {
     }
 
     private func iconBackupsDirectory() -> URL? {
-        FileManager.default
-            .urls(for: .applicationSupportDirectory, in: .userDomainMask)
-            .first?
-            .appendingPathComponent("BadgeApp/IconBackups")
+        iconBackupStore.backupsDirectory()
     }
 
     private func iconBackupRecordsDirectory() -> URL? {
-        iconBackupsDirectory()?.appendingPathComponent("Records")
+        iconBackupStore.recordsDirectory()
     }
 
     private func iconBackupImagesDirectory() -> URL? {
-        iconBackupsDirectory()?.appendingPathComponent("Images")
+        iconBackupStore.imagesDirectory()
     }
 
     private func iconBackupRecordURL(for id: String) -> URL? {
-        iconBackupRecordsDirectory()?.appendingPathComponent(id).appendingPathExtension("json")
+        iconBackupStore.recordURL(for: id)
     }
 
     private func backedUpIcon(for path: String) -> NSImage? {
