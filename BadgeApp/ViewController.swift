@@ -62,6 +62,7 @@ class ViewController: NSViewController, NSTextFieldDelegate {
     private let badgePreviewIconRenderer = BadgePreviewIconRenderer()
     private let badgeIconComposer = BadgeIconComposer()
     private let badgeImageNormalizer = BadgeImageNormalizer()
+    private let customBadgeStore = CustomBadgeStore()
 
     override func loadView() {
         self.view = NSView(frame: NSRect(x: 0, y: 0, width: 900, height: 650))
@@ -77,29 +78,7 @@ class ViewController: NSViewController, NSTextFieldDelegate {
     }
 
     func loadCustomBadges() {
-        let fm = FileManager.default
-        guard let appSupport = fm.urls(for: .applicationSupportDirectory, in: .userDomainMask).first else { return }
-        let badgesDir = appSupport.appendingPathComponent("BadgeApp/Badges")
-
-        do {
-            try fm.createDirectory(at: badgesDir, withIntermediateDirectories: true)
-            let files = try fm.contentsOfDirectory(at: badgesDir, includingPropertiesForKeys: nil)
-            for file in files {
-                if let image = NSImage(contentsOfFile: file.path) {
-                    let name = NSImage.Name(file.deletingPathExtension().lastPathComponent)
-                    image.setName(name)
-                    customBadges.append(
-                        CustomBadgeRecord(
-                            name: name,
-                            label: file.deletingPathExtension().lastPathComponent,
-                            path: file.path
-                        )
-                    )
-                }
-            }
-        } catch {
-            print("Error loading custom badges: \(error)")
-        }
+        customBadges = customBadgeStore.loadBadges()
     }
 
     func saveCustomBadge(image: NSImage, name: String) -> Bool {
