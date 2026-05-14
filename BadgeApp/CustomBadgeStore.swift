@@ -6,6 +6,7 @@
 //
 
 import Cocoa
+import BadgeKit
 
 final class CustomBadgeStore {
     private let fileManager: FileManager
@@ -55,6 +56,43 @@ final class CustomBadgeStore {
         } catch {
             print("Error loading custom badges: \(error)")
             return []
+        }
+    }
+    
+    func saveBadge(
+        image: NSImage,
+        name: String,
+        normalizer: BadgeImageNormalizer
+    ) -> CustomBadgeRecord? {
+        guard let badgesDir = badgesDirectory() else {
+            return nil
+        }
+
+        let fileURL = badgesDir.appendingPathComponent("\(name).png")
+
+        guard let normalizedBadge = normalizer.normalize(image) else {
+            return nil
+        }
+
+        do {
+            try fileManager.createDirectory(
+                at: badgesDir,
+                withIntermediateDirectories: true
+            )
+
+            try normalizedBadge.pngData.write(to: fileURL)
+
+            let customName = NSImage.Name(name)
+            normalizedBadge.image.setName(customName)
+
+            return CustomBadgeRecord(
+                name: customName,
+                label: name,
+                path: fileURL.path
+            )
+        } catch {
+            print("Error saving custom badge: \(error)")
+            return nil
         }
     }
 }

@@ -82,31 +82,16 @@ class ViewController: NSViewController, NSTextFieldDelegate {
     }
 
     func saveCustomBadge(image: NSImage, name: String) -> Bool {
-        let fm = FileManager.default
-        guard let appSupport = fm.urls(for: .applicationSupportDirectory, in: .userDomainMask).first else { return false }
-        let badgesDir = appSupport.appendingPathComponent("BadgeApp/Badges")
-        let fileURL = badgesDir.appendingPathComponent("\(name).png")
-
-        guard let renderedBadge = renderBadgeImage(image) else { return false }
-        let pngData = renderedBadge.pngData
-
-        do {
-            try fm.createDirectory(at: badgesDir, withIntermediateDirectories: true)
-            try pngData.write(to: fileURL)
-            let customName = NSImage.Name(name)
-            renderedBadge.image.setName(customName)
-            customBadges.append(
-                CustomBadgeRecord(
-                    name: customName,
-                    label: name,
-                    path: fileURL.path
-                )
-            )
-            return true
-        } catch {
-            print("Error saving custom badge: \(error)")
+        guard let badge = customBadgeStore.saveBadge(
+            image: image,
+            name: name,
+            normalizer: badgeImageNormalizer
+        ) else {
             return false
         }
+
+        customBadges.append(badge)
+        return true
     }
 
     private func iconBackupsDirectory() -> URL? {
@@ -1064,17 +1049,6 @@ class ViewController: NSViewController, NSTextFieldDelegate {
                 }
             }
         }
-    }
-
-    private func renderBadgeImage(_ image: NSImage) -> (image: NSImage, pngData: Data)? {
-        guard let normalizedBadge = badgeImageNormalizer.normalize(image) else {
-            return nil
-        }
-
-        return (
-            image: normalizedBadge.image,
-            pngData: normalizedBadge.pngData
-        )
     }
 
     func deleteCustomBadge(at index: Int) {
