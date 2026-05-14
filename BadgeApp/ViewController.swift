@@ -438,6 +438,10 @@ class ViewController: NSViewController, NSTextFieldDelegate {
     }
 
     private func refreshRestoredVisualState(for item: DroppedItem) {
+        refreshCurrentVisualState(for: item, showsBadgePreview: false)
+    }
+
+    private func refreshCurrentVisualState(for item: DroppedItem, showsBadgePreview: Bool? = nil) {
         let colorInfo = folderCustomizationColorInfo(at: item.path)
         item.folderColorName = colorInfo?.name
         item.folderColor = colorInfo?.color
@@ -445,7 +449,19 @@ class ViewController: NSViewController, NSTextFieldDelegate {
         item.folderSymbolName = symbolInfo.systemName
         item.folderSymbolText = symbolInfo.text
         item.icon = customRenderedFolderPreview(for: item) ?? NSWorkspace.shared.icon(forFile: item.path)
-        item.showsBadgePreview = true
+        item.baseIconForPreview = backedUpIcon(for: item.path)
+        item.badgeStatus = badgeStatus(
+            badgeState: badgeAppBadgeState(at: item.path),
+            hasAppBadge: hasBadgeAppliedByBadgeApp(at: item.path),
+            hasCustomIcon: hasCustomFinderIcon(at: item.path),
+            hasVisualCustomization: item.isDirectory && hasFolderVisualCustomization(at: item.path),
+            hasCleanBaseIcon: item.baseIconForPreview != nil
+        )
+        item.cachedPreviewIcon = nil
+        item.cachedPreviewKey = nil
+        if let showsBadgePreview {
+            item.showsBadgePreview = showsBadgePreview
+        }
     }
 
     private func folderIcon(_ icon: NSImage, tintedWith color: NSColor?) -> NSImage {
@@ -1794,13 +1810,18 @@ class ViewController: NSViewController, NSTextFieldDelegate {
 
     @objc func removeBadge() {
         for item in items {
+            let hadBadgeAppState = badgeAppBadgeState(at: item.path) != nil ||
+                badgeAppFolderMetadata(at: item.path) != nil ||
+                badgeAppBackupID(at: item.path) != nil
+
             if restoreOriginalIconStateIfAvailable(for: item.path) {
                 refreshRestoredVisualState(for: item)
             } else if restoreBadgeAppFolderVisualStateIfAvailable(for: item.path) {
                 refreshRestoredVisualState(for: item)
-            } else {
+            } else if hadBadgeAppState {
                 NSWorkspace.shared.setIcon(nil, forFile: item.path, options: [])
                 NSWorkspace.shared.noteFileSystemChanged(item.path)
+                removeBadgeAppFolderMetadata(at: item.path)
                 removeBadgeAppBadgeState(at: item.path)
                 removeBadgeAppBackupID(at: item.path)
                 item.folderColorName = nil
@@ -1809,6 +1830,9 @@ class ViewController: NSViewController, NSTextFieldDelegate {
                 item.folderSymbolText = nil
                 item.icon = NSWorkspace.shared.icon(forFile: item.path)
                 item.showsBadgePreview = true
+                refreshCurrentVisualState(for: item, showsBadgePreview: false)
+            } else {
+                refreshCurrentVisualState(for: item)
             }
         }
 
