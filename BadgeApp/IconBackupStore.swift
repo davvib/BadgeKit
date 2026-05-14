@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import Cocoa
 
 final class IconBackupStore {
     private let fileManager: FileManager
@@ -40,5 +41,23 @@ final class IconBackupStore {
         }
 
         return try? JSONDecoder().decode(IconBackupRecord.self, from: data)
+    }
+    
+    func previewOrOriginalIcon(for record: IconBackupRecord) -> NSImage? {
+        guard let imagesDir = imagesDirectory() else {
+            return nil
+        }
+
+        if let previewIconFileName = record.previewIconFileName,
+           let previewIcon = NSImage(contentsOf: imagesDir.appendingPathComponent(previewIconFileName)) {
+            return previewIcon
+        }
+
+        guard record.hadCustomIcon,
+              let iconFileName = record.iconFileName else {
+            return nil
+        }
+
+        return NSImage(contentsOf: imagesDir.appendingPathComponent(iconFileName))
     }
 }

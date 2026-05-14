@@ -99,20 +99,12 @@ class ViewController: NSViewController, NSTextFieldDelegate {
     }
 
     private func backedUpIcon(for path: String) -> NSImage? {
-        guard shouldUseBackedUpIcon(for: path) else { return nil }
-
-        guard let record = iconBackupRecord(for: path),
-              let imagesDir = iconBackupImagesDirectory() else { return nil }
-
-        if let previewIconFileName = record.previewIconFileName,
-           let previewIcon = NSImage(contentsOf: imagesDir.appendingPathComponent(previewIconFileName)) {
-            return previewIcon
+        guard shouldUseBackedUpIcon(for: path),
+              let record = iconBackupRecord(for: path) else {
+            return nil
         }
 
-        guard record.hadCustomIcon,
-              let iconFileName = record.iconFileName else { return nil }
-
-        return NSImage(contentsOf: imagesDir.appendingPathComponent(iconFileName))
+        return iconBackupStore.previewOrOriginalIcon(for: record)
     }
 
     private func shouldUseBackedUpIcon(for path: String) -> Bool {
