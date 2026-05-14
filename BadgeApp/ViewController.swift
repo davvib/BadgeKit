@@ -651,12 +651,7 @@ class ViewController: NSViewController, NSTextFieldDelegate {
     }
 
     private func iconBackupRecord(withID id: String) -> IconBackupRecord? {
-        guard let recordURL = iconBackupRecordURL(for: id),
-              let data = try? Data(contentsOf: recordURL) else {
-            return nil
-        }
-
-        return try? JSONDecoder().decode(IconBackupRecord.self, from: data)
+        iconBackupStore.record(withID: id)
     }
 
     private func iconBackupRecord(_ record: IconBackupRecord, belongsTo path: String) -> Bool {

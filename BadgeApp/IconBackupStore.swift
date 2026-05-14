@@ -32,4 +32,13 @@ final class IconBackupStore {
     func recordURL(for id: String) -> URL? {
         recordsDirectory()?.appendingPathComponent(id).appendingPathExtension("json")
     }
+    
+    func record(withID id: String) -> IconBackupRecord? {
+        guard let recordURL = recordURL(for: id),
+              let data = try? Data(contentsOf: recordURL) else {
+            return nil
+        }
+
+        return try? JSONDecoder().decode(IconBackupRecord.self, from: data)
+    }
 }
