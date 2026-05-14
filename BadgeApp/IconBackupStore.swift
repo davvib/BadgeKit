@@ -8,6 +8,11 @@
 import Foundation
 import Cocoa
 
+struct StoredIconBackupRecord {
+    let record: IconBackupRecord
+    let recordURL: URL
+}
+
 final class IconBackupStore {
     private let fileManager: FileManager
 
@@ -102,4 +107,29 @@ final class IconBackupStore {
 
         return NSImage(contentsOf: imagesDir.appendingPathComponent(iconFileName))
     }
+    
+    func storedRecords() -> [StoredIconBackupRecord] {
+        guard let recordsDir = recordsDirectory(),
+              let recordURLs = try? fileManager.contentsOfDirectory(
+                at: recordsDir,
+                includingPropertiesForKeys: nil
+              ) else {
+            return []
+        }
+
+        return recordURLs.compactMap { recordURL in
+            guard recordURL.pathExtension == "json",
+                  let data = try? Data(contentsOf: recordURL),
+                  let record = try? JSONDecoder().decode(IconBackupRecord.self, from: data) else {
+                return nil
+            }
+
+            return StoredIconBackupRecord(
+                record: record,
+                recordURL: recordURL
+            )
+        }
+    }
 }
+
+

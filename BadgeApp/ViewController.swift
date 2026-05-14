@@ -539,25 +539,15 @@ class ViewController: NSViewController, NSTextFieldDelegate {
     }
 
     private func cleanupStoredIconBackups() {
-        guard let recordsDir = iconBackupRecordsDirectory(),
-              let recordURLs = try? FileManager.default.contentsOfDirectory(
-                at: recordsDir,
-                includingPropertiesForKeys: nil
-              ) else {
-            return
-        }
-
-        for recordURL in recordURLs where recordURL.pathExtension == "json" {
-            guard let data = try? Data(contentsOf: recordURL),
-                  let record = try? JSONDecoder().decode(IconBackupRecord.self, from: data) else {
+        for storedRecord in iconBackupStore.storedRecords() {
+            if shouldKeepStoredIconBackup(storedRecord.record) {
                 continue
             }
 
-            if shouldKeepStoredIconBackup(record) {
-                continue
-            }
-
-            deleteIconBackupFiles(for: record, recordURL: recordURL)
+            deleteIconBackupFiles(
+                for: storedRecord.record,
+                recordURL: storedRecord.recordURL
+            )
         }
     }
 
