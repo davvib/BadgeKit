@@ -82,22 +82,6 @@ class ViewController: NSViewController, NSTextFieldDelegate {
         return true
     }
 
-    private func iconBackupsDirectory() -> URL? {
-        iconBackupStore.backupsDirectory()
-    }
-
-    private func iconBackupRecordsDirectory() -> URL? {
-        iconBackupStore.recordsDirectory()
-    }
-
-    private func iconBackupImagesDirectory() -> URL? {
-        iconBackupStore.imagesDirectory()
-    }
-
-    private func iconBackupRecordURL(for id: String) -> URL? {
-        iconBackupStore.recordURL(for: id)
-    }
-
     private func backedUpIcon(for path: String) -> NSImage? {
         guard shouldUseBackedUpIcon(for: path),
               let record = iconBackupRecord(for: path) else {
@@ -604,15 +588,8 @@ class ViewController: NSViewController, NSTextFieldDelegate {
     }
 
     private func deleteIconBackupFiles(for record: IconBackupRecord, recordURL: URL) {
-        try? FileManager.default.removeItem(at: recordURL)
-
-        guard let imagesDir = iconBackupImagesDirectory() else { return }
-        if let iconFileName = record.iconFileName {
-            try? FileManager.default.removeItem(at: imagesDir.appendingPathComponent(iconFileName))
-        }
-        if let previewIconFileName = record.previewIconFileName {
-            try? FileManager.default.removeItem(at: imagesDir.appendingPathComponent(previewIconFileName))
-        }
+        _ = recordURL
+        iconBackupStore.deleteBackupFiles(for: record)
     }
 
     private func iconBackupRecord(for path: String) -> IconBackupRecord? {
