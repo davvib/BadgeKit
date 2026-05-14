@@ -4,19 +4,6 @@ import QuickLookThumbnailing
 import UniformTypeIdentifiers
 import BadgeKit
 
-struct IconBackupRecord: Codable {
-    let id: String
-    let originalPath: String
-    let bookmarkData: Data
-    let createdAt: Date?
-    let originalResourceIdentifier: String?
-    let hadCustomIcon: Bool
-    let iconFileName: String?
-    let previewIconFileName: String?
-    let visualCustomizationXattrs: [String: Data]?
-    let finderInfoData: Data?
-}
-
 struct BadgeAppFolderMetadata: Codable {
     let colorName: String?
     let symbolName: String?

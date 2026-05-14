@@ -13,6 +13,7 @@
 		3D8858C9BAB351A705ABDAFB /* DroppedItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC4A915536D5735AEA9042F1 /* DroppedItem.swift */; };
 		AE01D87ED777FA1E17460A7C /* DropZoneView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20F97ADCD4A7D795A6CD2D9A /* DropZoneView.swift */; };
 		BC49A789C66E60045BDF57CA /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6062F70E1A545127650D288F /* ViewController.swift */; };
+		E8346DE62FB5F04A00070BEB /* IconBackupRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8346DE52FB5F04A00070BEB /* IconBackupRecord.swift */; };
 		E88E3C8E2FB39390008D1CEE /* BadgeKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E88E3C8D2FB39390008D1CEE /* BadgeKit.framework */; };
 		E8FCC5732FB5CC6400E08322 /* CustomBadgeRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8FCC5722FB5CC6400E08322 /* CustomBadgeRecord.swift */; };
 		E8FCC5752FB5CD9100E08322 /* CustomBadgeStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8FCC5742FB5CD9100E08322 /* CustomBadgeStore.swift */; };
@@ -25,6 +26,7 @@
 		66ACBA80B5F8D62F5A442CA6 /* BadgeApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BadgeApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		93AD2808C2EE791C3E76C7A0 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		E6B6F2C1E4694E97B108AA1E /* Carpetas */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Carpetas; sourceTree = "<group>"; };
+		E8346DE52FB5F04A00070BEB /* IconBackupRecord.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IconBackupRecord.swift; sourceTree = "<group>"; };
 		E88E3C8D2FB39390008D1CEE /* BadgeKit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = BadgeKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		E8FCC5722FB5CC6400E08322 /* CustomBadgeRecord.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomBadgeRecord.swift; sourceTree = "<group>"; };
 		E8FCC5742FB5CD9100E08322 /* CustomBadgeStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomBadgeStore.swift; sourceTree = "<group>"; };
@@ -53,6 +55,7 @@
 				6062F70E1A545127650D288F /* ViewController.swift */,
 				E8FCC5722FB5CC6400E08322 /* CustomBadgeRecord.swift */,
 				E8FCC5742FB5CD9100E08322 /* CustomBadgeStore.swift */,
+				E8346DE52FB5F04A00070BEB /* IconBackupRecord.swift */,
 			);
 			path = BadgeApp;
 			sourceTree = "<group>";
@@ -112,7 +115,7 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
-				LastUpgradeCheck = 1430;
+				LastUpgradeCheck = 2650;
 			};
 			buildConfigurationList = 374592D913CD5B121C7E6847 /* Build configuration list for PBXProject "BadgeApp" */;
 			developmentRegion = en;
@@ -156,6 +159,7 @@
 				E8FCC5732FB5CC6400E08322 /* CustomBadgeRecord.swift in Sources */,
 				BC49A789C66E60045BDF57CA /* ViewController.swift in Sources */,
 				323AAF3CA008E1622A98AF09 /* main.swift in Sources */,
+				E8346DE62FB5F04A00070BEB /* IconBackupRecord.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -196,9 +200,11 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
@@ -209,8 +215,10 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				SWIFT_VERSION = 5.0;
@@ -223,6 +231,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = BadgeApp/BadgeApp.entitlements;
 				COMBINE_HIDPI_IMAGES = YES;
+				DEAD_CODE_STRIPPING = YES;
 				ENABLE_APP_SANDBOX = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSPrincipalClass = NSApplication;
@@ -269,9 +278,11 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -291,6 +302,7 @@
 				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
@@ -303,6 +315,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = BadgeApp/BadgeApp.entitlements;
 				COMBINE_HIDPI_IMAGES = YES;
+				DEAD_CODE_STRIPPING = YES;
 				ENABLE_APP_SANDBOX = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSPrincipalClass = NSApplication;
