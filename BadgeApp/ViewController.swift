@@ -51,7 +51,6 @@ class ViewController: NSViewController, NSTextFieldDelegate {
     private let badgeImageNormalizer = BadgeImageNormalizer()
     private let customBadgeStore = CustomBadgeStore()
     private let iconBackupStore = IconBackupStore()
-    private let iconBackupTrashLocator = IconBackupTrashLocator()
     private let iconBackupRetentionPolicy = IconBackupRetentionPolicy()
 
     override func loadView() {
