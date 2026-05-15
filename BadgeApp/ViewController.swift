@@ -768,15 +768,14 @@ class ViewController: NSViewController, NSTextFieldDelegate {
     }
 
     private func writeBadgeAppBadgeState(at path: String) {
-        let state = BadgeAppBadgeState(
-            version: 1,
+        badgeAppMetadataStore.writeBadgeState(
+            at: path,
             badgeSize: Double(appDelegate.badgeSize),
             badgeOffsetX: Double(badgeOffsetX),
             badgeOffsetY: Double(badgeOffsetY)
-        )
-
-        guard let data = try? JSONEncoder().encode(state) else { return }
-        setXattrData(data, named: badgeAppBadgeStateXattr, at: path)
+        ) { [weak self] data, name, path in
+            self?.setXattrData(data, named: name, at: path)
+        }
     }
 
     private func removeBadgeAppBadgeState(at path: String) {
@@ -786,8 +785,9 @@ class ViewController: NSViewController, NSTextFieldDelegate {
     }
 
     private func writeBadgeAppBackupID(_ id: String, at path: String) {
-        guard let data = id.data(using: .utf8) else { return }
-        setXattrData(data, named: badgeAppBackupIDXattr, at: path)
+        badgeAppMetadataStore.writeBackupID(id, at: path) { [weak self] data, name, path in
+            self?.setXattrData(data, named: name, at: path)
+        }
     }
 
     private func removeBadgeAppBackupID(at path: String) {
@@ -797,18 +797,18 @@ class ViewController: NSViewController, NSTextFieldDelegate {
     }
 
     private func writeBadgeAppFolderMetadata(for item: DroppedItem) {
-        guard isDirectory(at: item.path),
-              item.folderColorName != nil || item.folderSymbolName != nil || item.folderSymbolText != nil,
-              let data = try? JSONEncoder().encode(BadgeAppFolderMetadata(
-                version: 1,
-                colorName: item.folderColorName,
-                symbolName: item.folderSymbolName,
-                symbolText: item.folderSymbolText
-              )) else {
+        guard isDirectory(at: item.path) else {
             return
         }
 
-        setXattrData(data, named: badgeAppFolderMetadataXattr, at: item.path)
+        badgeAppMetadataStore.writeFolderMetadata(
+            at: item.path,
+            colorName: item.folderColorName,
+            symbolName: item.folderSymbolName,
+            symbolText: item.folderSymbolText
+        ) { [weak self] data, name, path in
+            self?.setXattrData(data, named: name, at: path)
+        }
     }
 
     private func removeBadgeAppFolderMetadata(at path: String) {
