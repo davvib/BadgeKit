@@ -38,6 +38,7 @@ class ViewController: NSViewController, NSTextFieldDelegate {
     private let iconBackupRetentionPolicy = IconBackupRetentionPolicy()
     private let badgeAppMetadataStore = BadgeAppMetadataStore()
     private let badgePreviewMessageProvider = BadgePreviewMessageProvider()
+    private let previewCacheInvalidator = PreviewCacheInvalidator()
 
     override func loadView() {
         self.view = NSView(frame: NSRect(x: 0, y: 0, width: 900, height: 650))
@@ -1324,10 +1325,7 @@ class ViewController: NSViewController, NSTextFieldDelegate {
     }
 
     private func invalidatePreviewCaches() {
-        for item in items {
-            item.cachedPreviewIcon = nil
-            item.cachedPreviewKey = nil
-        }
+        previewCacheInvalidator.invalidate(items: items)
     }
 
     func addItem(path: String) {
