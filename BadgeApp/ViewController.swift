@@ -51,6 +51,7 @@ class ViewController: NSViewController, NSTextFieldDelegate {
     private let badgeImageNormalizer = BadgeImageNormalizer()
     private let customBadgeStore = CustomBadgeStore()
     private let iconBackupStore = IconBackupStore()
+    private let iconBackupTrashLocator = IconBackupTrashLocator()
 
     override func loadView() {
         self.view = NSView(frame: NSRect(x: 0, y: 0, width: 900, height: 650))
@@ -532,7 +533,9 @@ class ViewController: NSViewController, NSTextFieldDelegate {
             return true
         }
 
-        return trashContainsItemNamed((record.originalPath as NSString).lastPathComponent)
+        return iconBackupTrashLocator.containsItemNamed(
+            (record.originalPath as NSString).lastPathComponent
+        )
     }
 
     private func fileExistsOrIsInTrash(at url: URL) -> Bool {
@@ -542,46 +545,6 @@ class ViewController: NSViewController, NSTextFieldDelegate {
 
         return url.standardizedFileURL.pathComponents.contains(".Trash") ||
             url.standardizedFileURL.pathComponents.contains(".Trashes")
-    }
-
-    private func trashContainsItemNamed(_ name: String) -> Bool {
-        guard !name.isEmpty else { return false }
-
-        for trashDirectory in trashSearchDirectories() {
-            guard let enumerator = FileManager.default.enumerator(
-                at: trashDirectory,
-                includingPropertiesForKeys: [.isRegularFileKey, .isDirectoryKey],
-                options: [.skipsHiddenFiles, .skipsPackageDescendants]
-            ) else {
-                continue
-            }
-
-            for case let itemURL as URL in enumerator where itemURL.lastPathComponent == name {
-                return true
-            }
-        }
-
-        return false
-    }
-
-    private func trashSearchDirectories() -> [URL] {
-        var directories = [
-            FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent(".Trash")
-        ]
-
-        let volumesURL = URL(fileURLWithPath: "/Volumes", isDirectory: true)
-        if let volumeURLs = try? FileManager.default.contentsOfDirectory(
-            at: volumesURL,
-            includingPropertiesForKeys: nil,
-            options: [.skipsHiddenFiles]
-        ) {
-            let uid = String(getuid())
-            directories += volumeURLs.map {
-                $0.appendingPathComponent(".Trashes").appendingPathComponent(uid)
-            }
-        }
-
-        return directories
     }
 
     private func iconBackupRecord(for path: String) -> IconBackupRecord? {
