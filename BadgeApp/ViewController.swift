@@ -39,6 +39,7 @@ class ViewController: NSViewController, NSTextFieldDelegate {
     private let customBadgeStore = CustomBadgeStore()
     private let iconBackupStore = IconBackupStore()
     private let iconBackupRetentionPolicy = IconBackupRetentionPolicy()
+    private let badgeAppMetadataStore = BadgeAppMetadataStore()
 
     override func loadView() {
         self.view = NSView(frame: NSRect(x: 0, y: 0, width: 900, height: 650))
@@ -722,18 +723,21 @@ class ViewController: NSViewController, NSTextFieldDelegate {
     }
 
     private func badgeAppFolderMetadata(at path: String) -> BadgeAppFolderMetadata? {
-        guard let data = xattrData(named: badgeAppFolderMetadataXattr, at: path) else { return nil }
-        return try? JSONDecoder().decode(BadgeAppFolderMetadata.self, from: data)
+        badgeAppMetadataStore.folderMetadata(at: path) { [weak self] name, path in
+            self?.xattrData(named: name, at: path)
+        }
     }
 
     private func badgeAppBadgeState(at path: String) -> BadgeAppBadgeState? {
-        guard let data = xattrData(named: badgeAppBadgeStateXattr, at: path) else { return nil }
-        return try? JSONDecoder().decode(BadgeAppBadgeState.self, from: data)
+        badgeAppMetadataStore.badgeState(at: path) { [weak self] name, path in
+            self?.xattrData(named: name, at: path)
+        }
     }
 
     private func badgeAppBackupID(at path: String) -> String? {
-        guard let data = xattrData(named: badgeAppBackupIDXattr, at: path) else { return nil }
-        return String(data: data, encoding: .utf8)
+        badgeAppMetadataStore.backupID(at: path) { [weak self] name, path in
+            self?.xattrData(named: name, at: path)
+        }
     }
 
     private func hasBadgeAppliedByBadgeApp(at path: String) -> Bool {
