@@ -18,6 +18,8 @@
 		E8B127AB2FB5F99600A0B2B6 /* IconBackupStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8B127AA2FB5F99600A0B2B6 /* IconBackupStore.swift */; };
 		E8BBD8452FB77FB600CEA502 /* IconBackupTrashLocator.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8BBD8442FB77FB600CEA502 /* IconBackupTrashLocator.swift */; };
 		E8BBD8472FB7812E00CEA502 /* IconBackupRetentionPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8BBD8462FB7812E00CEA502 /* IconBackupRetentionPolicy.swift */; };
+		E8BBD8492FB7848F00CEA502 /* BadgeAppFolderMetadata.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8BBD8482FB7848F00CEA502 /* BadgeAppFolderMetadata.swift */; };
+		E8BBD84B2FB784A600CEA502 /* BadgeAppBadgeState.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8BBD84A2FB784A600CEA502 /* BadgeAppBadgeState.swift */; };
 		E8FCC5732FB5CC6400E08322 /* CustomBadgeRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8FCC5722FB5CC6400E08322 /* CustomBadgeRecord.swift */; };
 		E8FCC5752FB5CD9100E08322 /* CustomBadgeStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8FCC5742FB5CD9100E08322 /* CustomBadgeStore.swift */; };
 /* End PBXBuildFile section */
@@ -34,6 +36,8 @@
 		E8B127AA2FB5F99600A0B2B6 /* IconBackupStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IconBackupStore.swift; sourceTree = "<group>"; };
 		E8BBD8442FB77FB600CEA502 /* IconBackupTrashLocator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IconBackupTrashLocator.swift; sourceTree = "<group>"; };
 		E8BBD8462FB7812E00CEA502 /* IconBackupRetentionPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IconBackupRetentionPolicy.swift; sourceTree = "<group>"; };
+		E8BBD8482FB7848F00CEA502 /* BadgeAppFolderMetadata.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BadgeAppFolderMetadata.swift; sourceTree = "<group>"; };
+		E8BBD84A2FB784A600CEA502 /* BadgeAppBadgeState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BadgeAppBadgeState.swift; sourceTree = "<group>"; };
 		E8FCC5722FB5CC6400E08322 /* CustomBadgeRecord.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomBadgeRecord.swift; sourceTree = "<group>"; };
 		E8FCC5742FB5CD9100E08322 /* CustomBadgeStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomBadgeStore.swift; sourceTree = "<group>"; };
 		EC4A915536D5735AEA9042F1 /* DroppedItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DroppedItem.swift; sourceTree = "<group>"; };
@@ -65,6 +69,8 @@
 				E8B127AA2FB5F99600A0B2B6 /* IconBackupStore.swift */,
 				E8BBD8442FB77FB600CEA502 /* IconBackupTrashLocator.swift */,
 				E8BBD8462FB7812E00CEA502 /* IconBackupRetentionPolicy.swift */,
+				E8BBD8482FB7848F00CEA502 /* BadgeAppFolderMetadata.swift */,
+				E8BBD84A2FB784A600CEA502 /* BadgeAppBadgeState.swift */,
 			);
 			path = BadgeApp;
 			sourceTree = "<group>";
@@ -161,6 +167,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E8BBD8492FB7848F00CEA502 /* BadgeAppFolderMetadata.swift in Sources */,
 				E8FCC5752FB5CD9100E08322 /* CustomBadgeStore.swift in Sources */,
 				E8BBD8472FB7812E00CEA502 /* IconBackupRetentionPolicy.swift in Sources */,
 				E8B127AB2FB5F99600A0B2B6 /* IconBackupStore.swift in Sources */,
@@ -168,6 +175,7 @@
 				AE01D87ED777FA1E17460A7C /* DropZoneView.swift in Sources */,
 				3D8858C9BAB351A705ABDAFB /* DroppedItem.swift in Sources */,
 				E8FCC5732FB5CC6400E08322 /* CustomBadgeRecord.swift in Sources */,
+				E8BBD84B2FB784A600CEA502 /* BadgeAppBadgeState.swift in Sources */,
 				E8BBD8452FB77FB600CEA502 /* IconBackupTrashLocator.swift in Sources */,
 				BC49A789C66E60045BDF57CA /* ViewController.swift in Sources */,
 				323AAF3CA008E1622A98AF09 /* main.swift in Sources */,

@@ -4,19 +4,6 @@ import QuickLookThumbnailing
 import UniformTypeIdentifiers
 import BadgeKit
 
-struct BadgeAppFolderMetadata: Codable {
-    let colorName: String?
-    let symbolName: String?
-    let symbolText: String?
-}
-
-struct BadgeAppBadgeState: Codable {
-    let version: Int
-    let badgeSize: Double
-    let badgeOffsetX: Double
-    let badgeOffsetY: Double
-}
-
 private struct FolderSymbolInfo {
     let systemName: String?
     let text: String?
@@ -809,6 +796,7 @@ class ViewController: NSViewController, NSTextFieldDelegate {
         guard isDirectory(at: item.path),
               item.folderColorName != nil || item.folderSymbolName != nil || item.folderSymbolText != nil,
               let data = try? JSONEncoder().encode(BadgeAppFolderMetadata(
+                version: 1,
                 colorName: item.folderColorName,
                 symbolName: item.folderSymbolName,
                 symbolText: item.folderSymbolText
