@@ -52,6 +52,7 @@ class ViewController: NSViewController, NSTextFieldDelegate {
     private let customBadgeStore = CustomBadgeStore()
     private let iconBackupStore = IconBackupStore()
     private let iconBackupTrashLocator = IconBackupTrashLocator()
+    private let iconBackupRetentionPolicy = IconBackupRetentionPolicy()
 
     override func loadView() {
         self.view = NSView(frame: NSRect(x: 0, y: 0, width: 900, height: 650))
@@ -525,26 +526,15 @@ class ViewController: NSViewController, NSTextFieldDelegate {
     }
 
     private func shouldKeepStoredIconBackup(_ record: IconBackupRecord) -> Bool {
-        if let resolved = resolvedBookmark(from: record.bookmarkData, allowingStale: true) {
-            return fileExistsOrIsInTrash(at: resolved.url)
-        }
+        let resolvedURL = resolvedBookmark(
+            from: record.bookmarkData,
+            allowingStale: true
+        )?.url
 
-        if FileManager.default.fileExists(atPath: record.originalPath) {
-            return true
-        }
-
-        return iconBackupTrashLocator.containsItemNamed(
-            (record.originalPath as NSString).lastPathComponent
+        return iconBackupRetentionPolicy.shouldKeep(
+            record: record,
+            resolvedURL: resolvedURL
         )
-    }
-
-    private func fileExistsOrIsInTrash(at url: URL) -> Bool {
-        if FileManager.default.fileExists(atPath: url.path) {
-            return true
-        }
-
-        return url.standardizedFileURL.pathComponents.contains(".Trash") ||
-            url.standardizedFileURL.pathComponents.contains(".Trashes")
     }
 
     private func iconBackupRecord(for path: String) -> IconBackupRecord? {
