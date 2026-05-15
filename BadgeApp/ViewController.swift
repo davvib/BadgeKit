@@ -23,9 +23,6 @@ class ViewController: NSViewController, NSTextFieldDelegate {
     private let folderIconFileName = "Icon\r"
     private let folderResetDelay: TimeInterval = 0.8
     private let folderIconRenderSizes = [16, 32, 64, 128, 256, 512, 1024]
-    private let badgeAppFolderMetadataXattr = "com.badgeapp.folderMetadata"
-    private let badgeAppBadgeStateXattr = "com.badgeapp.badgeState"
-    private let badgeAppBackupIDXattr = "com.badgeapp.backupID"
     private let metadataQueue = DispatchQueue(label: "com.badgeapp.metadata", qos: .userInitiated)
     private var previewMessageView: NSView?
     private var previewMessageLabel: NSTextField?
