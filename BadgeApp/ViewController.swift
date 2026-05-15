@@ -779,8 +779,10 @@ class ViewController: NSViewController, NSTextFieldDelegate {
     }
 
     private func removeBadgeAppBadgeState(at path: String) {
-        path.withCString { pathPointer in
-            _ = removexattr(pathPointer, badgeAppBadgeStateXattr, 0)
+        badgeAppMetadataStore.removeBadgeState(at: path) { name, path in
+            path.withCString { pathPointer in
+                _ = removexattr(pathPointer, name, 0)
+            }
         }
     }
 
@@ -791,8 +793,10 @@ class ViewController: NSViewController, NSTextFieldDelegate {
     }
 
     private func removeBadgeAppBackupID(at path: String) {
-        path.withCString { pathPointer in
-            _ = removexattr(pathPointer, badgeAppBackupIDXattr, 0)
+        badgeAppMetadataStore.removeBackupID(at: path) { name, path in
+            path.withCString { pathPointer in
+                _ = removexattr(pathPointer, name, 0)
+            }
         }
     }
 
@@ -812,8 +816,10 @@ class ViewController: NSViewController, NSTextFieldDelegate {
     }
 
     private func removeBadgeAppFolderMetadata(at path: String) {
-        path.withCString { pathPointer in
-            _ = removexattr(pathPointer, badgeAppFolderMetadataXattr, 0)
+        badgeAppMetadataStore.removeFolderMetadata(at: path) { name, path in
+            path.withCString { pathPointer in
+                _ = removexattr(pathPointer, name, 0)
+            }
         }
     }
 

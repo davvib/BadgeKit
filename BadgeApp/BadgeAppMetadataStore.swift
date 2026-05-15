@@ -88,4 +88,16 @@ final class BadgeAppMetadataStore {
 
         dataWriter(data, folderMetadataXattr, path)
     }
+    
+    func removeBadgeState(at path: String, remover: (String, String) -> Void) {
+        remover(badgeStateXattr, path)
+    }
+
+    func removeBackupID(at path: String, remover: (String, String) -> Void) {
+        remover(backupIDXattr, path)
+    }
+
+    func removeFolderMetadata(at path: String, remover: (String, String) -> Void) {
+        remover(folderMetadataXattr, path)
+    }
 }
