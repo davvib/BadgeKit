@@ -519,10 +519,7 @@ class ViewController: NSViewController, NSTextFieldDelegate {
                 continue
             }
 
-            deleteIconBackupFiles(
-                for: storedRecord.record,
-                recordURL: storedRecord.recordURL
-            )
+            iconBackupStore.deleteBackupFiles(for: storedRecord.record)
         }
     }
 
@@ -585,11 +582,6 @@ class ViewController: NSViewController, NSTextFieldDelegate {
         }
 
         return directories
-    }
-
-    private func deleteIconBackupFiles(for record: IconBackupRecord, recordURL: URL) {
-        _ = recordURL
-        iconBackupStore.deleteBackupFiles(for: record)
     }
 
     private func iconBackupRecord(for path: String) -> IconBackupRecord? {
