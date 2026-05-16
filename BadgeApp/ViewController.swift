@@ -39,6 +39,7 @@ class ViewController: NSViewController, NSTextFieldDelegate {
     private let badgeAppMetadataStore = BadgeAppMetadataStore()
     private let badgePreviewMessageProvider = BadgePreviewMessageProvider()
     private let previewCacheInvalidator = PreviewCacheInvalidator()
+    private let xattrStore = XattrStore()
 
     override func loadView() {
         self.view = NSView(frame: NSRect(x: 0, y: 0, width: 900, height: 650))
@@ -868,62 +869,21 @@ class ViewController: NSViewController, NSTextFieldDelegate {
     }
 
     private func xattrNames(at path: String) -> [String] {
-        let size = path.withCString { pathPointer in
-            listxattr(pathPointer, nil, 0, 0)
-        }
-        guard size > 0 else { return [] }
-
-        var data = Data(count: size)
-        let result = data.withUnsafeMutableBytes { buffer in
-            path.withCString { pathPointer in
-                listxattr(pathPointer, buffer.baseAddress, size, 0)
-            }
-        }
-        guard result > 0 else { return [] }
-
-        return data
-            .split(separator: 0)
-            .compactMap { String(data: Data($0), encoding: .utf8) }
+        xattrStore.names(at: path)
     }
 
     private func xattrData(named name: String, at path: String) -> Data? {
-        let size = path.withCString { pathPointer in
-            name.withCString { namePointer in
-                getxattr(pathPointer, namePointer, nil, 0, 0, 0)
-            }
-        }
-        guard size > 0 else { return nil }
-
-        var data = Data(count: size)
-        let result = data.withUnsafeMutableBytes { buffer in
-            path.withCString { pathPointer in
-                name.withCString { namePointer in
-                    getxattr(pathPointer, namePointer, buffer.baseAddress, size, 0, 0)
-                }
-            }
-        }
-
-        return result > 0 ? data : nil
+        xattrStore.data(named: name, at: path)
     }
 
     private func setXattrData(_ data: Data, named name: String, at path: String) {
-        data.withUnsafeBytes { buffer in
-            guard let baseAddress = buffer.baseAddress else { return }
-
-            path.withCString { pathPointer in
-                name.withCString { namePointer in
-                    _ = setxattr(pathPointer, namePointer, baseAddress, buffer.count, 0, 0)
-                }
-            }
-        }
+        xattrStore.setData(data, named: name, at: path)
     }
     
     private func removeXattr(named name: String, at path: String) {
-        path.withCString { pathPointer in
-            _ = removexattr(pathPointer, name, 0)
-        }
+        xattrStore.remove(named: name, at: path)
     }
-
+    
     func deleteCustomBadge(at index: Int) {
         guard index < customBadges.count else {
             return
