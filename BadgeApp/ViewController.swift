@@ -4,7 +4,7 @@ import QuickLookThumbnailing
 import UniformTypeIdentifiers
 import BadgeKit
 
-private struct FolderSymbolInfo {
+struct FolderSymbolInfo {
     let systemName: String?
     let text: String?
 }
@@ -146,58 +146,15 @@ class ViewController: NSViewController, NSTextFieldDelegate {
     }
 
     private func folderSymbolXattrNames(in names: [String]) -> [String] {
-        let preferred = ["com.apple.icon.folder#S"]
-        let iconNames = names
-            .filter { $0.hasPrefix("com.apple.icon.folder") }
-            .sorted()
-
-        return preferred + iconNames.filter { !preferred.contains($0) }
+        folderVisualCustomizationReader.symbolXattrNames(from: names)
     }
 
     private func folderSymbolInfo(fromData data: Data?) -> FolderSymbolInfo? {
-        guard let data else {
-            return nil
-        }
-
-        if let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any] {
-            let stringValues = object.values.compactMap { $0 as? String }
-
-            if let symbolName = object["sym"] as? String,
-               NSImage(systemSymbolName: symbolName, accessibilityDescription: nil) != nil {
-                return FolderSymbolInfo(systemName: symbolName, text: nil)
-            }
-
-            if let emoji = stringValues.first(where: isEmojiFolderSymbol) {
-                return FolderSymbolInfo(systemName: nil, text: emoji)
-            }
-
-            if let symbolName = stringValues.first(where: {
-                NSImage(systemSymbolName: $0, accessibilityDescription: nil) != nil
-            }) {
-                return FolderSymbolInfo(systemName: symbolName, text: nil)
-            }
-        }
-
-        if let text = String(data: data, encoding: .utf8)?
-            .trimmingCharacters(in: .whitespacesAndNewlines),
-           isEmojiFolderSymbol(text) {
-            return FolderSymbolInfo(systemName: nil, text: text)
-        }
-
-        return nil
+        folderVisualCustomizationReader.symbolInfo(fromData: data)
     }
 
     private func isEmojiFolderSymbol(_ value: String) -> Bool {
-        let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmed.isEmpty, trimmed.count <= 8 else { return false }
-
-        return trimmed.unicodeScalars.contains { scalar in
-            scalar.properties.isEmojiPresentation ||
-            scalar.properties.isEmojiModifier ||
-            scalar.properties.isEmojiModifierBase ||
-            scalar.properties.isJoinControl ||
-            scalar.value == 0xfe0f
-        }
+        folderVisualCustomizationReader.isEmojiFolderSymbol(value)
     }
 
     private func customRenderedFolderIcon(for item: DroppedItem, badge: NSImage? = nil) -> NSImage? {
