@@ -1278,65 +1278,24 @@ class ViewController: NSViewController, NSTextFieldDelegate {
     }
 
     private func iconForPreviewingBadge(to path: String, completion: @escaping (NSImage, Bool) -> Void) {
-        let isDirectory = isDirectory(at: path)
-        let fallbackIcon = badgeBaseIconResolver.fallbackIcon(for: path)
-        let hasAppBadge = hasBadgeAppliedByBadgeApp(at: path)
-
-        if hasAppBadge {
-            completion(fallbackIcon, false)
-            return
-        }
-
-        if hasCustomFinderIcon(at: path) {
-            completion(fallbackIcon, false)
-            return
-        }
-
-        if isDirectory {
-            completion(fallbackIcon, false)
-            return
-        }
-
-        quickLookIcon(for: path, fallbackIcon: fallbackIcon) { icon in
-            completion(icon, false)
-        }
+        badgeBaseIconResolver.iconForPreviewingBadge(
+            path: path,
+            isDirectory: isDirectory(at: path),
+            hasAppBadge: hasBadgeAppliedByBadgeApp(at: path),
+            completion: completion
+        )
     }
 
     private func iconForApplyingBadge(to path: String, completion: @escaping (NSImage) -> Void) {
-        let url = URL(fileURLWithPath: path)
-        let fallbackIcon = badgeBaseIconResolver.fallbackIcon(for: path)
-        let hasAppBadge = hasBadgeAppliedByBadgeApp(at: path)
-
-        if let backedUpIcon = backedUpIcon(for: path) {
-            completion(backedUpIcon)
-            return
-        }
-
-        if hasAppBadge, isDirectory(at: path) {
-            completion(defaultFolderIcon())
-            return
-        }
-
-        if hasAppBadge {
-            quickLookIcon(for: path, fallbackIcon: fallbackIcon, completion: completion)
-            return
-        }
-
-        if hasCustomFinderIcon(at: path) {
-            completion(fallbackIcon)
-            return
-        }
-
-        if (try? url.resourceValues(forKeys: [.isDirectoryKey]).isDirectory) == true {
-            completion(fallbackIcon)
-            return
-        }
-
-        quickLookIcon(for: path, fallbackIcon: fallbackIcon, completion: completion)
-    }
-
-    private func defaultFolderIcon() -> NSImage {
-        badgeBaseIconResolver.defaultFolderIcon()
+        badgeBaseIconResolver.iconForApplyingBadge(
+            path: path,
+            isDirectory: isDirectory(at: path),
+            hasAppBadge: hasBadgeAppliedByBadgeApp(at: path),
+            backedUpIconProvider: { [weak self] path in
+                self?.backedUpIcon(for: path)
+            },
+            completion: completion
+        )
     }
 
     private func quickLookIcon(for path: String, fallbackIcon: NSImage, completion: @escaping (NSImage) -> Void) {
