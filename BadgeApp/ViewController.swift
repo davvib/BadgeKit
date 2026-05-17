@@ -70,6 +70,13 @@ class ViewController: NSViewController, NSTextFieldDelegate {
         quickLookIconProvider: quickLookIconProvider,
         finderIconStateReader: finderIconStateReader
     )
+    
+    private lazy var badgeApplyService = BadgeApplyService(
+        finderIconApplier: finderIconApplier,
+        finderInfoStore: finderInfoStore,
+        visualCustomizationRestorer: folderVisualCustomizationRestorer,
+        iconBackupService: iconBackupService
+    )
 
     override func loadView() {
         self.view = NSView(frame: NSRect(x: 0, y: 0, width: 900, height: 650))
@@ -1190,50 +1197,39 @@ class ViewController: NSViewController, NSTextFieldDelegate {
 
     private func applyBadgedIcon(_ icon: NSImage, to item: DroppedItem) -> Bool {
         let path = item.path
-        let backupRecord = iconBackupRecord(for: path)
-        let needsClearBeforeApplying = hasCustomFinderIcon(at: path) || backupRecord?.hadCustomIcon == true
-        let needsVisualCustomizationClear = hasFolderVisualCustomization(at: path) || backupRecord?.visualCustomizationXattrs?.isEmpty == false
 
-        if needsClearBeforeApplying {
-            _ = finderIconApplier.clearIcon(at: path)
-            finderIconApplier.notifyFileSystemChanged(at: path)
-        }
-
-        if needsVisualCustomizationClear {
-            removeFolderVisualCustomizationXattrs(at: path)
-            finderIconApplier.notifyFileSystemChanged(at: path)
-        }
-
-        return writeBadgedIcon(
+        return badgeApplyService.applyBadgedIcon(
             icon,
-            to: item,
-            restoreOriginalOnFailure: needsClearBeforeApplying || needsVisualCustomizationClear
-        )
+            to: path,
+            backupRecord: iconBackupRecord(for: path),
+            hasCustomFinderIcon: hasCustomFinderIcon(at: path),
+            hasFolderVisualCustomization: hasFolderVisualCustomization(at: path)
+        ) { [weak self, weak item] icon, restoreOriginalOnFailure in
+            guard let self, let item else { return false }
+
+            return self.writeBadgedIcon(
+                icon,
+                to: item,
+                restoreOriginalOnFailure: restoreOriginalOnFailure
+            )
+        }
     }
 
     private func writeBadgedIcon(_ icon: NSImage, to item: DroppedItem, restoreOriginalOnFailure: Bool) -> Bool {
-        let path = item.path
-        let url = URL(fileURLWithPath: path)
-        let didStartAccessing = url.startAccessingSecurityScopedResource()
-        defer {
-            if didStartAccessing {
-                url.stopAccessingSecurityScopedResource()
+        badgeApplyService.writeBadgedIcon(
+            icon,
+            to: item.path,
+            restoreOriginalOnFailure: restoreOriginalOnFailure,
+            metadataWriter: { [weak self, weak item] path in
+                guard let self, let item else { return }
+
+                self.writeBadgeAppFolderMetadata(for: item)
+                self.writeBadgeAppBadgeState(at: path)
+            },
+            restoreOriginalIconState: { [weak self] path in
+                self?.restoreOriginalIconStateIfAvailable(for: path) ?? false
             }
-        }
-
-        let didApply = finderIconApplier.applyIcon(icon, to: path)
-        if didApply {
-            forceFinderCustomIconState(at: path)
-            writeBadgeAppFolderMetadata(for: item)
-            writeBadgeAppBadgeState(at: path)
-        }
-        finderIconApplier.notifyFileAndParentChanged(at: path)
-
-        if !didApply, restoreOriginalOnFailure {
-            _ = restoreOriginalIconStateIfAvailable(for: path)
-        }
-
-        return didApply
+        )
     }
 
     private func showIconApplyError(for path: String) {
