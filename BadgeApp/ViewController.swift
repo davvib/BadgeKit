@@ -40,6 +40,7 @@ class ViewController: NSViewController, NSTextFieldDelegate {
     private let previewCacheInvalidator = PreviewCacheInvalidator()
     private let xattrStore = XattrStore()
     private let finderIconFileStore = FinderIconFileStore()
+    private lazy var finderInfoStore = FinderInfoStore(xattrStore: xattrStore)
 
     override func loadView() {
         self.view = NSView(frame: NSRect(x: 0, y: 0, width: 900, height: 650))
@@ -430,7 +431,7 @@ class ViewController: NSViewController, NSTextFieldDelegate {
         let visualCustomizationXattrs = folderVisualCustomizationXattrs(at: path)
         let hasCustomIcon = hasCustomFinderIcon(at: path)
         let shouldBackupIconImage = hasCustomIcon || !visualCustomizationXattrs.isEmpty || folderIconFileExists(at: path)
-        let finderInfoData = xattrData(named: "com.apple.FinderInfo", at: path)
+        let finderInfoData = finderInfoStore.data(at: path)
         let id = UUID().uuidString
         let iconFileName = shouldBackupIconImage ? "\(id).tiff" : nil
         let previewIconFileName = "\(id)-preview.tiff"
@@ -647,40 +648,15 @@ class ViewController: NSViewController, NSTextFieldDelegate {
     }
 
     private func finderInfoBytes(at path: String) -> [UInt8]? {
-        guard let data = xattrData(named: "com.apple.FinderInfo", at: path), data.count >= 32 else {
-            return nil
-        }
-
-        return Array(data.prefix(32))
+        finderInfoStore.bytes(at: path)
     }
 
     private func setFinderInfoBytes(_ finderInfo: [UInt8], at path: String) -> Bool {
-        guard finderInfo.count == 32 else { return false }
-
-        let result = finderInfo.withUnsafeBytes { buffer in
-            path.withCString { pathPointer in
-                setxattr(pathPointer, "com.apple.FinderInfo", buffer.baseAddress, buffer.count, 0, 0)
-            }
-        }
-
-        return result == 0
+        finderInfoStore.setBytes(finderInfo, at: path)
     }
 
     private func restoreFinderInfo(_ data: Data?, to path: String) {
-        guard let data else {
-            path.withCString { pathPointer in
-                _ = removexattr(pathPointer, "com.apple.FinderInfo", 0)
-            }
-            return
-        }
-
-        data.withUnsafeBytes { buffer in
-            guard let baseAddress = buffer.baseAddress else { return }
-
-            path.withCString { pathPointer in
-                _ = setxattr(pathPointer, "com.apple.FinderInfo", baseAddress, buffer.count, 0, 0)
-            }
-        }
+        finderInfoStore.restore(data, to: path)
     }
 
     private func forceFinderCustomIconState(at path: String) {
