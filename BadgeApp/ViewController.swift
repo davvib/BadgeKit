@@ -41,6 +41,27 @@ class ViewController: NSViewController, NSTextFieldDelegate {
     private lazy var finderInfoStore = FinderInfoStore(xattrStore: xattrStore)
     private let finderIconApplier = FinderIconApplier()
     private let fileIdentityResolver = FileIdentityResolver()
+    
+    private lazy var finderIconStateReader = FinderIconStateReader(
+        finderInfoStore: finderInfoStore,
+        finderIconFileStore: finderIconFileStore
+    )
+    
+    private lazy var folderVisualCustomizationReader = FolderVisualCustomizationReader(
+        xattrStore: xattrStore
+    )
+    
+    private lazy var folderVisualCustomizationRestorer = FolderVisualCustomizationRestorer(
+        xattrStore: xattrStore,
+        reader: folderVisualCustomizationReader
+    )
+    
+    private lazy var iconBackupService = IconBackupService(
+        backupStore: iconBackupStore,
+        retentionPolicy: iconBackupRetentionPolicy,
+        fileIdentityResolver: fileIdentityResolver,
+        finderInfoStore: finderInfoStore
+    )
 
     override func loadView() {
         self.view = NSView(frame: NSRect(x: 0, y: 0, width: 900, height: 650))
@@ -426,50 +447,25 @@ class ViewController: NSViewController, NSTextFieldDelegate {
     }
 
     private func cleanupStoredIconBackups() {
-        for storedRecord in iconBackupStore.storedRecords() {
-            if shouldKeepStoredIconBackup(storedRecord.record) {
-                continue
-            }
-
-            iconBackupStore.deleteBackupFiles(for: storedRecord.record)
-        }
+        iconBackupService.cleanupStoredBackups()
     }
 
     private func shouldKeepStoredIconBackup(_ record: IconBackupRecord) -> Bool {
-        let resolvedURL = resolvedBookmark(
-            from: record.bookmarkData,
-            allowingStale: true
-        )?.url
-
-        return iconBackupRetentionPolicy.shouldKeep(
-            record: record,
-            resolvedURL: resolvedURL
-        )
+        iconBackupService.shouldKeepStoredBackup(record)
     }
 
     private func iconBackupRecord(for path: String) -> IconBackupRecord? {
-        guard let backupID = badgeAppBackupID(at: path),
-              let record = iconBackupRecord(withID: backupID),
-              iconBackupRecord(record, belongsTo: path) else {
-            return nil
+        iconBackupService.record(for: path) { [weak self] path in
+            self?.badgeAppBackupID(at: path)
         }
-
-        return record
     }
 
     private func iconBackupRecord(withID id: String) -> IconBackupRecord? {
-        iconBackupStore.record(withID: id)
+        iconBackupService.record(withID: id)
     }
 
     private func iconBackupRecord(_ record: IconBackupRecord, belongsTo path: String) -> Bool {
-        let targetURL = URL(fileURLWithPath: path).standardizedFileURL
-
-        if let originalResourceIdentifier = record.originalResourceIdentifier,
-           let targetIdentifier = fileResourceIdentifierString(for: targetURL) {
-            return originalResourceIdentifier == targetIdentifier
-        }
-
-        return record.originalPath == path
+        iconBackupService.record(record, belongsTo: path)
     }
 
     private func resolvedBookmark(
@@ -1460,18 +1456,4 @@ class ViewController: NSViewController, NSTextFieldDelegate {
 
         dropZoneView.needsDisplay = true
     }
-    
-    private lazy var finderIconStateReader = FinderIconStateReader(
-        finderInfoStore: finderInfoStore,
-        finderIconFileStore: finderIconFileStore
-    )
-    
-    private lazy var folderVisualCustomizationReader = FolderVisualCustomizationReader(
-        xattrStore: xattrStore
-    )
-    
-    private lazy var folderVisualCustomizationRestorer = FolderVisualCustomizationRestorer(
-        xattrStore: xattrStore,
-        reader: folderVisualCustomizationReader
-    )
 }
