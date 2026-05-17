@@ -12,17 +12,23 @@ final class IconBackupService {
     private let retentionPolicy: IconBackupRetentionPolicy
     private let fileIdentityResolver: FileIdentityResolver
     private let finderInfoStore: FinderInfoStore
+    private let finderIconApplier: FinderIconApplier
+    private let visualCustomizationRestorer: FolderVisualCustomizationRestorer
 
     init(
         backupStore: IconBackupStore,
         retentionPolicy: IconBackupRetentionPolicy,
         fileIdentityResolver: FileIdentityResolver,
-        finderInfoStore: FinderInfoStore
+        finderInfoStore: FinderInfoStore,
+        finderIconApplier: FinderIconApplier,
+        visualCustomizationRestorer: FolderVisualCustomizationRestorer
     ) {
         self.backupStore = backupStore
         self.retentionPolicy = retentionPolicy
         self.fileIdentityResolver = fileIdentityResolver
         self.finderInfoStore = finderInfoStore
+        self.finderIconApplier = finderIconApplier
+        self.visualCustomizationRestorer = visualCustomizationRestorer
     }
     
     func shouldKeepStoredBackup(_ record: IconBackupRecord) -> Bool {
@@ -136,5 +142,37 @@ final class IconBackupService {
         } catch {
             print("Error backing up original icon state: \(error)")
         }
+    }
+    
+    func restoreOriginalIconStateIfAvailable(
+        for path: String,
+        backupIDProvider: (String) -> String?,
+        metadataCleaner: (String) -> Void
+    ) -> Bool {
+        guard let record = record(for: path, backupIDProvider: backupIDProvider) else {
+            return false
+        }
+
+        let didRestore: Bool
+
+        if let originalIcon = backupStore.originalIcon(for: record) {
+            didRestore = finderIconApplier.applyIcon(originalIcon, to: path)
+        } else {
+            didRestore = finderIconApplier.clearIcon(at: path)
+        }
+
+        if didRestore {
+            visualCustomizationRestorer.restoreVisualCustomizationXattrs(
+                record.visualCustomizationXattrs,
+                to: path
+            )
+
+            finderInfoStore.restore(record.finderInfoData, to: path)
+            metadataCleaner(path)
+            backupStore.deleteBackupFiles(for: record)
+            finderIconApplier.notifyFileSystemChanged(at: path)
+        }
+
+        return didRestore
     }
 }

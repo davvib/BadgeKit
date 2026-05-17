@@ -60,7 +60,9 @@ class ViewController: NSViewController, NSTextFieldDelegate {
         backupStore: iconBackupStore,
         retentionPolicy: iconBackupRetentionPolicy,
         fileIdentityResolver: fileIdentityResolver,
-        finderInfoStore: finderInfoStore
+        finderInfoStore: finderInfoStore,
+        finderIconApplier: finderIconApplier,
+        visualCustomizationRestorer: folderVisualCustomizationRestorer
     )
 
     override func loadView() {
@@ -371,29 +373,17 @@ class ViewController: NSViewController, NSTextFieldDelegate {
     }
 
     private func restoreOriginalIconStateIfAvailable(for path: String) -> Bool {
-        guard let record = iconBackupRecord(for: path) else {
-            return false
-        }
-
-        var didRestore = false
-
-        if let originalIcon = iconBackupStore.originalIcon(for: record) {
-            didRestore = finderIconApplier.applyIcon(originalIcon, to: path)
-        } else {
-            didRestore = finderIconApplier.clearIcon(at: path)
-        }
-
-        if didRestore {
-            restoreFolderVisualCustomizationXattrs(record.visualCustomizationXattrs, to: path)
-            restoreFinderInfo(record.finderInfoData, to: path)
-            removeBadgeAppFolderMetadata(at: path)
-            removeBadgeAppBadgeState(at: path)
-            removeBadgeAppBackupID(at: path)
-            iconBackupStore.deleteBackupFiles(for: record)
-            finderIconApplier.notifyFileSystemChanged(at: path)
-        }
-
-        return didRestore
+        iconBackupService.restoreOriginalIconStateIfAvailable(
+            for: path,
+            backupIDProvider: { [weak self] path in
+                self?.badgeAppBackupID(at: path)
+            },
+            metadataCleaner: { [weak self] path in
+                self?.removeBadgeAppFolderMetadata(at: path)
+                self?.removeBadgeAppBadgeState(at: path)
+                self?.removeBadgeAppBackupID(at: path)
+            }
+        )
     }
 
     private func cleanupStoredIconBackups() {
