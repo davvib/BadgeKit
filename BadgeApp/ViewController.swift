@@ -39,6 +39,7 @@ class ViewController: NSViewController, NSTextFieldDelegate {
     private let xattrStore = XattrStore()
     private let finderIconFileStore = FinderIconFileStore()
     private lazy var finderInfoStore = FinderInfoStore(xattrStore: xattrStore)
+    private let finderIconApplier = FinderIconApplier()
 
     override func loadView() {
         self.view = NSView(frame: NSRect(x: 0, y: 0, width: 900, height: 650))
@@ -405,9 +406,9 @@ class ViewController: NSViewController, NSTextFieldDelegate {
         var didRestore = false
 
         if let originalIcon = iconBackupStore.originalIcon(for: record) {
-            didRestore = NSWorkspace.shared.setIcon(originalIcon, forFile: path, options: [])
+            didRestore = finderIconApplier.applyIcon(originalIcon, to: path)
         } else {
-            didRestore = NSWorkspace.shared.setIcon(nil, forFile: path, options: [])
+            didRestore = finderIconApplier.clearIcon(at: path)
         }
 
         if didRestore {
@@ -417,7 +418,7 @@ class ViewController: NSViewController, NSTextFieldDelegate {
             removeBadgeAppBadgeState(at: path)
             removeBadgeAppBackupID(at: path)
             iconBackupStore.deleteBackupFiles(for: record)
-            NSWorkspace.shared.noteFileSystemChanged(path)
+            finderIconApplier.notifyFileSystemChanged(at: path)
         }
 
         return didRestore
@@ -580,12 +581,11 @@ class ViewController: NSViewController, NSTextFieldDelegate {
         guard isDirectory(at: path) else { return }
 
         removeFolderVisualCustomizationXattrs(at: path)
-        _ = NSWorkspace.shared.setIcon(nil, forFile: path, options: [])
+        _ = finderIconApplier.clearIcon(at: path)
         finderIconFileStore.removeFolderIconFile(at: path)
         clearFinderCustomIconState(at: path)
 
-        NSWorkspace.shared.noteFileSystemChanged(path)
-        NSWorkspace.shared.noteFileSystemChanged((path as NSString).deletingLastPathComponent)
+        finderIconApplier.notifyFileAndParentChanged(at: path)
     }
 
     private func badgeAppFolderMetadata(at path: String) -> BadgeAppFolderMetadata? {
@@ -689,7 +689,7 @@ class ViewController: NSViewController, NSTextFieldDelegate {
             return false
         }
 
-        _ = NSWorkspace.shared.setIcon(nil, forFile: path, options: [])
+        _ = finderIconApplier.clearIcon(at: path)
         clearFinderCustomIconState(at: path)
 
         if let colorName = metadata.colorName,
@@ -712,8 +712,7 @@ class ViewController: NSViewController, NSTextFieldDelegate {
         removeBadgeAppFolderMetadata(at: path)
         removeBadgeAppBadgeState(at: path)
         removeBadgeAppBackupID(at: path)
-        NSWorkspace.shared.noteFileSystemChanged(path)
-        NSWorkspace.shared.noteFileSystemChanged((path as NSString).deletingLastPathComponent)
+        finderIconApplier.notifyFileAndParentChanged(at: path)
 
         return true
     }
@@ -1273,13 +1272,13 @@ class ViewController: NSViewController, NSTextFieldDelegate {
         let needsVisualCustomizationClear = hasFolderVisualCustomization(at: path) || backupRecord?.visualCustomizationXattrs?.isEmpty == false
 
         if needsClearBeforeApplying {
-            _ = NSWorkspace.shared.setIcon(nil, forFile: path, options: [])
-            NSWorkspace.shared.noteFileSystemChanged(path)
+            _ = finderIconApplier.clearIcon(at: path)
+            finderIconApplier.notifyFileSystemChanged(at: path)
         }
 
         if needsVisualCustomizationClear {
             removeFolderVisualCustomizationXattrs(at: path)
-            NSWorkspace.shared.noteFileSystemChanged(path)
+            finderIconApplier.notifyFileSystemChanged(at: path)
         }
 
         return writeBadgedIcon(
@@ -1299,14 +1298,13 @@ class ViewController: NSViewController, NSTextFieldDelegate {
             }
         }
 
-        let didApply = NSWorkspace.shared.setIcon(icon, forFile: path, options: [])
+        let didApply = finderIconApplier.applyIcon(icon, to: path)
         if didApply {
             forceFinderCustomIconState(at: path)
             writeBadgeAppFolderMetadata(for: item)
             writeBadgeAppBadgeState(at: path)
         }
-        NSWorkspace.shared.noteFileSystemChanged(path)
-        NSWorkspace.shared.noteFileSystemChanged((path as NSString).deletingLastPathComponent)
+        finderIconApplier.notifyFileAndParentChanged(at: path)
 
         if !didApply, restoreOriginalOnFailure {
             _ = restoreOriginalIconStateIfAvailable(for: path)
@@ -1452,8 +1450,8 @@ class ViewController: NSViewController, NSTextFieldDelegate {
             } else if restoreBadgeAppFolderVisualStateIfAvailable(for: item.path) {
                 refreshRestoredVisualState(for: item)
             } else if hadBadgeAppState {
-                NSWorkspace.shared.setIcon(nil, forFile: item.path, options: [])
-                NSWorkspace.shared.noteFileSystemChanged(item.path)
+                _ = finderIconApplier.clearIcon(at: item.path)
+                finderIconApplier.notifyFileSystemChanged(at: item.path)
                 removeBadgeAppFolderMetadata(at: item.path)
                 removeBadgeAppBadgeState(at: item.path)
                 removeBadgeAppBackupID(at: item.path)
