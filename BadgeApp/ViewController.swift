@@ -80,9 +80,8 @@ class ViewController: NSViewController, NSTextFieldDelegate {
     }
 
     private func shouldUseBackedUpIcon(for path: String) -> Bool {
-        hasCustomFinderIcon(at: path) ||
-        hasFolderVisualCustomization(at: path) ||
-        folderIconFileExists(at: path)
+        finderIconStateReader.hasCustomVisualState(at: path) ||
+        hasFolderVisualCustomization(at: path)
     }
 
     private func folderCustomizationColor(at path: String) -> NSColor? {
@@ -428,7 +427,11 @@ class ViewController: NSViewController, NSTextFieldDelegate {
         let url = URL(fileURLWithPath: path)
         let visualCustomizationXattrs = folderVisualCustomizationXattrs(at: path)
         let hasCustomIcon = hasCustomFinderIcon(at: path)
-        let shouldBackupIconImage = hasCustomIcon || !visualCustomizationXattrs.isEmpty || folderIconFileExists(at: path)
+        
+        let shouldBackupIconImage =
+            finderIconStateReader.hasCustomVisualState(at: path) ||
+            !visualCustomizationXattrs.isEmpty
+        
         let finderInfoData = xattrData(named: "com.apple.FinderInfo", at: path)
         let id = UUID().uuidString
         let iconFileName = shouldBackupIconImage ? "\(id).tiff" : nil
@@ -589,8 +592,9 @@ class ViewController: NSViewController, NSTextFieldDelegate {
     }
 
     private func hasCustomFinderIcon(at path: String) -> Bool {
-        finderInfoStore.hasCustomIcon(at: path)
+        finderIconStateReader.hasCustomFinderIcon(at: path)
     }
+    
     private func hasFolderVisualCustomization(at path: String) -> Bool {
         !folderVisualCustomizationXattrs(at: path).isEmpty
     }
@@ -1577,4 +1581,9 @@ class ViewController: NSViewController, NSTextFieldDelegate {
 
         dropZoneView.needsDisplay = true
     }
+    
+    private lazy var finderIconStateReader = FinderIconStateReader(
+        finderInfoStore: finderInfoStore,
+        finderIconFileStore: finderIconFileStore
+    )
 }
