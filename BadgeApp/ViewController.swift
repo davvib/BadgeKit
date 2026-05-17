@@ -426,7 +426,6 @@ class ViewController: NSViewController, NSTextFieldDelegate {
 
         let url = URL(fileURLWithPath: path)
         let visualCustomizationXattrs = folderVisualCustomizationXattrs(at: path)
-        let hasCustomIcon = hasCustomFinderIcon(at: path)
         
         let shouldBackupIconImage =
             finderIconStateReader.hasCustomVisualState(at: path) ||
@@ -596,7 +595,10 @@ class ViewController: NSViewController, NSTextFieldDelegate {
     }
     
     private func hasFolderVisualCustomization(at path: String) -> Bool {
-        !folderVisualCustomizationXattrs(at: path).isEmpty
+        folderVisualCustomizationReader.hasVisualCustomization(
+            at: path,
+            xattrNames: xattrNames(at: path)
+        )
     }
 
     private func isDirectory(at path: String) -> Bool {
@@ -608,11 +610,13 @@ class ViewController: NSViewController, NSTextFieldDelegate {
             return [:]
         }
 
-        return xattrNames(at: path)
-            .filter(isFolderVisualCustomizationXattr)
-            .reduce(into: [String: Data]()) { result, name in
-                result[name] = xattrData(named: name, at: path)
-            }
+        let names = folderVisualCustomizationReader.visualCustomizationXattrNames(
+            from: xattrNames(at: path)
+        )
+
+        return names.reduce(into: [String: Data]()) { result, name in
+            result[name] = xattrData(named: name, at: path)
+        }
     }
 
     private func removeFolderVisualCustomizationXattrs(at path: String) {
@@ -630,9 +634,7 @@ class ViewController: NSViewController, NSTextFieldDelegate {
     }
 
     private func isFolderVisualCustomizationXattr(_ name: String) -> Bool {
-        name == "com.apple.metadata:_kMDItemUserTags" ||
-        name.hasPrefix("com.apple.metadata:kMDLabel_") ||
-        name.hasPrefix("com.apple.icon.")
+        folderVisualCustomizationReader.isVisualCustomizationXattr(name)
     }
 
     private func folderIconFileURL(for path: String) -> URL {
@@ -1585,5 +1587,9 @@ class ViewController: NSViewController, NSTextFieldDelegate {
     private lazy var finderIconStateReader = FinderIconStateReader(
         finderInfoStore: finderInfoStore,
         finderIconFileStore: finderIconFileStore
+    )
+    
+    private lazy var folderVisualCustomizationReader = FolderVisualCustomizationReader(
+        xattrStore: xattrStore
     )
 }
