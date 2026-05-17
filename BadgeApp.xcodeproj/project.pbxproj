@@ -20,6 +20,7 @@
 		E84BA8052FB9BF590073F897 /* FolderVisualCustomizationReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = E84BA8042FB9BF590073F897 /* FolderVisualCustomizationReader.swift */; };
 		E84BA81D2FB9CFD50073F897 /* FolderVisualCustomizationRestorer.swift in Sources */ = {isa = PBXBuildFile; fileRef = E84BA81C2FB9CFD50073F897 /* FolderVisualCustomizationRestorer.swift */; };
 		E84BA81F2FB9D3010073F897 /* FinderIconApplier.swift in Sources */ = {isa = PBXBuildFile; fileRef = E84BA81E2FB9D3010073F897 /* FinderIconApplier.swift */; };
+		E84BA8212FB9D7DE0073F897 /* FileIdentityResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = E84BA8202FB9D7DE0073F897 /* FileIdentityResolver.swift */; };
 		E88972082FB92B1100DE0F1A /* XattrStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = E88972072FB92B1100DE0F1A /* XattrStore.swift */; };
 		E88E3C8E2FB39390008D1CEE /* BadgeKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E88E3C8D2FB39390008D1CEE /* BadgeKit.framework */; };
 		E8B127AB2FB5F99600A0B2B6 /* IconBackupStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8B127AA2FB5F99600A0B2B6 /* IconBackupStore.swift */; };
@@ -48,6 +49,7 @@
 		E84BA8042FB9BF590073F897 /* FolderVisualCustomizationReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FolderVisualCustomizationReader.swift; sourceTree = "<group>"; };
 		E84BA81C2FB9CFD50073F897 /* FolderVisualCustomizationRestorer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FolderVisualCustomizationRestorer.swift; sourceTree = "<group>"; };
 		E84BA81E2FB9D3010073F897 /* FinderIconApplier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FinderIconApplier.swift; sourceTree = "<group>"; };
+		E84BA8202FB9D7DE0073F897 /* FileIdentityResolver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileIdentityResolver.swift; sourceTree = "<group>"; };
 		E88972072FB92B1100DE0F1A /* XattrStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = XattrStore.swift; sourceTree = "<group>"; };
 		E88E3C8D2FB39390008D1CEE /* BadgeKit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = BadgeKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		E8B127AA2FB5F99600A0B2B6 /* IconBackupStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IconBackupStore.swift; sourceTree = "<group>"; };
@@ -101,6 +103,7 @@
 				E84BA8042FB9BF590073F897 /* FolderVisualCustomizationReader.swift */,
 				E84BA81C2FB9CFD50073F897 /* FolderVisualCustomizationRestorer.swift */,
 				E84BA81E2FB9D3010073F897 /* FinderIconApplier.swift */,
+				E84BA8202FB9D7DE0073F897 /* FileIdentityResolver.swift */,
 			);
 			path = BadgeApp;
 			sourceTree = "<group>";
@@ -206,6 +209,7 @@
 				E8BBD84D2FB7876900CEA502 /* BadgeAppMetadataStore.swift in Sources */,
 				04C7CE624A6761B239E365B7 /* AppDelegate.swift in Sources */,
 				E84BA8032FB9B7FF0073F897 /* FinderIconStateReader.swift in Sources */,
+				E84BA8212FB9D7DE0073F897 /* FileIdentityResolver.swift in Sources */,
 				E8BBD84F2FB790DD00CEA502 /* BadgePreviewMessageProvider.swift in Sources */,
 				E84BA8052FB9BF590073F897 /* FolderVisualCustomizationReader.swift in Sources */,
 				AE01D87ED777FA1E17460A7C /* DropZoneView.swift in Sources */,

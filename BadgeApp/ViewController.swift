@@ -40,6 +40,7 @@ class ViewController: NSViewController, NSTextFieldDelegate {
     private let finderIconFileStore = FinderIconFileStore()
     private lazy var finderInfoStore = FinderInfoStore(xattrStore: xattrStore)
     private let finderIconApplier = FinderIconApplier()
+    private let fileIdentityResolver = FileIdentityResolver()
 
     override func loadView() {
         self.view = NSView(frame: NSRect(x: 0, y: 0, width: 900, height: 650))
@@ -471,44 +472,24 @@ class ViewController: NSViewController, NSTextFieldDelegate {
         return record.originalPath == path
     }
 
-    private func resolvedBookmark(from bookmarkData: Data, allowingStale: Bool = false) -> (url: URL, isStale: Bool)? {
-        var isStale = false
-        if let url = try? URL(
-            resolvingBookmarkData: bookmarkData,
-            options: [.withSecurityScope],
-            relativeTo: nil,
-            bookmarkDataIsStale: &isStale
-        ), allowingStale || !isStale {
-            return (url, isStale)
-        }
-
-        isStale = false
-        if let url = try? URL(
-            resolvingBookmarkData: bookmarkData,
-            options: [],
-            relativeTo: nil,
-            bookmarkDataIsStale: &isStale
-        ), allowingStale || !isStale {
-            return (url, isStale)
-        }
-
-        return nil
+    private func resolvedBookmark(
+        from bookmarkData: Data,
+        allowingStale: Bool = false
+    ) -> (url: URL, isStale: Bool)? {
+        fileIdentityResolver.resolvedBookmark(
+            from: bookmarkData,
+            allowingStale: allowingStale
+        )
     }
 
-    private func fileResourceIdentifier(for url: URL) -> NSObject? {
-        guard let identifier = try? url.resourceValues(forKeys: [.fileResourceIdentifierKey]).fileResourceIdentifier else {
-            return nil
-        }
-
-        return identifier as? NSObject
+    private func fileResourceIdentifier(
+        for url: URL
+    ) -> (any NSCopying & NSSecureCoding & NSObjectProtocol)? {
+        fileIdentityResolver.resourceIdentifier(for: url)
     }
 
     private func fileResourceIdentifierString(for url: URL) -> String? {
-        guard let identifier = fileResourceIdentifier(for: url) else { return nil }
-        if let data = identifier as? Data {
-            return data.base64EncodedString()
-        }
-        return String(describing: identifier)
+        fileIdentityResolver.resourceIdentifierString(for: url)
     }
 
     private func hasCustomFinderIcon(at path: String) -> Bool {
