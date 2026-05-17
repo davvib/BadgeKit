@@ -540,17 +540,7 @@ class ViewController: NSViewController, NSTextFieldDelegate {
     }
 
     private func removeFolderVisualCustomizationXattrs(at path: String) {
-        let xattrsToRemove = xattrNames(at: path).filter(isFolderVisualCustomizationXattr)
-        let url = URL(fileURLWithPath: path)
-        try? (url as NSURL).setResourceValue([], forKey: .tagNamesKey)
-
-        for name in xattrsToRemove {
-            path.withCString { pathPointer in
-                name.withCString { namePointer in
-                    _ = removexattr(pathPointer, namePointer, 0)
-                }
-            }
-        }
+        folderVisualCustomizationRestorer.removeVisualCustomizationXattrs(at: path)
     }
 
     private func isFolderVisualCustomizationXattr(_ name: String) -> Bool {
@@ -729,19 +719,7 @@ class ViewController: NSViewController, NSTextFieldDelegate {
     }
 
     private func restoreFolderVisualCustomizationXattrs(_ xattrs: [String: Data]?, to path: String) {
-        guard let xattrs else { return }
-
-        for (name, data) in xattrs {
-            data.withUnsafeBytes { buffer in
-                guard let baseAddress = buffer.baseAddress else { return }
-
-                path.withCString { pathPointer in
-                    name.withCString { namePointer in
-                        _ = setxattr(pathPointer, namePointer, baseAddress, buffer.count, 0, 0)
-                    }
-                }
-            }
-        }
+        folderVisualCustomizationRestorer.restoreVisualCustomizationXattrs(xattrs, to: path)
     }
 
     private func xattrNames(at path: String) -> [String] {
@@ -1511,5 +1489,10 @@ class ViewController: NSViewController, NSTextFieldDelegate {
     
     private lazy var folderVisualCustomizationReader = FolderVisualCustomizationReader(
         xattrStore: xattrStore
+    )
+    
+    private lazy var folderVisualCustomizationRestorer = FolderVisualCustomizationRestorer(
+        xattrStore: xattrStore,
+        reader: folderVisualCustomizationReader
     )
 }
