@@ -65,6 +65,11 @@ class ViewController: NSViewController, NSTextFieldDelegate {
         finderIconApplier: finderIconApplier,
         visualCustomizationRestorer: folderVisualCustomizationRestorer
     )
+    
+    private lazy var badgeBaseIconResolver = BadgeBaseIconResolver(
+        quickLookIconProvider: quickLookIconProvider,
+        finderIconStateReader: finderIconStateReader
+    )
 
     override func loadView() {
         self.view = NSView(frame: NSRect(x: 0, y: 0, width: 900, height: 650))
@@ -318,7 +323,7 @@ class ViewController: NSViewController, NSTextFieldDelegate {
         let symbolInfo = folderSymbolInfo(at: item.path)
         item.folderSymbolName = symbolInfo.systemName
         item.folderSymbolText = symbolInfo.text
-        item.icon = customRenderedFolderPreview(for: item) ?? quickLookIconProvider.fallbackIcon(for: item.path)
+        item.icon = customRenderedFolderPreview(for: item) ?? badgeBaseIconResolver.fallbackIcon(for: item.path)
         item.baseIconForPreview = backedUpIcon(for: item.path)
         item.badgeStatus = badgeStatus(
             badgeState: badgeAppBadgeState(at: item.path),
@@ -367,7 +372,7 @@ class ViewController: NSViewController, NSTextFieldDelegate {
             path: path,
             visualCustomizationXattrs: folderVisualCustomizationXattrs(at: path),
             hasCustomVisualState: finderIconStateReader.hasCustomVisualState(at: path),
-            workspaceIcon: quickLookIconProvider.fallbackIcon(for: path)
+            workspaceIcon: badgeBaseIconResolver.fallbackIcon(for: path)
         ) { [weak self] id, path in
             self?.writeBadgeAppBackupID(id, at: path)
         }
@@ -1274,7 +1279,7 @@ class ViewController: NSViewController, NSTextFieldDelegate {
 
     private func iconForPreviewingBadge(to path: String, completion: @escaping (NSImage, Bool) -> Void) {
         let isDirectory = isDirectory(at: path)
-        let fallbackIcon = quickLookIconProvider.fallbackIcon(for: path)
+        let fallbackIcon = badgeBaseIconResolver.fallbackIcon(for: path)
         let hasAppBadge = hasBadgeAppliedByBadgeApp(at: path)
 
         if hasAppBadge {
@@ -1299,7 +1304,7 @@ class ViewController: NSViewController, NSTextFieldDelegate {
 
     private func iconForApplyingBadge(to path: String, completion: @escaping (NSImage) -> Void) {
         let url = URL(fileURLWithPath: path)
-        let fallbackIcon = quickLookIconProvider.fallbackIcon(for: path)
+        let fallbackIcon = badgeBaseIconResolver.fallbackIcon(for: path)
         let hasAppBadge = hasBadgeAppliedByBadgeApp(at: path)
 
         if let backedUpIcon = backedUpIcon(for: path) {
@@ -1331,11 +1336,11 @@ class ViewController: NSViewController, NSTextFieldDelegate {
     }
 
     private func defaultFolderIcon() -> NSImage {
-        quickLookIconProvider.defaultFolderIcon()
+        badgeBaseIconResolver.defaultFolderIcon()
     }
 
     private func quickLookIcon(for path: String, fallbackIcon: NSImage, completion: @escaping (NSImage) -> Void) {
-        quickLookIconProvider.quickLookIcon(
+        badgeBaseIconResolver.quickLookIcon(
             for: path,
             fallbackIcon: fallbackIcon,
             completion: completion
@@ -1371,7 +1376,7 @@ class ViewController: NSViewController, NSTextFieldDelegate {
                 item.folderColor = nil
                 item.folderSymbolName = nil
                 item.folderSymbolText = nil
-                item.icon = quickLookIconProvider.fallbackIcon(for: item.path)
+                item.icon = badgeBaseIconResolver.fallbackIcon(for: item.path)
                 item.showsBadgePreview = true
                 refreshCurrentVisualState(for: item, showsBadgePreview: false)
             } else {
@@ -1386,7 +1391,7 @@ class ViewController: NSViewController, NSTextFieldDelegate {
         for item in items where isDirectory(at: item.path) {
             saveOriginalIconStateIfNeeded(for: item.path)
             resetFolderToPlainIconBeforeApplying(at: item.path)
-            item.icon = quickLookIconProvider.fallbackIcon(for: item.path)
+            item.icon = badgeBaseIconResolver.fallbackIcon(for: item.path)
         }
 
         dropZoneView.needsDisplay = true

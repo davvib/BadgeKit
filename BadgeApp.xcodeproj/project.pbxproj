@@ -14,6 +14,7 @@
 		AE01D87ED777FA1E17460A7C /* DropZoneView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20F97ADCD4A7D795A6CD2D9A /* DropZoneView.swift */; };
 		BC49A789C66E60045BDF57CA /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6062F70E1A545127650D288F /* ViewController.swift */; };
 		E82ED8542FBA38E700AF785D /* QuickLookIconProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = E82ED8532FBA38E700AF785D /* QuickLookIconProvider.swift */; };
+		E82ED8562FBA3B6300AF785D /* BadgeBaseIconResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = E82ED8552FBA3B6300AF785D /* BadgeBaseIconResolver.swift */; };
 		E8346DE62FB5F04A00070BEB /* IconBackupRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8346DE52FB5F04A00070BEB /* IconBackupRecord.swift */; };
 		E84BA7FF2FB9A4380073F897 /* FinderIconFileStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = E84BA7FE2FB9A4380073F897 /* FinderIconFileStore.swift */; };
 		E84BA8012FB9A6CB0073F897 /* FinderInfoStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = E84BA8002FB9A6CB0073F897 /* FinderInfoStore.swift */; };
@@ -45,6 +46,7 @@
 		93AD2808C2EE791C3E76C7A0 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		E6B6F2C1E4694E97B108AA1E /* Carpetas */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Carpetas; sourceTree = "<group>"; };
 		E82ED8532FBA38E700AF785D /* QuickLookIconProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickLookIconProvider.swift; sourceTree = "<group>"; };
+		E82ED8552FBA3B6300AF785D /* BadgeBaseIconResolver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BadgeBaseIconResolver.swift; sourceTree = "<group>"; };
 		E8346DE52FB5F04A00070BEB /* IconBackupRecord.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IconBackupRecord.swift; sourceTree = "<group>"; };
 		E84BA7FE2FB9A4380073F897 /* FinderIconFileStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FinderIconFileStore.swift; sourceTree = "<group>"; };
 		E84BA8002FB9A6CB0073F897 /* FinderInfoStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FinderInfoStore.swift; sourceTree = "<group>"; };
@@ -110,6 +112,7 @@
 				E84BA8202FB9D7DE0073F897 /* FileIdentityResolver.swift */,
 				E8A31E042FBA14B5006C3519 /* IconBackupService.swift */,
 				E82ED8532FBA38E700AF785D /* QuickLookIconProvider.swift */,
+				E82ED8552FBA3B6300AF785D /* BadgeBaseIconResolver.swift */,
 			);
 			path = BadgeApp;
 			sourceTree = "<group>";
@@ -211,6 +214,7 @@
 				E8FCC5752FB5CD9100E08322 /* CustomBadgeStore.swift in Sources */,
 				E8BBD8472FB7812E00CEA502 /* IconBackupRetentionPolicy.swift in Sources */,
 				E82ED8542FBA38E700AF785D /* QuickLookIconProvider.swift in Sources */,
+				E82ED8562FBA3B6300AF785D /* BadgeBaseIconResolver.swift in Sources */,
 				E8B127AB2FB5F99600A0B2B6 /* IconBackupStore.swift in Sources */,
 				E84BA7FF2FB9A4380073F897 /* FinderIconFileStore.swift in Sources */,
 				E8BBD84D2FB7876900CEA502 /* BadgeAppMetadataStore.swift in Sources */,
