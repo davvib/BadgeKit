@@ -18,8 +18,6 @@ class ViewController: NSViewController, NSTextFieldDelegate {
     var customBadges: [CustomBadgeRecord] = []
     var isPreviewSelected = false
     private let savedBadgePixelSize = 1024
-    private let finderInfoHasCustomIconFlag: UInt16 = 0x0400
-    private let finderInfoExtendedFlagsAreInvalidFlag: UInt16 = 0x8000
     private let folderResetDelay: TimeInterval = 0.8
     private let folderIconRenderSizes = [16, 32, 64, 128, 256, 512, 1024]
     private let metadataQueue = DispatchQueue(label: "com.badgeapp.metadata", qos: .userInitiated)
@@ -431,7 +429,7 @@ class ViewController: NSViewController, NSTextFieldDelegate {
         let visualCustomizationXattrs = folderVisualCustomizationXattrs(at: path)
         let hasCustomIcon = hasCustomFinderIcon(at: path)
         let shouldBackupIconImage = hasCustomIcon || !visualCustomizationXattrs.isEmpty || folderIconFileExists(at: path)
-        let finderInfoData = finderInfoStore.data(at: path)
+        let finderInfoData = xattrData(named: "com.apple.FinderInfo", at: path)
         let id = UUID().uuidString
         let iconFileName = shouldBackupIconImage ? "\(id).tiff" : nil
         let previewIconFileName = "\(id)-preview.tiff"
@@ -591,13 +589,8 @@ class ViewController: NSViewController, NSTextFieldDelegate {
     }
 
     private func hasCustomFinderIcon(at path: String) -> Bool {
-        guard let finderInfo = finderInfoBytes(at: path),
-              finderInfo.count >= 10 else { return false }
-
-        let flags = (UInt16(finderInfo[8]) << 8) | UInt16(finderInfo[9])
-        return (flags & finderInfoHasCustomIconFlag) != 0
+        finderInfoStore.hasCustomIcon(at: path)
     }
-
     private func hasFolderVisualCustomization(at path: String) -> Bool {
         !folderVisualCustomizationXattrs(at: path).isEmpty
     }
@@ -660,30 +653,11 @@ class ViewController: NSViewController, NSTextFieldDelegate {
     }
 
     private func forceFinderCustomIconState(at path: String) {
-        var finderInfo = finderInfoBytes(at: path) ?? [UInt8](repeating: 0, count: 32)
-
-        var flags = (UInt16(finderInfo[8]) << 8) | UInt16(finderInfo[9])
-        flags |= finderInfoHasCustomIconFlag
-        finderInfo[8] = UInt8((flags >> 8) & 0xff)
-        finderInfo[9] = UInt8(flags & 0xff)
-
-        var extendedFlags = (UInt16(finderInfo[24]) << 8) | UInt16(finderInfo[25])
-        extendedFlags &= ~finderInfoExtendedFlagsAreInvalidFlag
-        finderInfo[24] = UInt8((extendedFlags >> 8) & 0xff)
-        finderInfo[25] = UInt8(extendedFlags & 0xff)
-
-        _ = setFinderInfoBytes(finderInfo, at: path)
+        finderInfoStore.forceCustomIconState(at: path)
     }
 
     private func clearFinderCustomIconState(at path: String) {
-        guard var finderInfo = finderInfoBytes(at: path) else { return }
-
-        var flags = (UInt16(finderInfo[8]) << 8) | UInt16(finderInfo[9])
-        flags &= ~finderInfoHasCustomIconFlag
-        finderInfo[8] = UInt8((flags >> 8) & 0xff)
-        finderInfo[9] = UInt8(flags & 0xff)
-
-        _ = setFinderInfoBytes(finderInfo, at: path)
+        finderInfoStore.clearCustomIconState(at: path)
     }
 
     private func resetFolderToPlainIconBeforeApplying(at path: String) {
