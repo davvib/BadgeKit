@@ -20,7 +20,6 @@ class ViewController: NSViewController, NSTextFieldDelegate {
     private let savedBadgePixelSize = 1024
     private let finderInfoHasCustomIconFlag: UInt16 = 0x0400
     private let finderInfoExtendedFlagsAreInvalidFlag: UInt16 = 0x8000
-    private let folderIconFileName = "Icon\r"
     private let folderResetDelay: TimeInterval = 0.8
     private let folderIconRenderSizes = [16, 32, 64, 128, 256, 512, 1024]
     private let metadataQueue = DispatchQueue(label: "com.badgeapp.metadata", qos: .userInitiated)
@@ -40,6 +39,7 @@ class ViewController: NSViewController, NSTextFieldDelegate {
     private let badgePreviewMessageProvider = BadgePreviewMessageProvider()
     private let previewCacheInvalidator = PreviewCacheInvalidator()
     private let xattrStore = XattrStore()
+    private let finderIconFileStore = FinderIconFileStore()
 
     override func loadView() {
         self.view = NSView(frame: NSRect(x: 0, y: 0, width: 900, height: 650))
@@ -638,12 +638,12 @@ class ViewController: NSViewController, NSTextFieldDelegate {
     }
 
     private func folderIconFileURL(for path: String) -> URL {
-        URL(fileURLWithPath: path).appendingPathComponent(folderIconFileName)
+        finderIconFileStore.folderIconFileURL(for: path)
     }
 
     private func folderIconFileExists(at path: String) -> Bool {
         guard isDirectory(at: path) else { return false }
-        return FileManager.default.fileExists(atPath: folderIconFileURL(for: path).path)
+        return finderIconFileStore.folderIconFileExists(at: path)
     }
 
     private func finderInfoBytes(at path: String) -> [UInt8]? {
@@ -715,7 +715,7 @@ class ViewController: NSViewController, NSTextFieldDelegate {
 
         removeFolderVisualCustomizationXattrs(at: path)
         _ = NSWorkspace.shared.setIcon(nil, forFile: path, options: [])
-        try? FileManager.default.removeItem(at: folderIconFileURL(for: path))
+        finderIconFileStore.removeFolderIconFile(at: path)
         clearFinderCustomIconState(at: path)
 
         NSWorkspace.shared.noteFileSystemChanged(path)
