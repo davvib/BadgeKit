@@ -74,4 +74,67 @@ final class IconBackupService {
             backupStore.deleteBackupFiles(for: storedRecord.record)
         }
     }
+    
+    func saveOriginalIconState(
+        path: String,
+        visualCustomizationXattrs: [String: Data],
+        hasCustomVisualState: Bool,
+        workspaceIcon: NSImage,
+        backupIDWriter: (String, String) -> Void
+    ) {
+        do {
+            _ = try backupStore.prepareStorageDirectories()
+        } catch {
+            print("Error preparing icon backup storage: \(error)")
+            return
+        }
+
+        let url = URL(fileURLWithPath: path)
+        let shouldBackupIconImage =
+            hasCustomVisualState ||
+            !visualCustomizationXattrs.isEmpty
+
+        let finderInfoData = finderInfoStore.data(at: path)
+        let id = UUID().uuidString
+        let iconFileName = shouldBackupIconImage ? "\(id).tiff" : nil
+        let previewIconFileName = "\(id)-preview.tiff"
+
+        do {
+            try backupStore.writeTIFFIcon(
+                workspaceIcon,
+                fileName: previewIconFileName
+            )
+
+            if let iconFileName {
+                try backupStore.writeTIFFIcon(
+                    workspaceIcon,
+                    fileName: iconFileName
+                )
+            }
+
+            let bookmarkData = try url.bookmarkData(
+                options: [.withSecurityScope],
+                includingResourceValuesForKeys: nil,
+                relativeTo: nil
+            )
+
+            let record = IconBackupRecord(
+                id: id,
+                originalPath: path,
+                bookmarkData: bookmarkData,
+                createdAt: Date(),
+                originalResourceIdentifier: fileIdentityResolver.resourceIdentifierString(for: url),
+                hadCustomIcon: shouldBackupIconImage,
+                iconFileName: iconFileName,
+                previewIconFileName: previewIconFileName,
+                visualCustomizationXattrs: visualCustomizationXattrs.isEmpty ? nil : visualCustomizationXattrs,
+                finderInfoData: finderInfoData
+            )
+
+            try backupStore.writeRecord(record)
+            backupIDWriter(id, path)
+        } catch {
+            print("Error backing up original icon state: \(error)")
+        }
+    }
 }

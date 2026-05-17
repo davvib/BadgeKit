@@ -360,63 +360,13 @@ class ViewController: NSViewController, NSTextFieldDelegate {
 
         removeBadgeAppBackupID(at: path)
 
-        do {
-            _ = try iconBackupStore.prepareStorageDirectories()
-        } catch {
-            print("Error preparing icon backup storage: \(error)")
-            return
-        }
-
-        let url = URL(fileURLWithPath: path)
-        let visualCustomizationXattrs = folderVisualCustomizationXattrs(at: path)
-        
-        let shouldBackupIconImage =
-            finderIconStateReader.hasCustomVisualState(at: path) ||
-            !visualCustomizationXattrs.isEmpty
-        
-        let finderInfoData = xattrData(named: "com.apple.FinderInfo", at: path)
-        let id = UUID().uuidString
-        let iconFileName = shouldBackupIconImage ? "\(id).tiff" : nil
-        let previewIconFileName = "\(id)-preview.tiff"
-
-        do {
-            let workspaceIcon = NSWorkspace.shared.icon(forFile: path)
-
-            try iconBackupStore.writeTIFFIcon(
-                workspaceIcon,
-                fileName: previewIconFileName
-            )
-
-            if let iconFileName {
-                try iconBackupStore.writeTIFFIcon(
-                    workspaceIcon,
-                    fileName: iconFileName
-                )
-            }
-
-            let bookmarkData = try url.bookmarkData(
-                options: [.withSecurityScope],
-                includingResourceValuesForKeys: nil,
-                relativeTo: nil
-            )
-
-            let record = IconBackupRecord(
-                id: id,
-                originalPath: path,
-                bookmarkData: bookmarkData,
-                createdAt: Date(),
-                originalResourceIdentifier: fileResourceIdentifierString(for: url),
-                hadCustomIcon: shouldBackupIconImage,
-                iconFileName: iconFileName,
-                previewIconFileName: previewIconFileName,
-                visualCustomizationXattrs: visualCustomizationXattrs.isEmpty ? nil : visualCustomizationXattrs,
-                finderInfoData: finderInfoData
-            )
-
-            try iconBackupStore.writeRecord(record)
-            writeBadgeAppBackupID(id, at: path)
-        } catch {
-            print("Error backing up original icon state: \(error)")
+        iconBackupService.saveOriginalIconState(
+            path: path,
+            visualCustomizationXattrs: folderVisualCustomizationXattrs(at: path),
+            hasCustomVisualState: finderIconStateReader.hasCustomVisualState(at: path),
+            workspaceIcon: NSWorkspace.shared.icon(forFile: path)
+        ) { [weak self] id, path in
+            self?.writeBadgeAppBackupID(id, at: path)
         }
     }
 
