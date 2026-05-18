@@ -17,9 +17,7 @@ class ViewController: NSViewController, NSTextFieldDelegate {
     var badgeOffsetY: CGFloat = -4
     var customBadges: [CustomBadgeRecord] = []
     var isPreviewSelected = false
-    private let savedBadgePixelSize = 1024
     private let folderResetDelay: TimeInterval = 0.8
-    private let folderIconRenderSizes = [16, 32, 64, 128, 256, 512, 1024]
     private let metadataQueue = DispatchQueue(label: "com.badgeapp.metadata", qos: .userInitiated)
     private var previewMessageView: NSView?
     private var previewMessageLabel: NSTextField?
@@ -328,28 +326,6 @@ class ViewController: NSViewController, NSTextFieldDelegate {
         )
         badgeItemVisualStateUpdater.invalidatePreviewCache(for: item)
         badgeItemVisualStateUpdater.applyPreviewVisibility(showsBadgePreview, to: item)
-    }
-
-    private func folderIcon(_ icon: NSImage, tintedWith color: NSColor?) -> NSImage {
-        guard let color else { return icon }
-
-        let renderedIcon = NSImage(size: icon.size)
-        renderedIcon.lockFocus()
-
-        let bounds = NSRect(origin: .zero, size: renderedIcon.size)
-        icon.draw(in: bounds, from: .zero, operation: .sourceOver, fraction: 1.0)
-        color.withAlphaComponent(0.24).setFill()
-        bounds.fill(using: .sourceAtop)
-        icon.draw(in: bounds, from: .zero, operation: .sourceOver, fraction: 0.55)
-
-        renderedIcon.unlockFocus()
-
-        return renderedIcon
-    }
-
-    private func configureRepeatingButton(_ button: NSButton) {
-        button.isContinuous = true
-        (button.cell as? NSButtonCell)?.setPeriodicDelay(0.25, interval: 0.04)
     }
 
     private func saveOriginalIconStateIfNeeded(for path: String) {
