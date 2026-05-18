@@ -80,6 +80,11 @@ class ViewController: NSViewController, NSTextFieldDelegate {
     private lazy var badgeRemovalService = BadgeRemovalService(
         finderIconApplier: finderIconApplier
     )
+    
+    private lazy var badgeAppMetadataRepository = BadgeAppMetadataRepository(
+        metadataStore: badgeAppMetadataStore,
+        xattrStore: xattrStore
+    )
 
     override func loadView() {
         self.view = NSView(frame: NSRect(x: 0, y: 0, width: 900, height: 650))
@@ -422,21 +427,15 @@ class ViewController: NSViewController, NSTextFieldDelegate {
     }
 
     private func badgeAppFolderMetadata(at path: String) -> BadgeAppFolderMetadata? {
-        badgeAppMetadataStore.folderMetadata(at: path) { [weak self] name, path in
-            self?.xattrData(named: name, at: path)
-        }
+        badgeAppMetadataRepository.folderMetadata(at: path)
     }
 
     private func badgeAppBadgeState(at path: String) -> BadgeAppBadgeState? {
-        badgeAppMetadataStore.badgeState(at: path) { [weak self] name, path in
-            self?.xattrData(named: name, at: path)
-        }
+        badgeAppMetadataRepository.badgeState(at: path)
     }
 
     private func badgeAppBackupID(at path: String) -> String? {
-        badgeAppMetadataStore.backupID(at: path) { [weak self] name, path in
-            self?.xattrData(named: name, at: path)
-        }
+        badgeAppMetadataRepository.backupID(at: path)
     }
 
     private func hasBadgeAppliedByBadgeApp(at path: String) -> Bool {
@@ -467,32 +466,24 @@ class ViewController: NSViewController, NSTextFieldDelegate {
     }
 
     private func writeBadgeAppBadgeState(at path: String) {
-        badgeAppMetadataStore.writeBadgeState(
+        badgeAppMetadataRepository.writeBadgeState(
             at: path,
             badgeSize: Double(appDelegate.badgeSize),
             badgeOffsetX: Double(badgeOffsetX),
             badgeOffsetY: Double(badgeOffsetY)
-        ) { [weak self] data, name, path in
-            self?.setXattrData(data, named: name, at: path)
-        }
+        )
     }
 
     private func removeBadgeAppBadgeState(at path: String) {
-        badgeAppMetadataStore.removeBadgeState(at: path) { [weak self] name, path in
-            self?.removeXattr(named: name, at: path)
-        }
+        badgeAppMetadataRepository.removeBadgeState(at: path)
     }
 
     private func writeBadgeAppBackupID(_ id: String, at path: String) {
-        badgeAppMetadataStore.writeBackupID(id, at: path) { [weak self] data, name, path in
-            self?.setXattrData(data, named: name, at: path)
-        }
+        badgeAppMetadataRepository.writeBackupID(id, at: path)
     }
 
     private func removeBadgeAppBackupID(at path: String) {
-        badgeAppMetadataStore.removeBackupID(at: path) { [weak self] name, path in
-            self?.removeXattr(named: name, at: path)
-        }
+        badgeAppMetadataRepository.removeBackupID(at: path)
     }
 
     private func writeBadgeAppFolderMetadata(for item: DroppedItem) {
@@ -500,20 +491,16 @@ class ViewController: NSViewController, NSTextFieldDelegate {
             return
         }
 
-        badgeAppMetadataStore.writeFolderMetadata(
+        badgeAppMetadataRepository.writeFolderMetadata(
             at: item.path,
             colorName: item.folderColorName,
             symbolName: item.folderSymbolName,
             symbolText: item.folderSymbolText
-        ) { [weak self] data, name, path in
-            self?.setXattrData(data, named: name, at: path)
-        }
+        )
     }
 
     private func removeBadgeAppFolderMetadata(at path: String) {
-        badgeAppMetadataStore.removeFolderMetadata(at: path) { [weak self] name, path in
-            self?.removeXattr(named: name, at: path)
-        }
+        badgeAppMetadataRepository.removeFolderMetadata(at: path)
     }
 
     private func restoreBadgeAppFolderVisualStateIfAvailable(for path: String) -> Bool {
