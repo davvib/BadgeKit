@@ -25,6 +25,7 @@
 		E84BA81F2FB9D3010073F897 /* FinderIconApplier.swift in Sources */ = {isa = PBXBuildFile; fileRef = E84BA81E2FB9D3010073F897 /* FinderIconApplier.swift */; };
 		E84BA8212FB9D7DE0073F897 /* FileIdentityResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = E84BA8202FB9D7DE0073F897 /* FileIdentityResolver.swift */; };
 		E855C0712FBAFD4C00A31357 /* BadgeRemovalService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E855C0702FBAFD4C00A31357 /* BadgeRemovalService.swift */; };
+		E855C0732FBB057F00A31357 /* BadgeItemVisualStateUpdater.swift in Sources */ = {isa = PBXBuildFile; fileRef = E855C0722FBB057F00A31357 /* BadgeItemVisualStateUpdater.swift */; };
 		E88972082FB92B1100DE0F1A /* XattrStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = E88972072FB92B1100DE0F1A /* XattrStore.swift */; };
 		E88E3C8E2FB39390008D1CEE /* BadgeKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E88E3C8D2FB39390008D1CEE /* BadgeKit.framework */; };
 		E8A31E052FBA14B5006C3519 /* IconBackupService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8A31E042FBA14B5006C3519 /* IconBackupService.swift */; };
@@ -59,6 +60,7 @@
 		E84BA81E2FB9D3010073F897 /* FinderIconApplier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FinderIconApplier.swift; sourceTree = "<group>"; };
 		E84BA8202FB9D7DE0073F897 /* FileIdentityResolver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileIdentityResolver.swift; sourceTree = "<group>"; };
 		E855C0702FBAFD4C00A31357 /* BadgeRemovalService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BadgeRemovalService.swift; sourceTree = "<group>"; };
+		E855C0722FBB057F00A31357 /* BadgeItemVisualStateUpdater.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BadgeItemVisualStateUpdater.swift; sourceTree = "<group>"; };
 		E88972072FB92B1100DE0F1A /* XattrStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = XattrStore.swift; sourceTree = "<group>"; };
 		E88E3C8D2FB39390008D1CEE /* BadgeKit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = BadgeKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		E8A31E042FBA14B5006C3519 /* IconBackupService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IconBackupService.swift; sourceTree = "<group>"; };
@@ -119,6 +121,7 @@
 				E82ED8552FBA3B6300AF785D /* BadgeBaseIconResolver.swift */,
 				E82ED8572FBA470400AF785D /* BadgeApplyService.swift */,
 				E855C0702FBAFD4C00A31357 /* BadgeRemovalService.swift */,
+				E855C0722FBB057F00A31357 /* BadgeItemVisualStateUpdater.swift */,
 			);
 			path = BadgeApp;
 			sourceTree = "<group>";
@@ -219,6 +222,7 @@
 				E84BA81F2FB9D3010073F897 /* FinderIconApplier.swift in Sources */,
 				E8FCC5752FB5CD9100E08322 /* CustomBadgeStore.swift in Sources */,
 				E8BBD8472FB7812E00CEA502 /* IconBackupRetentionPolicy.swift in Sources */,
+				E855C0732FBB057F00A31357 /* BadgeItemVisualStateUpdater.swift in Sources */,
 				E82ED8542FBA38E700AF785D /* QuickLookIconProvider.swift in Sources */,
 				E82ED8562FBA3B6300AF785D /* BadgeBaseIconResolver.swift in Sources */,
 				E8B127AB2FB5F99600A0B2B6 /* IconBackupStore.swift in Sources */,

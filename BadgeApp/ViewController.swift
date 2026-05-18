@@ -42,6 +42,7 @@ class ViewController: NSViewController, NSTextFieldDelegate {
     private let finderIconApplier = FinderIconApplier()
     private let fileIdentityResolver = FileIdentityResolver()
     private let quickLookIconProvider = QuickLookIconProvider()
+    private let badgeItemVisualStateUpdater = BadgeItemVisualStateUpdater()
     
     private lazy var finderIconStateReader = FinderIconStateReader(
         finderInfoStore: finderInfoStore,
@@ -299,9 +300,7 @@ class ViewController: NSViewController, NSTextFieldDelegate {
         )
         badgeOffsetX = offset.x
         badgeOffsetY = offset.y
-        item.showsBadgePreview = true
-        item.cachedPreviewIcon = nil
-        item.cachedPreviewKey = nil
+        badgeItemVisualStateUpdater.showPreview(for: item)
         dropZoneView.needsDisplay = true
     }
 
@@ -343,11 +342,8 @@ class ViewController: NSViewController, NSTextFieldDelegate {
             hasVisualCustomization: item.isDirectory && hasFolderVisualCustomization(at: item.path),
             hasCleanBaseIcon: item.baseIconForPreview != nil
         )
-        item.cachedPreviewIcon = nil
-        item.cachedPreviewKey = nil
-        if let showsBadgePreview {
-            item.showsBadgePreview = showsBadgePreview
-        }
+        badgeItemVisualStateUpdater.invalidatePreviewCache(for: item)
+        badgeItemVisualStateUpdater.applyPreviewVisibility(showsBadgePreview, to: item)
     }
 
     private func folderIcon(_ icon: NSImage, tintedWith color: NSColor?) -> NSImage {
@@ -1028,9 +1024,7 @@ class ViewController: NSViewController, NSTextFieldDelegate {
     @objc func previewBadge() {
         guard let item = items.last else { return }
 
-        item.showsBadgePreview = true
-        item.cachedPreviewIcon = nil
-        item.cachedPreviewKey = nil
+        badgeItemVisualStateUpdater.showPreview(for: item)
         dropZoneView.needsDisplay = true
 
         showPreviewMessage(previewMessage(for: item))
@@ -1039,9 +1033,7 @@ class ViewController: NSViewController, NSTextFieldDelegate {
     @objc func removePreviewBadge() {
         guard let item = items.last else { return }
 
-        item.showsBadgePreview = false
-        item.cachedPreviewIcon = nil
-        item.cachedPreviewKey = nil
+        badgeItemVisualStateUpdater.hidePreview(for: item)
         dropZoneView.needsDisplay = true
         showPreviewMessage("Preview quitada.\nSe muestra de nuevo\nel estado real.")
     }
@@ -1135,9 +1127,10 @@ class ViewController: NSViewController, NSTextFieldDelegate {
                     guard self.items.contains(where: { $0 === item }) else { return }
 
                     item.icon = previewIcon
-                    item.showsBadgePreview = shouldShowBadgePreview
-                    item.cachedPreviewIcon = nil
-                    item.cachedPreviewKey = nil
+                    self.badgeItemVisualStateUpdater.setPreviewVisibility(
+                        shouldShowBadgePreview,
+                        for: item
+                    )
                     self.dropZoneView.needsDisplay = true
                 }
             }
