@@ -77,6 +77,10 @@ class ViewController: NSViewController, NSTextFieldDelegate {
         visualCustomizationRestorer: folderVisualCustomizationRestorer,
         iconBackupService: iconBackupService
     )
+    
+    private lazy var badgeRemovalService = BadgeRemovalService(
+        finderIconApplier: finderIconApplier
+    )
 
     override func loadView() {
         self.view = NSView(frame: NSRect(x: 0, y: 0, width: 900, height: 650))
@@ -1313,20 +1317,37 @@ class ViewController: NSViewController, NSTextFieldDelegate {
 
     @objc func removeBadge() {
         for item in items {
-            let hadBadgeAppState = badgeAppBadgeState(at: item.path) != nil ||
-                badgeAppFolderMetadata(at: item.path) != nil ||
-                badgeAppBackupID(at: item.path) != nil
+            let hadBadgeAppState = badgeRemovalService.hasBadgeAppState(
+                at: item.path,
+                folderMetadataProvider: { [weak self] path in
+                    self?.badgeAppFolderMetadata(at: path)
+                },
+                badgeStateProvider: { [weak self] path in
+                    self?.badgeAppBadgeState(at: path)
+                },
+                backupIDProvider: { [weak self] path in
+                    self?.badgeAppBackupID(at: path)
+                }
+            )
 
             if restoreOriginalIconStateIfAvailable(for: item.path) {
                 refreshRestoredVisualState(for: item)
             } else if restoreBadgeAppFolderVisualStateIfAvailable(for: item.path) {
                 refreshRestoredVisualState(for: item)
             } else if hadBadgeAppState {
-                _ = finderIconApplier.clearIcon(at: item.path)
-                finderIconApplier.notifyFileSystemChanged(at: item.path)
-                removeBadgeAppFolderMetadata(at: item.path)
-                removeBadgeAppBadgeState(at: item.path)
-                removeBadgeAppBackupID(at: item.path)
+                badgeRemovalService.clearBadgeAppFallbackState(at: item.path)
+                badgeRemovalService.cleanBadgeAppMetadata(
+                    at: item.path,
+                    folderMetadataRemover: { [weak self] path in
+                        self?.removeBadgeAppFolderMetadata(at: path)
+                    },
+                    badgeStateRemover: { [weak self] path in
+                        self?.removeBadgeAppBadgeState(at: path)
+                    },
+                    backupIDRemover: { [weak self] path in
+                        self?.removeBadgeAppBackupID(at: path)
+                    }
+                )
                 item.folderColorName = nil
                 item.folderColor = nil
                 item.folderSymbolName = nil
