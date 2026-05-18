@@ -407,10 +407,6 @@ class ViewController: NSViewController, NSTextFieldDelegate {
         folderVisualCustomizationRestorer.removeVisualCustomizationXattrs(at: path)
     }
 
-    private func isFolderVisualCustomizationXattr(_ name: String) -> Bool {
-        folderVisualCustomizationReader.isVisualCustomizationXattr(name)
-    }
-
     private func clearFinderCustomIconState(at path: String) {
         finderInfoStore.clearCustomIconState(at: path)
     }
@@ -535,10 +531,6 @@ class ViewController: NSViewController, NSTextFieldDelegate {
         finderIconApplier.notifyFileAndParentChanged(at: path)
 
         return true
-    }
-
-    private func restoreFolderVisualCustomizationXattrs(_ xattrs: [String: Data]?, to path: String) {
-        folderVisualCustomizationRestorer.restoreVisualCustomizationXattrs(xattrs, to: path)
     }
 
     private func xattrNames(at path: String) -> [String] {
