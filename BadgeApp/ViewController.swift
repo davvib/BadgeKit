@@ -127,18 +127,14 @@ class ViewController: NSViewController, NSTextFieldDelegate {
         hasFolderVisualCustomization(at: path)
     }
 
-    private func folderCustomizationColor(at path: String) -> NSColor? {
-        folderCustomizationColorInfo(at: path)?.color
-    }
-
     private func folderCustomizationColorInfo(at path: String) -> (name: String, color: NSColor)? {
         if let metadata = badgeAppFolderMetadata(at: path),
            let name = metadata.colorName,
-           let color = folderColor(named: name) {
+           let color = folderVisualCustomizationReader.folderColor(named: name) {
             return (name, color)
         }
 
-        if let colorInfo = folderCustomizationColorInfo(
+        if let colorInfo = folderVisualCustomizationReader.colorInfo(
             fromUserTagsData: xattrData(named: "com.apple.metadata:_kMDItemUserTags", at: path)
         ) {
             return colorInfo
@@ -146,19 +142,11 @@ class ViewController: NSViewController, NSTextFieldDelegate {
 
         if let data = iconBackupRecord(for: path)?
             .visualCustomizationXattrs?["com.apple.metadata:_kMDItemUserTags"],
-           let colorInfo = folderCustomizationColorInfo(fromUserTagsData: data) {
+           let colorInfo = folderVisualCustomizationReader.colorInfo(fromUserTagsData: data) {
             return colorInfo
         }
 
         return nil
-    }
-
-    private func folderCustomizationColorInfo(fromUserTagsData data: Data?) -> (name: String, color: NSColor)? {
-        folderVisualCustomizationReader.colorInfo(fromUserTagsData: data)
-    }
-
-    private func folderColor(named name: String) -> NSColor? {
-        folderVisualCustomizationReader.folderColor(named: name)
     }
 
     private func folderSymbolInfo(at path: String) -> FolderSymbolInfo {
@@ -194,10 +182,6 @@ class ViewController: NSViewController, NSTextFieldDelegate {
 
     private func folderSymbolInfo(fromData data: Data?) -> FolderSymbolInfo? {
         folderVisualCustomizationReader.symbolInfo(fromData: data)
-    }
-
-    private func isEmojiFolderSymbol(_ value: String) -> Bool {
-        folderVisualCustomizationReader.isEmojiFolderSymbol(value)
     }
 
     private func customRenderedFolderIcon(for item: DroppedItem, badge: NSImage? = nil) -> NSImage? {
@@ -403,42 +387,10 @@ class ViewController: NSViewController, NSTextFieldDelegate {
         iconBackupService.cleanupStoredBackups()
     }
 
-    private func shouldKeepStoredIconBackup(_ record: IconBackupRecord) -> Bool {
-        iconBackupService.shouldKeepStoredBackup(record)
-    }
-
     private func iconBackupRecord(for path: String) -> IconBackupRecord? {
         iconBackupService.record(for: path) { [weak self] path in
             self?.badgeAppBackupID(at: path)
         }
-    }
-
-    private func iconBackupRecord(withID id: String) -> IconBackupRecord? {
-        iconBackupService.record(withID: id)
-    }
-
-    private func iconBackupRecord(_ record: IconBackupRecord, belongsTo path: String) -> Bool {
-        iconBackupService.record(record, belongsTo: path)
-    }
-
-    private func resolvedBookmark(
-        from bookmarkData: Data,
-        allowingStale: Bool = false
-    ) -> (url: URL, isStale: Bool)? {
-        fileIdentityResolver.resolvedBookmark(
-            from: bookmarkData,
-            allowingStale: allowingStale
-        )
-    }
-
-    private func fileResourceIdentifier(
-        for url: URL
-    ) -> (any NSCopying & NSSecureCoding & NSObjectProtocol)? {
-        fileIdentityResolver.resourceIdentifier(for: url)
-    }
-
-    private func fileResourceIdentifierString(for url: URL) -> String? {
-        fileIdentityResolver.resourceIdentifierString(for: url)
     }
 
     private func hasCustomFinderIcon(at path: String) -> Bool {
@@ -476,31 +428,6 @@ class ViewController: NSViewController, NSTextFieldDelegate {
 
     private func isFolderVisualCustomizationXattr(_ name: String) -> Bool {
         folderVisualCustomizationReader.isVisualCustomizationXattr(name)
-    }
-
-    private func folderIconFileURL(for path: String) -> URL {
-        finderIconFileStore.folderIconFileURL(for: path)
-    }
-
-    private func folderIconFileExists(at path: String) -> Bool {
-        guard isDirectory(at: path) else { return false }
-        return finderIconFileStore.folderIconFileExists(at: path)
-    }
-
-    private func finderInfoBytes(at path: String) -> [UInt8]? {
-        finderInfoStore.bytes(at: path)
-    }
-
-    private func setFinderInfoBytes(_ finderInfo: [UInt8], at path: String) -> Bool {
-        finderInfoStore.setBytes(finderInfo, at: path)
-    }
-
-    private func restoreFinderInfo(_ data: Data?, to path: String) {
-        finderInfoStore.restore(data, to: path)
-    }
-
-    private func forceFinderCustomIconState(at path: String) {
-        finderInfoStore.forceCustomIconState(at: path)
     }
 
     private func clearFinderCustomIconState(at path: String) {
