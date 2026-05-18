@@ -7,6 +7,13 @@
 
 import Cocoa
 
+enum BadgeRemovalResult {
+    case restoredOriginal
+    case restoredBadgeAppVisualState
+    case clearedBadgeAppFallback
+    case unchanged
+}
+
 final class BadgeRemovalService {
     private let finderIconApplier: FinderIconApplier
 
@@ -39,5 +46,28 @@ final class BadgeRemovalService {
         folderMetadataRemover(path)
         badgeStateRemover(path)
         backupIDRemover(path)
+    }
+    
+    func removeBadge(
+        at path: String,
+        hasBadgeAppState: Bool,
+        restoreOriginalIconState: (String) -> Bool,
+        restoreBadgeAppFolderVisualState: (String) -> Bool,
+        fallbackCleaner: (String) -> Void
+    ) -> BadgeRemovalResult {
+        if restoreOriginalIconState(path) {
+            return .restoredOriginal
+        }
+
+        if restoreBadgeAppFolderVisualState(path) {
+            return .restoredBadgeAppVisualState
+        }
+
+        if hasBadgeAppState {
+            fallbackCleaner(path)
+            return .clearedBadgeAppFallback
+        }
+
+        return .unchanged
     }
 }

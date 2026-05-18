@@ -1330,24 +1330,37 @@ class ViewController: NSViewController, NSTextFieldDelegate {
                 }
             )
 
-            if restoreOriginalIconStateIfAvailable(for: item.path) {
+            let removalResult = badgeRemovalService.removeBadge(
+                at: item.path,
+                hasBadgeAppState: hadBadgeAppState,
+                restoreOriginalIconState: { [weak self] path in
+                    self?.restoreOriginalIconStateIfAvailable(for: path) ?? false
+                },
+                restoreBadgeAppFolderVisualState: { [weak self] path in
+                    self?.restoreBadgeAppFolderVisualStateIfAvailable(for: path) ?? false
+                },
+                fallbackCleaner: { [weak self] path in
+                    self?.badgeRemovalService.clearBadgeAppFallbackState(at: path)
+                    self?.badgeRemovalService.cleanBadgeAppMetadata(
+                        at: path,
+                        folderMetadataRemover: { [weak self] path in
+                            self?.removeBadgeAppFolderMetadata(at: path)
+                        },
+                        badgeStateRemover: { [weak self] path in
+                            self?.removeBadgeAppBadgeState(at: path)
+                        },
+                        backupIDRemover: { [weak self] path in
+                            self?.removeBadgeAppBackupID(at: path)
+                        }
+                    )
+                }
+            )
+
+            switch removalResult {
+            case .restoredOriginal, .restoredBadgeAppVisualState:
                 refreshRestoredVisualState(for: item)
-            } else if restoreBadgeAppFolderVisualStateIfAvailable(for: item.path) {
-                refreshRestoredVisualState(for: item)
-            } else if hadBadgeAppState {
-                badgeRemovalService.clearBadgeAppFallbackState(at: item.path)
-                badgeRemovalService.cleanBadgeAppMetadata(
-                    at: item.path,
-                    folderMetadataRemover: { [weak self] path in
-                        self?.removeBadgeAppFolderMetadata(at: path)
-                    },
-                    badgeStateRemover: { [weak self] path in
-                        self?.removeBadgeAppBadgeState(at: path)
-                    },
-                    backupIDRemover: { [weak self] path in
-                        self?.removeBadgeAppBackupID(at: path)
-                    }
-                )
+
+            case .clearedBadgeAppFallback:
                 item.folderColorName = nil
                 item.folderColor = nil
                 item.folderSymbolName = nil
@@ -1355,7 +1368,8 @@ class ViewController: NSViewController, NSTextFieldDelegate {
                 item.icon = badgeBaseIconResolver.fallbackIcon(for: item.path)
                 item.showsBadgePreview = true
                 refreshCurrentVisualState(for: item, showsBadgePreview: false)
-            } else {
+
+            case .unchanged:
                 refreshCurrentVisualState(for: item)
             }
         }
