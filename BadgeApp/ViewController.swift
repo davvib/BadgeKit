@@ -41,6 +41,7 @@ class ViewController: NSViewController, NSTextFieldDelegate {
     private let fileIdentityResolver = FileIdentityResolver()
     private let quickLookIconProvider = QuickLookIconProvider()
     private let badgeItemVisualStateUpdater = BadgeItemVisualStateUpdater()
+    private let badgeItemLoadService = BadgeItemLoadService()
     
     private lazy var finderIconStateReader = FinderIconStateReader(
         finderInfoStore: finderInfoStore,
@@ -446,19 +447,13 @@ class ViewController: NSViewController, NSTextFieldDelegate {
         hasVisualCustomization: Bool,
         hasCleanBaseIcon: Bool
     ) -> DroppedItemBadgeStatus {
-        if badgeState != nil, hasCleanBaseIcon {
-            return .badgeAppEditable
-        }
-
-        if hasAppBadge {
-            return .badgeAppAppliedNotEditable
-        }
-
-        if hasCustomIcon || hasVisualCustomization {
-            return .externalCustomIcon
-        }
-
-        return .none
+        badgeItemLoadService.buildBadgeStatus(
+            badgeState: badgeState,
+            hasAppBadge: hasAppBadge,
+            hasCustomIcon: hasCustomIcon,
+            hasVisualCustomization: hasVisualCustomization,
+            hasCleanBaseIcon: hasCleanBaseIcon
+        )
     }
 
     private func writeBadgeAppBadgeState(at path: String) {
@@ -969,19 +964,25 @@ class ViewController: NSViewController, NSTextFieldDelegate {
             let hasCustomIcon = self.hasCustomFinderIcon(at: path)
             let hasVisualCustomization = isDirectory && self.hasFolderVisualCustomization(at: path)
             let baseIcon = self.backedUpIcon(for: path)
-            let badgeStatus = self.badgeStatus(
+            
+            let loadResult = self.badgeItemLoadService.makeLoadResult(
+                path: path,
+                isDirectory: isDirectory,
+                colorInfo: colorInfo,
+                symbolInfo: symbolInfo,
                 badgeState: badgeState,
                 hasAppBadge: hasAppBadge,
                 hasCustomIcon: hasCustomIcon,
                 hasVisualCustomization: hasVisualCustomization,
-                hasCleanBaseIcon: baseIcon != nil
+                baseIcon: baseIcon
             )
 
             DispatchQueue.main.async {
                 guard let item else { return }
                 guard self.items.contains(where: { $0 === item }) else { return }
 
-                if let badgeState, baseIcon != nil {
+                if let badgeState = loadResult.badgeState,
+                   loadResult.baseIconForPreview != nil {
                     self.appDelegate.badgeSize = CGFloat(badgeState.badgeSize)
                     self.badgeOffsetX = CGFloat(badgeState.badgeOffsetX)
                     self.badgeOffsetY = CGFloat(badgeState.badgeOffsetY)
@@ -990,15 +991,13 @@ class ViewController: NSViewController, NSTextFieldDelegate {
                     }
                 }
 
-                item.badgeStatus = badgeStatus
-                item.baseIconForPreview = baseIcon
-                item.folderColorName = colorInfo?.name
-                item.folderColor = colorInfo?.color
-                item.folderSymbolName = symbolInfo.systemName
-                item.folderSymbolText = symbolInfo.text
-                item.cachedPreviewIcon = nil
-                item.cachedPreviewKey = nil
-                print("Folder color for \(path): \(colorInfo?.name ?? "none")")
+                self.badgeItemLoadService.apply(
+                    loadResult,
+                    to: item,
+                    visualStateUpdater: self.badgeItemVisualStateUpdater
+                )
+                
+                print("Folder color for \(path): \(loadResult.colorName ?? "none")")
                 self.dropZoneView.needsDisplay = true
                 self.showPreviewMessage(self.loadMessage(for: item))
             }
