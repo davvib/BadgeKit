@@ -345,22 +345,17 @@ class ViewController: NSViewController, NSTextFieldDelegate {
     }
 
     private func refreshCurrentVisualState(for item: DroppedItem, showsBadgePreview: Bool? = nil) {
-        let colorInfo = folderCustomizationColorInfo(at: item.path)
-        item.folderColorName = colorInfo?.name
-        item.folderColor = colorInfo?.color
-        let symbolInfo = folderSymbolInfo(at: item.path)
-        item.folderSymbolName = symbolInfo.systemName
-        item.folderSymbolText = symbolInfo.text
-        item.icon = customRenderedFolderPreview(for: item) ?? badgeBaseIconResolver.fallbackIcon(for: item.path)
-        item.baseIconForPreview = backedUpIcon(for: item.path)
-        item.badgeStatus = badgeStatus(
-            badgeState: badgeAppBadgeState(at: item.path),
-            hasAppBadge: hasBadgeAppliedByBadgeApp(at: item.path),
-            hasCustomIcon: hasCustomFinderIcon(at: item.path),
-            hasVisualCustomization: item.isDirectory && hasFolderVisualCustomization(at: item.path),
-            hasCleanBaseIcon: item.baseIconForPreview != nil
+        let loadResult = badgeItemLoadService.loadResult(for: item.path)
+
+        badgeItemLoadService.apply(
+            loadResult,
+            to: item,
+            visualStateUpdater: badgeItemVisualStateUpdater
         )
-        badgeItemVisualStateUpdater.invalidatePreviewCache(for: item)
+
+        item.icon = customRenderedFolderPreview(for: item) ??
+            badgeBaseIconResolver.fallbackIcon(for: item.path)
+
         badgeItemVisualStateUpdater.applyPreviewVisibility(showsBadgePreview, to: item)
     }
 
@@ -468,22 +463,6 @@ class ViewController: NSViewController, NSTextFieldDelegate {
     private func hasBadgeAppliedByBadgeApp(at path: String) -> Bool {
         badgeAppBadgeState(at: path) != nil ||
         (iconBackupRecord(for: path) != nil && hasCustomFinderIcon(at: path))
-    }
-
-    private func badgeStatus(
-        badgeState: BadgeAppBadgeState?,
-        hasAppBadge: Bool,
-        hasCustomIcon: Bool,
-        hasVisualCustomization: Bool,
-        hasCleanBaseIcon: Bool
-    ) -> DroppedItemBadgeStatus {
-        badgeItemLoadService.buildBadgeStatus(
-            badgeState: badgeState,
-            hasAppBadge: hasAppBadge,
-            hasCustomIcon: hasCustomIcon,
-            hasVisualCustomization: hasVisualCustomization,
-            hasCleanBaseIcon: hasCleanBaseIcon
-        )
     }
 
     private func writeBadgeAppBadgeState(at path: String) {
