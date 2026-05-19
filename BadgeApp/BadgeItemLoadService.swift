@@ -8,6 +8,10 @@
 import AppKit
 
 final class BadgeItemLoadService {
+    private let dependencies: BadgeItemLoadDependencies
+    init(dependencies: BadgeItemLoadDependencies) {
+            self.dependencies = dependencies
+        }
     
     func makeLoadResult(
         path: String,
@@ -82,27 +86,17 @@ final class BadgeItemLoadService {
         visualStateUpdater.invalidatePreviewCache(for: item)
     }
     
-    func loadResult(
-        for path: String,
-        isDirectoryProvider: (String) -> Bool,
-        colorInfoProvider: (String) -> (name: String, color: NSColor)?,
-        symbolInfoProvider: (String) -> FolderSymbolInfo,
-        badgeStateProvider: (String) -> BadgeAppBadgeState?,
-        hasAppBadgeProvider: (String) -> Bool,
-        hasCustomIconProvider: (String) -> Bool,
-        hasVisualCustomizationProvider: (String) -> Bool,
-        baseIconProvider: (String) -> NSImage?
-    ) -> BadgeItemLoadResult {
-        let isDirectory = isDirectoryProvider(path)
-        let colorInfo = isDirectory ? colorInfoProvider(path) : nil
+    func loadResult(for path: String) -> BadgeItemLoadResult {
+        let isDirectory = dependencies.isDirectoryProvider(path)
+        let colorInfo = isDirectory ? dependencies.colorInfoProvider(path) : nil
         let symbolInfo = isDirectory
-            ? symbolInfoProvider(path)
+            ? dependencies.symbolInfoProvider(path)
             : FolderSymbolInfo(systemName: nil, text: nil)
-        let badgeState = badgeStateProvider(path)
-        let hasAppBadge = hasAppBadgeProvider(path)
-        let hasCustomIcon = hasCustomIconProvider(path)
-        let hasVisualCustomization = isDirectory && hasVisualCustomizationProvider(path)
-        let baseIcon = baseIconProvider(path)
+        let badgeState = dependencies.badgeStateProvider(path)
+        let hasAppBadge = dependencies.hasAppBadgeProvider(path)
+        let hasCustomIcon = dependencies.hasCustomIconProvider(path)
+        let hasVisualCustomization = isDirectory && dependencies.hasVisualCustomizationProvider(path)
+        let baseIcon = dependencies.baseIconProvider(path)
 
         return makeLoadResult(
             path: path,

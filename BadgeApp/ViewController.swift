@@ -41,7 +41,10 @@ class ViewController: NSViewController, NSTextFieldDelegate {
     private let fileIdentityResolver = FileIdentityResolver()
     private let quickLookIconProvider = QuickLookIconProvider()
     private let badgeItemVisualStateUpdater = BadgeItemVisualStateUpdater()
-    private let badgeItemLoadService = BadgeItemLoadService()
+    
+    private lazy var badgeItemLoadService = BadgeItemLoadService(
+        dependencies: badgeItemLoadDependencies
+    )
     
     private lazy var finderIconStateReader = FinderIconStateReader(
         finderInfoStore: finderInfoStore,
@@ -85,6 +88,33 @@ class ViewController: NSViewController, NSTextFieldDelegate {
     private lazy var badgeAppMetadataRepository = BadgeAppMetadataRepository(
         metadataStore: badgeAppMetadataStore,
         xattrStore: xattrStore
+    )
+    
+    private lazy var badgeItemLoadDependencies = BadgeItemLoadDependencies(
+        isDirectoryProvider: { [weak self] path in
+            self?.isDirectory(at: path) ?? false
+        },
+        colorInfoProvider: { [weak self] path in
+            self?.folderCustomizationColorInfo(at: path)
+        },
+        symbolInfoProvider: { [weak self] path in
+            self?.folderSymbolInfo(at: path) ?? FolderSymbolInfo(systemName: nil, text: nil)
+        },
+        badgeStateProvider: { [weak self] path in
+            self?.badgeAppBadgeState(at: path)
+        },
+        hasAppBadgeProvider: { [weak self] path in
+            self?.hasBadgeAppliedByBadgeApp(at: path) ?? false
+        },
+        hasCustomIconProvider: { [weak self] path in
+            self?.hasCustomFinderIcon(at: path) ?? false
+        },
+        hasVisualCustomizationProvider: { [weak self] path in
+            self?.hasFolderVisualCustomization(at: path) ?? false
+        },
+        baseIconProvider: { [weak self] path in
+            self?.backedUpIcon(for: path)
+        }
     )
 
     override func loadView() {
@@ -956,33 +986,7 @@ class ViewController: NSViewController, NSTextFieldDelegate {
         metadataQueue.async { [weak self, weak item] in
             guard let self else { return }
 
-            let loadResult = self.badgeItemLoadService.loadResult(
-                for: path,
-                isDirectoryProvider: { [weak self] path in
-                    self?.isDirectory(at: path) ?? false
-                },
-                colorInfoProvider: { [weak self] path in
-                    self?.folderCustomizationColorInfo(at: path)
-                },
-                symbolInfoProvider: { [weak self] path in
-                    self?.folderSymbolInfo(at: path) ?? FolderSymbolInfo(systemName: nil, text: nil)
-                },
-                badgeStateProvider: { [weak self] path in
-                    self?.badgeAppBadgeState(at: path)
-                },
-                hasAppBadgeProvider: { [weak self] path in
-                    self?.hasBadgeAppliedByBadgeApp(at: path) ?? false
-                },
-                hasCustomIconProvider: { [weak self] path in
-                    self?.hasCustomFinderIcon(at: path) ?? false
-                },
-                hasVisualCustomizationProvider: { [weak self] path in
-                    self?.hasFolderVisualCustomization(at: path) ?? false
-                },
-                baseIconProvider: { [weak self] path in
-                    self?.backedUpIcon(for: path)
-                }
-            )
+            let loadResult = self.badgeItemLoadService.loadResult(for: path)
 
             DispatchQueue.main.async {
                 guard let item else { return }
