@@ -549,10 +549,6 @@ class ViewController: NSViewController, NSTextFieldDelegate {
         xattrStore.setData(data, named: name, at: path)
     }
     
-    private func removeXattr(named name: String, at path: String) {
-        xattrStore.remove(named: name, at: path)
-    }
-    
     func deleteCustomBadge(at index: Int) {
         guard index < customBadges.count else {
             return
@@ -1158,14 +1154,6 @@ class ViewController: NSViewController, NSTextFieldDelegate {
             backedUpIconProvider: { [weak self] path in
                 self?.backedUpIcon(for: path)
             },
-            completion: completion
-        )
-    }
-
-    private func quickLookIcon(for path: String, fallbackIcon: NSImage, completion: @escaping (NSImage) -> Void) {
-        badgeBaseIconResolver.quickLookIcon(
-            for: path,
-            fallbackIcon: fallbackIcon,
             completion: completion
         )
     }
