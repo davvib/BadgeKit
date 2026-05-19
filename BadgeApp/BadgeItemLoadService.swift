@@ -83,9 +83,37 @@ final class BadgeItemLoadService {
     }
     
     func loadResult(
-        for path: String
-    ) -> BadgeItemLoadResult? {
+        for path: String,
+        isDirectoryProvider: (String) -> Bool,
+        colorInfoProvider: (String) -> (name: String, color: NSColor)?,
+        symbolInfoProvider: (String) -> FolderSymbolInfo,
+        badgeStateProvider: (String) -> BadgeAppBadgeState?,
+        hasAppBadgeProvider: (String) -> Bool,
+        hasCustomIconProvider: (String) -> Bool,
+        hasVisualCustomizationProvider: (String) -> Bool,
+        baseIconProvider: (String) -> NSImage?
+    ) -> BadgeItemLoadResult {
+        let isDirectory = isDirectoryProvider(path)
+        let colorInfo = isDirectory ? colorInfoProvider(path) : nil
+        let symbolInfo = isDirectory
+            ? symbolInfoProvider(path)
+            : FolderSymbolInfo(systemName: nil, text: nil)
+        let badgeState = badgeStateProvider(path)
+        let hasAppBadge = hasAppBadgeProvider(path)
+        let hasCustomIcon = hasCustomIconProvider(path)
+        let hasVisualCustomization = isDirectory && hasVisualCustomizationProvider(path)
+        let baseIcon = baseIconProvider(path)
 
-        return nil
+        return makeLoadResult(
+            path: path,
+            isDirectory: isDirectory,
+            colorInfo: colorInfo,
+            symbolInfo: symbolInfo,
+            badgeState: badgeState,
+            hasAppBadge: hasAppBadge,
+            hasCustomIcon: hasCustomIcon,
+            hasVisualCustomization: hasVisualCustomization,
+            baseIcon: baseIcon
+        )
     }
 }

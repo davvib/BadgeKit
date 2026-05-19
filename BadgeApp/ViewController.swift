@@ -956,25 +956,32 @@ class ViewController: NSViewController, NSTextFieldDelegate {
         metadataQueue.async { [weak self, weak item] in
             guard let self else { return }
 
-            let isDirectory = self.isDirectory(at: path)
-            let colorInfo = isDirectory ? self.folderCustomizationColorInfo(at: path) : nil
-            let symbolInfo = isDirectory ? self.folderSymbolInfo(at: path) : FolderSymbolInfo(systemName: nil, text: nil)
-            let badgeState = self.badgeAppBadgeState(at: path)
-            let hasAppBadge = self.hasBadgeAppliedByBadgeApp(at: path)
-            let hasCustomIcon = self.hasCustomFinderIcon(at: path)
-            let hasVisualCustomization = isDirectory && self.hasFolderVisualCustomization(at: path)
-            let baseIcon = self.backedUpIcon(for: path)
-            
-            let loadResult = self.badgeItemLoadService.makeLoadResult(
-                path: path,
-                isDirectory: isDirectory,
-                colorInfo: colorInfo,
-                symbolInfo: symbolInfo,
-                badgeState: badgeState,
-                hasAppBadge: hasAppBadge,
-                hasCustomIcon: hasCustomIcon,
-                hasVisualCustomization: hasVisualCustomization,
-                baseIcon: baseIcon
+            let loadResult = self.badgeItemLoadService.loadResult(
+                for: path,
+                isDirectoryProvider: { [weak self] path in
+                    self?.isDirectory(at: path) ?? false
+                },
+                colorInfoProvider: { [weak self] path in
+                    self?.folderCustomizationColorInfo(at: path)
+                },
+                symbolInfoProvider: { [weak self] path in
+                    self?.folderSymbolInfo(at: path) ?? FolderSymbolInfo(systemName: nil, text: nil)
+                },
+                badgeStateProvider: { [weak self] path in
+                    self?.badgeAppBadgeState(at: path)
+                },
+                hasAppBadgeProvider: { [weak self] path in
+                    self?.hasBadgeAppliedByBadgeApp(at: path) ?? false
+                },
+                hasCustomIconProvider: { [weak self] path in
+                    self?.hasCustomFinderIcon(at: path) ?? false
+                },
+                hasVisualCustomizationProvider: { [weak self] path in
+                    self?.hasFolderVisualCustomization(at: path) ?? false
+                },
+                baseIconProvider: { [weak self] path in
+                    self?.backedUpIcon(for: path)
+                }
             )
 
             DispatchQueue.main.async {
