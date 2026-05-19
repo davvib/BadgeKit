@@ -116,6 +116,10 @@ class ViewController: NSViewController, NSTextFieldDelegate {
             self?.backedUpIcon(for: path)
         }
     )
+    
+    private lazy var folderAppearanceResolver = FolderAppearanceResolver(
+        visualCustomizationReader: folderVisualCustomizationReader
+    )
 
     override func loadView() {
         self.view = NSView(frame: NSRect(x: 0, y: 0, width: 900, height: 650))
@@ -162,60 +166,40 @@ class ViewController: NSViewController, NSTextFieldDelegate {
     }
 
     private func folderCustomizationColorInfo(at path: String) -> (name: String, color: NSColor)? {
-        if let metadata = badgeAppFolderMetadata(at: path),
-           let name = metadata.colorName,
-           let color = folderVisualCustomizationReader.folderColor(named: name) {
-            return (name, color)
-        }
-
-        if let colorInfo = folderVisualCustomizationReader.colorInfo(
-            fromUserTagsData: xattrData(named: "com.apple.metadata:_kMDItemUserTags", at: path)
-        ) {
-            return colorInfo
-        }
-
-        if let data = iconBackupRecord(for: path)?
-            .visualCustomizationXattrs?["com.apple.metadata:_kMDItemUserTags"],
-           let colorInfo = folderVisualCustomizationReader.colorInfo(fromUserTagsData: data) {
-            return colorInfo
-        }
-
-        return nil
+        folderAppearanceResolver.colorInfo(
+            at: path,
+            folderMetadata: badgeAppFolderMetadata(at: path),
+            backupVisualCustomizationXattrs: iconBackupRecord(for: path)?.visualCustomizationXattrs,
+            xattrDataProvider: { [weak self] name, path in
+                self?.xattrData(named: name, at: path)
+            }
+        )
     }
 
     private func folderSymbolInfo(at path: String) -> FolderSymbolInfo {
-        if let metadata = badgeAppFolderMetadata(at: path),
-           metadata.symbolName != nil || metadata.symbolText != nil {
-            return FolderSymbolInfo(systemName: metadata.symbolName, text: metadata.symbolText)
-        }
-
-        for name in folderSymbolXattrNames(at: path) {
-            if let symbolInfo = folderSymbolInfo(fromData: xattrData(named: name, at: path)) {
-                return symbolInfo
+        folderAppearanceResolver.symbolInfo(
+            at: path,
+            backupVisualCustomizationXattrs: iconBackupRecord(for: path)?.visualCustomizationXattrs,
+            xattrNamesProvider: { [weak self] path in
+                self?.xattrNames(at: path) ?? []
+            },
+            xattrDataProvider: { [weak self] name, path in
+                self?.xattrData(named: name, at: path)
             }
-        }
-
-        if let xattrs = iconBackupRecord(for: path)?.visualCustomizationXattrs {
-            for name in folderSymbolXattrNames(in: Array(xattrs.keys)) {
-                if let symbolInfo = folderSymbolInfo(fromData: xattrs[name]) {
-                    return symbolInfo
-                }
-            }
-        }
-
-        return FolderSymbolInfo(systemName: nil, text: nil)
+        )
     }
 
     private func folderSymbolXattrNames(at path: String) -> [String] {
-        folderSymbolXattrNames(in: xattrNames(at: path))
+        folderAppearanceResolver.symbolXattrNames(
+            at: path,
+            xattrNamesProvider: { [weak self] path in
+                self?.xattrNames(at: path) ?? []
+            }
+        )
     }
 
     private func folderSymbolXattrNames(in names: [String]) -> [String] {
-        folderVisualCustomizationReader.symbolXattrNames(from: names)
-    }
-
-    private func folderSymbolInfo(fromData data: Data?) -> FolderSymbolInfo? {
-        folderVisualCustomizationReader.symbolInfo(fromData: data)
+        folderAppearanceResolver.symbolXattrNames(from: names)
     }
 
     private func customRenderedFolderIcon(for item: DroppedItem, badge: NSImage? = nil) -> NSImage? {
@@ -416,17 +400,18 @@ class ViewController: NSViewController, NSTextFieldDelegate {
     }
 
     private func folderVisualCustomizationXattrs(at path: String) -> [String: Data] {
-        guard (try? URL(fileURLWithPath: path).resourceValues(forKeys: [.isDirectoryKey]).isDirectory) == true else {
-            return [:]
-        }
-
-        let names = folderVisualCustomizationReader.visualCustomizationXattrNames(
-            from: xattrNames(at: path)
+        folderAppearanceResolver.visualCustomizationXattrs(
+            at: path,
+            isDirectoryProvider: { [weak self] path in
+                self?.isDirectory(at: path) ?? false
+            },
+            xattrNamesProvider: { [weak self] path in
+                self?.xattrNames(at: path) ?? []
+            },
+            xattrDataProvider: { [weak self] name, path in
+                self?.xattrData(named: name, at: path)
+            }
         )
-
-        return names.reduce(into: [String: Data]()) { result, name in
-            result[name] = xattrData(named: name, at: path)
-        }
     }
 
     private func removeFolderVisualCustomizationXattrs(at path: String) {
