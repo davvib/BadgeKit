@@ -120,6 +120,13 @@ class ViewController: NSViewController, NSTextFieldDelegate {
     private lazy var folderAppearanceResolver = FolderAppearanceResolver(
         visualCustomizationReader: folderVisualCustomizationReader
     )
+    
+    private lazy var folderIconPreparationService = FolderIconPreparationService(
+        visualCustomizationRestorer: folderVisualCustomizationRestorer,
+        finderIconApplier: finderIconApplier,
+        finderIconFileStore: finderIconFileStore,
+        finderInfoStore: finderInfoStore
+    )
 
     override func loadView() {
         self.view = NSView(frame: NSRect(x: 0, y: 0, width: 900, height: 650))
@@ -423,14 +430,12 @@ class ViewController: NSViewController, NSTextFieldDelegate {
     }
 
     private func resetFolderToPlainIconBeforeApplying(at path: String) {
-        guard isDirectory(at: path) else { return }
-
-        removeFolderVisualCustomizationXattrs(at: path)
-        _ = finderIconApplier.clearIcon(at: path)
-        finderIconFileStore.removeFolderIconFile(at: path)
-        clearFinderCustomIconState(at: path)
-
-        finderIconApplier.notifyFileAndParentChanged(at: path)
+        folderIconPreparationService.resetFolderToPlainIconBeforeApplying(
+            at: path,
+            isDirectoryProvider: { [weak self] path in
+                self?.isDirectory(at: path) ?? false
+            }
+        )
     }
 
     private func badgeAppFolderMetadata(at path: String) -> BadgeAppFolderMetadata? {
