@@ -110,5 +110,21 @@ final class FolderAppearanceResolver {
             result[name] = xattrDataProvider(name, path)
         }
     }
+    
+    func badgedFolderIcon(
+        for item: DroppedItem,
+        badge: NSImage,
+        badgeSize: NSSize,
+        customRenderedFolderIconProvider: (DroppedItem, NSImage) -> NSImage?,
+        makeBadgedIconProvider: (NSImage, NSImage, NSSize) -> NSImage
+    ) -> NSImage {
+
+        customRenderedFolderIconProvider(item, badge) ??
+            makeBadgedIconProvider(
+                item.icon,
+                badge,
+                badgeSize
+            )
+    }
 }
 

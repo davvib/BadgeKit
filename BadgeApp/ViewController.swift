@@ -1012,40 +1012,101 @@ class ViewController: NSViewController, NSTextFieldDelegate {
             saveOriginalIconStateIfNeeded(for: item.path)
 
             if isDirectory(at: item.path) {
-                let newIcon = customRenderedFolderIcon(for: item, badge: badge) ??
-                    makeBadgedIcon(originalIcon: item.icon, badge: badge, badgeSize: badgeSize)
-                resetFolderToPlainIconBeforeApplying(at: item.path)
-
-                DispatchQueue.main.asyncAfter(deadline: .now() + folderResetDelay) { [weak self, weak item] in
-                    guard let self,
-                          let item,
-                          self.items.contains(where: { $0 === item }) else { return }
-
-                    if self.writeBadgedIcon(newIcon, to: item, restoreOriginalOnFailure: true) {
-                        item.icon = self.customRenderedFolderPreview(for: item) ?? item.icon
-                        item.showsBadgePreview = true
-                    } else {
-                        self.showIconApplyError(for: item.path)
-                    }
-                    self.dropZoneView.needsDisplay = true
-                }
+                applyBadgeToFolder(
+                    item: item,
+                    badge: badge,
+                    badgeSize: badgeSize
+                )
                 continue
             }
 
-            iconForApplyingBadge(to: item.path) { [weak self] originalIcon in
-                DispatchQueue.main.async {
-                    guard let self else { return }
+            applyBadgeToFile(
+                item: item,
+                badge: badge,
+                badgeSize: badgeSize
+            )
+        }
+    }
+    
+    // MARK: - Helpers de applyBadge
 
-                    let newIcon = self.makeBadgedIcon(originalIcon: originalIcon, badge: badge, badgeSize: badgeSize)
-                    if self.applyBadgedIcon(newIcon, to: item) {
-                        item.icon = originalIcon
-                        item.showsBadgePreview = true
-                    } else {
-                        self.showIconApplyError(for: item.path)
-                    }
-                    self.dropZoneView.needsDisplay = true
+    private func applyBadgeToFile(
+        item: DroppedItem,
+        badge: NSImage,
+        badgeSize: NSSize
+    ) {
+        iconForApplyingBadge(to: item.path) { [weak self] originalIcon in
+            DispatchQueue.main.async {
+                guard let self else { return }
+
+                let newIcon = self.makeBadgedIcon(
+                    originalIcon: originalIcon,
+                    badge: badge,
+                    badgeSize: badgeSize
+                )
+
+                if self.applyBadgedIcon(newIcon, to: item) {
+                    item.icon = originalIcon
+                    item.showsBadgePreview = true
+                } else {
+                    self.showIconApplyError(for: item.path)
                 }
+
+                self.dropZoneView.needsDisplay = true
             }
+        }
+    }
+    
+    private func folderBadgedIcon(
+        for item: DroppedItem,
+        badge: NSImage,
+        badgeSize: NSSize
+    ) -> NSImage {
+        folderAppearanceResolver.badgedFolderIcon(
+            for: item,
+            badge: badge,
+            badgeSize: badgeSize,
+            customRenderedFolderIconProvider: { [weak self] item, badge in
+                self?.customRenderedFolderIcon(for: item, badge: badge)
+            },
+            makeBadgedIconProvider: { [weak self] originalIcon, badge, badgeSize in
+                guard let self else { return originalIcon }
+
+                return self.makeBadgedIcon(
+                    originalIcon: originalIcon,
+                    badge: badge,
+                    badgeSize: badgeSize
+                )
+            }
+        )
+    }
+    
+    private func applyBadgeToFolder(
+        item: DroppedItem,
+        badge: NSImage,
+        badgeSize: NSSize
+    ) {
+        let newIcon = folderBadgedIcon(
+            for: item,
+            badge: badge,
+            badgeSize: badgeSize
+        )
+
+        resetFolderToPlainIconBeforeApplying(at: item.path)
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + folderResetDelay) { [weak self, weak item] in
+            guard let self,
+                  let item,
+                  self.items.contains(where: { $0 === item }) else { return }
+
+            if self.writeBadgedIcon(newIcon, to: item, restoreOriginalOnFailure: true) {
+                item.icon = self.customRenderedFolderPreview(for: item) ?? item.icon
+                item.showsBadgePreview = true
+            } else {
+                self.showIconApplyError(for: item.path)
+            }
+
+            self.dropZoneView.needsDisplay = true
         }
     }
 
