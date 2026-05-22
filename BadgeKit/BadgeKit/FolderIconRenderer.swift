@@ -427,11 +427,13 @@ public final class FolderIconRenderer {
 
     private func drawTrimmed(image: NSImage, in rect: NSRect) {
         guard let trimmedImage = cachedTrimmedImage(image) else {
-            image.draw(in: rect, from: .zero, operation: .sourceOver, fraction: 1.0)
+            let drawRect = aspectFitRect(for: image.size, in: rect)
+            image.draw(in: drawRect, from: .zero, operation: .sourceOver, fraction: 1.0)
             return
         }
 
-        trimmedImage.draw(in: rect, from: .zero, operation: .sourceOver, fraction: 1.0)
+        let drawRect = aspectFitRect(for: trimmedImage.size, in: rect)
+        trimmedImage.draw(in: drawRect, from: .zero, operation: .sourceOver, fraction: 1.0)
     }
 
     private func cachedTrimmedImage(_ image: NSImage) -> NSImage? {
