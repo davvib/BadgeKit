@@ -217,8 +217,8 @@ class ViewController: NSViewController, NSTextFieldDelegate {
             symbolName: item.folderSymbolName,
             symbolText: item.folderSymbolText,
             badge: badge,
-            badgeSize: NSSize(width: appDelegate.badgeSize, height: appDelegate.badgeSize),
-            badgeOffset: NSPoint(x: badgeOffsetX, y: badgeOffsetY)
+            badgeSize: currentBadgeConfiguration.size,
+            badgeOffset: currentBadgeConfiguration.offset
         )
     }
 
@@ -229,8 +229,8 @@ class ViewController: NSViewController, NSTextFieldDelegate {
             symbolName: item.folderSymbolName,
             symbolText: item.folderSymbolText,
             badge: badge,
-            badgeSize: NSSize(width: appDelegate.badgeSize, height: appDelegate.badgeSize),
-            badgeOffset: NSPoint(x: badgeOffsetX, y: badgeOffsetY)
+            badgeSize: currentBadgeConfiguration.size,
+            badgeOffset: currentBadgeConfiguration.offset
         )
     }
 
@@ -243,8 +243,8 @@ class ViewController: NSViewController, NSTextFieldDelegate {
         let previewKey = badgePreviewCacheKeyBuilder.makeKey(
             icon: item.baseIconForPreview ?? item.icon,
             badge: badge,
-            badgeSize: appDelegate.badgeSize,
-            badgeOffset: NSPoint(x: badgeOffsetX, y: badgeOffsetY),
+            badgeSize: currentBadgeConfiguration.size.width,
+            badgeOffset: currentBadgeConfiguration.offset,
             folderColorName: item.folderColorName,
             folderSymbolName: item.folderSymbolName,
             folderSymbolText: item.folderSymbolText
@@ -255,7 +255,7 @@ class ViewController: NSViewController, NSTextFieldDelegate {
             return cachedPreviewIcon
         }
 
-        let badgeSize = NSSize(width: appDelegate.badgeSize, height: appDelegate.badgeSize)
+        let badgeSize = currentBadgeConfiguration.size
         let previewIcon = badgePreviewIconRenderer.renderPreviewIcon(
             baseIcon: item.baseIconForPreview ?? item.icon,
             folderColorName: item.folderColorName,
@@ -264,7 +264,7 @@ class ViewController: NSViewController, NSTextFieldDelegate {
             folderSymbolText: item.folderSymbolText,
             badge: badge,
             badgeSize: badgeSize,
-            badgeOffset: NSPoint(x: badgeOffsetX, y: badgeOffsetY),
+            badgeOffset: currentBadgeConfiguration.offset,
             fallbackRenderer: { [weak self] baseIcon, badge, badgeSize in
                 guard let self else { return baseIcon }
                 return self.makeBadgedIcon(
@@ -295,8 +295,8 @@ class ViewController: NSViewController, NSTextFieldDelegate {
             folderColorName: item.folderColorName,
             icon: item.baseIconForPreview ?? item.icon,
             badge: badge,
-            badgeSize: NSSize(width: appDelegate.badgeSize, height: appDelegate.badgeSize),
-            badgeOffset: NSPoint(x: badgeOffsetX, y: badgeOffsetY)
+            badgeSize: currentBadgeConfiguration.size,
+            badgeOffset: currentBadgeConfiguration.offset
         )
     }
 
@@ -305,7 +305,7 @@ class ViewController: NSViewController, NSTextFieldDelegate {
             isDirectory: item.isDirectory,
             folderColorName: item.folderColorName,
             icon: item.baseIconForPreview ?? item.icon,
-            badgeSize: NSSize(width: appDelegate.badgeSize, height: appDelegate.badgeSize),
+            badgeSize: currentBadgeConfiguration.size,
             placingBadgeCenterAt: center
         )
         badgeOffsetX = offset.x
@@ -325,8 +325,8 @@ class ViewController: NSViewController, NSTextFieldDelegate {
             isDirectory: item.isDirectory,
             icon: item.baseIconForPreview ?? item.icon,
             badge: badge,
-            badgeSize: NSSize(width: appDelegate.badgeSize, height: appDelegate.badgeSize),
-            badgeOffset: NSPoint(x: badgeOffsetX, y: badgeOffsetY)
+            badgeSize: currentBadgeConfiguration.size,
+            badgeOffset: currentBadgeConfiguration.offset
         )
 
         placePreviewBadgeCenter(logicalCenter, for: item)
@@ -1214,10 +1214,7 @@ class ViewController: NSViewController, NSTextFieldDelegate {
         badgeKitRenderer.renderPreview(
             baseIcon: originalIcon,
             badge: badge,
-            configuration: BadgeConfiguration(
-                size: badgeSize,
-                offset: CGPoint(x: badgeOffsetX, y: badgeOffsetY)
-            )
+            configuration: currentBadgeConfiguration
         )
     }
 
@@ -1312,5 +1309,18 @@ class ViewController: NSViewController, NSTextFieldDelegate {
                 self.dropZoneView.needsDisplay = true
             }
         }
+    }
+    
+    private var currentBadgeConfiguration: BadgeConfiguration {
+        BadgeConfiguration(
+            size: CGSize(
+                width: appDelegate.badgeSize,
+                height: appDelegate.badgeSize
+            ),
+            offset: CGPoint(
+                x: badgeOffsetX,
+                y: badgeOffsetY
+            )
+        )
     }
 }
