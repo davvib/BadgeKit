@@ -10,6 +10,14 @@ import Cocoa
 public final class BadgeFileGeometryCalculator {
     private let canvasSize: CGFloat
     
+    private struct AlphaBoundsCacheKey: Hashable {
+        let imageID: ObjectIdentifier
+        let pixelWidth: Int
+        let pixelHeight: Int
+    }
+
+    private var alphaBoundsCache: [AlphaBoundsCacheKey: CGRect] = [:]
+    
     public func logicalCenter(
         forVisibleCenter visibleCenter: NSPoint,
         badge: NSImage,
@@ -75,8 +83,29 @@ public final class BadgeFileGeometryCalculator {
             forProposedRect: nil,
             context: nil,
             hints: nil
-        ),
-        let bounds = alphaBounds(in: cgImage) else {
+        ) else {
+            return rect
+        }
+
+        let cacheKey = AlphaBoundsCacheKey(
+            imageID: ObjectIdentifier(badge),
+            pixelWidth: cgImage.width,
+            pixelHeight: cgImage.height
+        )
+
+        let bounds: CGRect?
+
+        if let cachedBounds = alphaBoundsCache[cacheKey] {
+            bounds = cachedBounds
+        } else {
+            let calculatedBounds = alphaBounds(in: cgImage)
+            if let calculatedBounds {
+                alphaBoundsCache[cacheKey] = calculatedBounds
+            }
+            bounds = calculatedBounds
+        }
+
+        guard let bounds else {
             return rect
         }
 

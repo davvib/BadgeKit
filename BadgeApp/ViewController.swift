@@ -1260,7 +1260,11 @@ class ViewController: NSViewController, NSTextFieldDelegate {
             )
 
             switch removalResult {
-            case .restoredOriginal, .restoredBadgeAppVisualState:
+            case .restoredOriginal:
+                refreshRestoredVisualState(for: item)
+                reloadPreviewIconAfterRemoval(for: item)
+
+            case .restoredBadgeAppVisualState:
                 refreshRestoredVisualState(for: item)
 
             case .clearedBadgeAppFallback:
@@ -1274,6 +1278,7 @@ class ViewController: NSViewController, NSTextFieldDelegate {
 
             case .unchanged:
                 refreshCurrentVisualState(for: item)
+                reloadPreviewIconAfterRemoval(for: item)
             }
         }
 
@@ -1288,5 +1293,21 @@ class ViewController: NSViewController, NSTextFieldDelegate {
         }
 
         dropZoneView.needsDisplay = true
+    }
+    
+    private func reloadPreviewIconAfterRemoval(for item: DroppedItem) {
+        iconForPreviewingBadge(to: item.path) { [weak self, weak item] previewIcon, shouldShowBadgePreview in
+            DispatchQueue.main.async {
+                guard let self, let item else { return }
+                guard self.items.contains(where: { $0 === item }) else { return }
+
+                item.icon = previewIcon
+                self.badgeItemVisualStateUpdater.setPreviewVisibility(
+                    shouldShowBadgePreview,
+                    for: item
+                )
+                self.dropZoneView.needsDisplay = true
+            }
+        }
     }
 }
