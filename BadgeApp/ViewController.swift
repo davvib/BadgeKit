@@ -41,6 +41,7 @@ class ViewController: NSViewController, NSTextFieldDelegate {
     private let fileIdentityResolver = FileIdentityResolver()
     private let quickLookIconProvider = QuickLookIconProvider()
     private let badgeItemVisualStateUpdater = BadgeItemVisualStateUpdater()
+    private let badgeKitRenderer = BadgeKitRenderer()
     
     private lazy var badgeItemLoadService = BadgeItemLoadService(
         dependencies: badgeItemLoadDependencies
@@ -1210,11 +1211,13 @@ class ViewController: NSViewController, NSTextFieldDelegate {
     }
 
     private func makeBadgedIcon(originalIcon: NSImage, badge: NSImage, badgeSize: NSSize) -> NSImage {
-        badgeIconComposer.makeBadgedIcon(
-            originalIcon: originalIcon,
+        badgeKitRenderer.renderPreview(
+            baseIcon: originalIcon,
             badge: badge,
-            badgeSize: badgeSize,
-            badgeOffset: NSPoint(x: badgeOffsetX, y: badgeOffsetY)
+            configuration: BadgeConfiguration(
+                size: badgeSize,
+                offset: CGPoint(x: badgeOffsetX, y: badgeOffsetY)
+            )
         )
     }
 
