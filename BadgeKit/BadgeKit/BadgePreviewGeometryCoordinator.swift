@@ -11,12 +11,9 @@ public final class BadgePreviewGeometryCoordinator {
     private let folderRenderer: FolderIconRenderer
     private let fileGeometryCalculator: BadgeFileGeometryCalculator
 
-    public init(
-        folderRenderer: FolderIconRenderer = FolderIconRenderer(),
-        fileGeometryCalculator: BadgeFileGeometryCalculator = BadgeFileGeometryCalculator()
-    ) {
-        self.folderRenderer = folderRenderer
-        self.fileGeometryCalculator = fileGeometryCalculator
+    public init() {
+        self.folderRenderer = FolderIconRenderer()
+        self.fileGeometryCalculator = BadgeFileGeometryCalculator()
     }
     
     public func geometry(

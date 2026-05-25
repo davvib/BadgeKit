@@ -7,7 +7,7 @@
 
 import Cocoa
 
-public final class BadgePreviewCacheKeyBuilder {
+final class BadgePreviewCacheKeyBuilder {
     public init() {}
 
     public func makeKey(

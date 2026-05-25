@@ -7,7 +7,7 @@
 
 import Cocoa
 
-public final class BadgeFileGeometryCalculator {
+final class BadgeFileGeometryCalculator {
     private let canvasSize: CGFloat
     
     private struct AlphaBoundsCacheKey: Hashable {
@@ -18,7 +18,7 @@ public final class BadgeFileGeometryCalculator {
 
     private var alphaBoundsCache: [AlphaBoundsCacheKey: CGRect] = [:]
     
-    public func logicalCenter(
+    func logicalCenter(
         forVisibleCenter visibleCenter: NSPoint,
         badge: NSImage,
         currentRect: NSRect
@@ -34,11 +34,11 @@ public final class BadgeFileGeometryCalculator {
         )
     }
 
-    public init(canvasSize: CGFloat = 1024) {
+    init(canvasSize: CGFloat = 1024) {
         self.canvasSize = canvasSize
     }
 
-    public func badgeRect(
+    func badgeRect(
         for icon: NSImage,
         badgeSize: NSSize,
         badgeOffset: NSPoint
@@ -59,7 +59,7 @@ public final class BadgeFileGeometryCalculator {
         )
     }
 
-    public func badgeOffset(
+    func badgeOffset(
         for icon: NSImage,
         badgeSize: NSSize,
         placingBadgeCenterAt center: NSPoint
@@ -78,7 +78,7 @@ public final class BadgeFileGeometryCalculator {
         )
     }
 
-    public func visibleBadgeRect(for badge: NSImage, in rect: NSRect) -> NSRect {
+    func visibleBadgeRect(for badge: NSImage, in rect: NSRect) -> NSRect {
         guard let cgImage = badge.cgImage(
             forProposedRect: nil,
             context: nil,

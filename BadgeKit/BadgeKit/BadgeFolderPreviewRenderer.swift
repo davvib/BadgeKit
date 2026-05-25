@@ -7,14 +7,14 @@
 
 import Cocoa
 
-public final class BadgeFolderPreviewRenderer {
+final class BadgeFolderPreviewRenderer {
     private let folderRenderer: FolderIconRenderer
 
-    public init(folderRenderer: FolderIconRenderer = FolderIconRenderer()) {
+    init(folderRenderer: FolderIconRenderer = FolderIconRenderer()) {
         self.folderRenderer = folderRenderer
     }
 
-    public func renderIcon(
+    func renderIcon(
         colorName: String?,
         fallbackColor: NSColor?,
         symbolName: String?,
@@ -36,7 +36,7 @@ public final class BadgeFolderPreviewRenderer {
         )
     }
 
-    public func renderPreview(
+    func renderPreview(
         colorName: String?,
         fallbackColor: NSColor?,
         symbolName: String?,

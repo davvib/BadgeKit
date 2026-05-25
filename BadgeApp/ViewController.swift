@@ -23,10 +23,6 @@ class ViewController: NSViewController, NSTextFieldDelegate {
     private var previewMessageLabel: NSTextField?
     private var previewMessageTimer: Timer?
     private let badgePreviewGeometryCoordinator = BadgePreviewGeometryCoordinator()
-    private let badgeFolderPreviewRenderer = BadgeFolderPreviewRenderer()
-    private let badgePreviewCacheKeyBuilder = BadgePreviewCacheKeyBuilder()
-    private let badgePreviewIconRenderer = BadgePreviewIconRenderer()
-    private let badgeIconComposer = BadgeIconComposer()
     private let badgeImageNormalizer = BadgeImageNormalizer()
     private let customBadgeStore = CustomBadgeStore()
     private let iconBackupStore = IconBackupStore()
@@ -36,12 +32,12 @@ class ViewController: NSViewController, NSTextFieldDelegate {
     private let previewCacheInvalidator = PreviewCacheInvalidator()
     private let xattrStore = XattrStore()
     private let finderIconFileStore = FinderIconFileStore()
-    private lazy var finderInfoStore = FinderInfoStore(xattrStore: xattrStore)
     private let finderIconApplier = FinderIconApplier()
     private let fileIdentityResolver = FileIdentityResolver()
     private let quickLookIconProvider = QuickLookIconProvider()
     private let badgeItemVisualStateUpdater = BadgeItemVisualStateUpdater()
     private let badgeKitRenderer = BadgeKitRenderer()
+    private lazy var finderInfoStore = FinderInfoStore(xattrStore: xattrStore)
     
     private lazy var badgeItemLoadService = BadgeItemLoadService(
         dependencies: badgeItemLoadDependencies
@@ -211,26 +207,24 @@ class ViewController: NSViewController, NSTextFieldDelegate {
     }
 
     private func customRenderedFolderIcon(for item: DroppedItem, badge: NSImage? = nil) -> NSImage? {
-        badgeFolderPreviewRenderer.renderIcon(
+        badgeKitRenderer.renderFolderIcon(
             colorName: item.folderColorName,
             fallbackColor: item.folderColor,
             symbolName: item.folderSymbolName,
             symbolText: item.folderSymbolText,
             badge: badge,
-            badgeSize: currentBadgeConfiguration.size,
-            badgeOffset: currentBadgeConfiguration.offset
+            configuration: currentBadgeConfiguration
         )
     }
 
     private func customRenderedFolderPreview(for item: DroppedItem, badge: NSImage? = nil) -> NSImage? {
-        badgeFolderPreviewRenderer.renderPreview(
+        badgeKitRenderer.renderFolderPreview(
             colorName: item.folderColorName,
             fallbackColor: item.folderColor,
             symbolName: item.folderSymbolName,
             symbolText: item.folderSymbolText,
             badge: badge,
-            badgeSize: currentBadgeConfiguration.size,
-            badgeOffset: currentBadgeConfiguration.offset
+            configuration: currentBadgeConfiguration
         )
     }
 
@@ -240,11 +234,10 @@ class ViewController: NSViewController, NSTextFieldDelegate {
             return customRenderedFolderPreview(for: item) ?? item.icon
         }
 
-        let previewKey = badgePreviewCacheKeyBuilder.makeKey(
-            icon: item.baseIconForPreview ?? item.icon,
+        let previewKey = badgeKitRenderer.makePreviewCacheKey(
+            baseIcon: item.baseIconForPreview ?? item.icon,
             badge: badge,
-            badgeSize: currentBadgeConfiguration.size.width,
-            badgeOffset: currentBadgeConfiguration.offset,
+            configuration: currentBadgeConfiguration,
             folderColorName: item.folderColorName,
             folderSymbolName: item.folderSymbolName,
             folderSymbolText: item.folderSymbolText
@@ -255,16 +248,14 @@ class ViewController: NSViewController, NSTextFieldDelegate {
             return cachedPreviewIcon
         }
 
-        let badgeSize = currentBadgeConfiguration.size
-        let previewIcon = badgePreviewIconRenderer.renderPreviewIcon(
+        let previewIcon = badgeKitRenderer.renderPreviewIcon(
             baseIcon: item.baseIconForPreview ?? item.icon,
             folderColorName: item.folderColorName,
             folderColor: item.folderColor,
             folderSymbolName: item.folderSymbolName,
             folderSymbolText: item.folderSymbolText,
             badge: badge,
-            badgeSize: badgeSize,
-            badgeOffset: currentBadgeConfiguration.offset,
+            configuration: currentBadgeConfiguration,
             fallbackRenderer: { [weak self] baseIcon, badge, badgeSize in
                 guard let self else { return baseIcon }
                 return self.makeBadgedIcon(

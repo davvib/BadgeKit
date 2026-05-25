@@ -7,11 +7,11 @@
 
 import Cocoa
 
-public final class BadgeIconComposer {
+final class BadgeIconComposer {
     private let iconSizes: [Int]
     private let canvasPixelSize: CGFloat
 
-    public init(
+    init(
         iconSizes: [Int] = [16, 32, 64, 128, 256, 512, 1024],
         canvasPixelSize: CGFloat = 1024
     ) {
@@ -19,7 +19,7 @@ public final class BadgeIconComposer {
         self.canvasPixelSize = canvasPixelSize
     }
 
-    public func makeBadgedIcon(
+    func makeBadgedIcon(
         originalIcon: NSImage,
         badge: NSImage,
         badgeSize: NSSize,
