@@ -13,6 +13,7 @@ public final class BadgeKitRenderer {
     private let cacheKeyBuilder = BadgePreviewCacheKeyBuilder()
     private let previewIconRenderer = BadgePreviewIconRenderer()
     private let folderPreviewRenderer = BadgeFolderPreviewRenderer()
+    private let geometryCoordinator = BadgePreviewGeometryCoordinator()
 
     public init() {}
 
@@ -104,6 +105,56 @@ public final class BadgeKitRenderer {
             fallbackColor: fallbackColor,
             symbolName: symbolName,
             symbolText: symbolText,
+            badge: badge,
+            badgeSize: configuration.size,
+            badgeOffset: configuration.offset
+        )
+    }
+    
+    public func badgeGeometry(
+        isDirectory: Bool,
+        folderColorName: String?,
+        baseIcon: NSImage,
+        badge: NSImage,
+        configuration: BadgeConfiguration
+    ) -> BadgeGeometry {
+        geometryCoordinator.geometry(
+            isDirectory: isDirectory,
+            folderColorName: folderColorName,
+            icon: baseIcon,
+            badge: badge,
+            badgeSize: configuration.size,
+            badgeOffset: configuration.offset
+        )
+    }
+    
+    public func badgeOffset(
+        isDirectory: Bool,
+        folderColorName: String?,
+        baseIcon: NSImage,
+        configuration: BadgeConfiguration,
+        placingBadgeCenterAt center: CGPoint
+    ) -> CGPoint {
+        geometryCoordinator.offset(
+            isDirectory: isDirectory,
+            folderColorName: folderColorName,
+            icon: baseIcon,
+            badgeSize: configuration.size,
+            placingBadgeCenterAt: center
+        )
+    }
+    
+    public func logicalBadgeCenter(
+        forVisibleCenter visibleCenter: CGPoint,
+        isDirectory: Bool,
+        baseIcon: NSImage,
+        badge: NSImage,
+        configuration: BadgeConfiguration
+    ) -> CGPoint {
+        geometryCoordinator.logicalCenter(
+            forVisibleCenter: visibleCenter,
+            isDirectory: isDirectory,
+            icon: baseIcon,
             badge: badge,
             badgeSize: configuration.size,
             badgeOffset: configuration.offset

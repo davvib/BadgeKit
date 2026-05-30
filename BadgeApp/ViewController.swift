@@ -22,7 +22,6 @@ class ViewController: NSViewController, NSTextFieldDelegate {
     private var previewMessageView: NSView?
     private var previewMessageLabel: NSTextField?
     private var previewMessageTimer: Timer?
-    private let badgePreviewGeometryCoordinator = BadgePreviewGeometryCoordinator()
     private let badgeImageNormalizer = BadgeImageNormalizer()
     private let customBadgeStore = CustomBadgeStore()
     private let iconBackupStore = IconBackupStore()
@@ -281,22 +280,21 @@ class ViewController: NSViewController, NSTextFieldDelegate {
             return nil
         }
 
-        return badgePreviewGeometryCoordinator.geometry(
+        return badgeKitRenderer.badgeGeometry(
             isDirectory: item.isDirectory,
             folderColorName: item.folderColorName,
-            icon: item.baseIconForPreview ?? item.icon,
+            baseIcon: item.baseIconForPreview ?? item.icon,
             badge: badge,
-            badgeSize: currentBadgeConfiguration.size,
-            badgeOffset: currentBadgeConfiguration.offset
+            configuration: currentBadgeConfiguration
         )
     }
 
     func placePreviewBadgeCenter(_ center: NSPoint, for item: DroppedItem) {
-        let offset = badgePreviewGeometryCoordinator.offset(
+        let offset = badgeKitRenderer.badgeOffset(
             isDirectory: item.isDirectory,
             folderColorName: item.folderColorName,
-            icon: item.baseIconForPreview ?? item.icon,
-            badgeSize: currentBadgeConfiguration.size,
+            baseIcon: item.baseIconForPreview ?? item.icon,
+            configuration: currentBadgeConfiguration,
             placingBadgeCenterAt: center
         )
         badgeOffsetX = offset.x
@@ -311,13 +309,12 @@ class ViewController: NSViewController, NSTextFieldDelegate {
             return
         }
 
-        let logicalCenter = badgePreviewGeometryCoordinator.logicalCenter(
+        let logicalCenter = badgeKitRenderer.logicalBadgeCenter(
             forVisibleCenter: center,
             isDirectory: item.isDirectory,
-            icon: item.baseIconForPreview ?? item.icon,
+            baseIcon: item.baseIconForPreview ?? item.icon,
             badge: badge,
-            badgeSize: currentBadgeConfiguration.size,
-            badgeOffset: currentBadgeConfiguration.offset
+            configuration: currentBadgeConfiguration
         )
 
         placePreviewBadgeCenter(logicalCenter, for: item)

@@ -7,16 +7,16 @@
 
 import Cocoa
 
-public final class BadgePreviewGeometryCoordinator {
+final class BadgePreviewGeometryCoordinator {
     private let folderRenderer: FolderIconRenderer
     private let fileGeometryCalculator: BadgeFileGeometryCalculator
 
-    public init() {
+    init() {
         self.folderRenderer = FolderIconRenderer()
         self.fileGeometryCalculator = BadgeFileGeometryCalculator()
     }
     
-    public func geometry(
+    func geometry(
         isDirectory: Bool,
         folderColorName: String?,
         icon: NSImage,
@@ -53,7 +53,7 @@ public final class BadgePreviewGeometryCoordinator {
         )
     }
     
-    public func offset(
+    func offset(
         isDirectory: Bool,
         folderColorName: String?,
         icon: NSImage,
@@ -75,7 +75,7 @@ public final class BadgePreviewGeometryCoordinator {
         )
     }
     
-    public func logicalCenter(
+    func logicalCenter(
         forVisibleCenter visibleCenter: NSPoint,
         isDirectory: Bool,
         icon: NSImage,
