@@ -42,9 +42,7 @@ class ViewController: NSViewController, NSTextFieldDelegate {
         finderIconFileStore: finderIconFileStore
     )
     
-    private lazy var folderVisualCustomizationReader = FolderVisualCustomizationReader(
-        xattrStore: xattrStore
-    )
+    private lazy var folderVisualCustomizationReader = FolderVisualCustomizationReader()
     
     private lazy var folderVisualCustomizationRestorer = FolderVisualCustomizationRestorer(
         xattrStore: xattrStore,

@@ -1,42 +1,41 @@
 //
 //  FolderVisualCustomizationReader.swift
-//  BadgeApp
+//  BadgeKit
 //
-//  Created by David Vilches on 17/05/2026.
+//  Created by David Vilches on 21/06/2026.
 //
 
-import Cocoa
-import BadgeKit
+import AppKit
 
-final class FolderVisualCustomizationReader {
-    private let xattrStore: XattrStore
+public final class FolderVisualCustomizationReader {
+    public init() {}
 
-    init(xattrStore: XattrStore) {
-        self.xattrStore = xattrStore
-    }
-    
-    func isVisualCustomizationXattr(_ name: String) -> Bool {
+    public func isVisualCustomizationXattr(_ name: String) -> Bool {
         name == "com.apple.metadata:_kMDItemUserTags" ||
         name.hasPrefix("com.apple.metadata:kMDLabel_") ||
         name.hasPrefix("com.apple.icon.")
     }
-    
-    func hasVisualCustomization(
+
+    public func hasVisualCustomization(
         at path: String,
         xattrNames: [String]
     ) -> Bool {
         xattrNames.contains(where: isVisualCustomizationXattr)
     }
-    
-    func visualCustomizationXattrNames(
+
+    public func visualCustomizationXattrNames(
         from names: [String]
     ) -> [String] {
         names.filter(isVisualCustomizationXattr)
     }
-    
-    func colorInfo(fromUserTagsData data: Data?) -> (name: String, color: NSColor)? {
+
+    public func colorInfo(fromUserTagsData data: Data?) -> (name: String, color: NSColor)? {
         guard let data,
-              let tags = try? PropertyListSerialization.propertyList(from: data, options: [], format: nil) as? [String] else {
+              let tags = try? PropertyListSerialization.propertyList(
+                from: data,
+                options: [],
+                format: nil
+              ) as? [String] else {
             return nil
         }
 
@@ -54,7 +53,7 @@ final class FolderVisualCustomizationReader {
         return nil
     }
 
-    func folderColor(named name: String) -> NSColor? {
+    public func folderColor(named name: String) -> NSColor? {
         switch name.folding(options: [.diacriticInsensitive, .caseInsensitive], locale: .current) {
         case "roja", "rojo", "red":
             return NSColor(red: 1.00, green: 0.32, blue: 0.28, alpha: 1)
@@ -78,8 +77,8 @@ final class FolderVisualCustomizationReader {
             return nil
         }
     }
-    
-    func isEmojiFolderSymbol(_ value: String) -> Bool {
+
+    public func isEmojiFolderSymbol(_ value: String) -> Bool {
         let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty, trimmed.count <= 8 else {
             return false
@@ -93,8 +92,8 @@ final class FolderVisualCustomizationReader {
             scalar.value == 0xfe0f
         }
     }
-    
-    func symbolXattrNames(from names: [String]) -> [String] {
+
+    public func symbolXattrNames(from names: [String]) -> [String] {
         let preferred = ["com.apple.icon.folder#S"]
         let iconNames = names
             .filter { $0.hasPrefix("com.apple.icon.folder") }
@@ -102,8 +101,8 @@ final class FolderVisualCustomizationReader {
 
         return preferred + iconNames.filter { !preferred.contains($0) }
     }
-    
-    func symbolInfo(fromData data: Data?) -> FolderSymbolInfo? {
+
+    public func symbolInfo(fromData data: Data?) -> FolderSymbolInfo? {
         guard let data else {
             return nil
         }
@@ -136,4 +135,3 @@ final class FolderVisualCustomizationReader {
         return nil
     }
 }
-

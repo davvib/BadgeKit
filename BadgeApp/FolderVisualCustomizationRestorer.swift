@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import BadgeKit
 
 final class FolderVisualCustomizationRestorer {
     private let xattrStore: XattrStore
