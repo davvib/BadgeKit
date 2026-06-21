@@ -6,6 +6,7 @@
 //
 
 import AppKit
+import BadgeKit
 
 final class FolderAppearanceResolver {
     private let visualCustomizationReader: FolderVisualCustomizationReader

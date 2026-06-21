@@ -6,6 +6,7 @@
 //
 
 import AppKit
+import BadgeKit
 
 final class BadgeItemLoadService {
     private let dependencies: BadgeItemLoadDependencies

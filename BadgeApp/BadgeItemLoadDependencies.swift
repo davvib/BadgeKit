@@ -6,6 +6,7 @@
 //
 
 import AppKit
+import BadgeKit
 
 struct BadgeItemLoadDependencies {
     let isDirectoryProvider: (String) -> Bool

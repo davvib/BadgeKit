@@ -4,11 +4,6 @@ import QuickLookThumbnailing
 import UniformTypeIdentifiers
 import BadgeKit
 
-struct FolderSymbolInfo {
-    let systemName: String?
-    let text: String?
-}
-
 class ViewController: NSViewController, NSTextFieldDelegate {
     weak var appDelegate: AppDelegate!
     var dropZoneView: DropZoneView!
