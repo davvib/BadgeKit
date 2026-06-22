@@ -6,7 +6,12 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		E86AB1172FE97EE200546E10 /* Carpetas in Resources */ = {isa = PBXBuildFile; fileRef = E86AB1162FE97EE200546E10 /* Carpetas */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
+		E86AB1162FE97EE200546E10 /* Carpetas */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Carpetas; path = ../Carpetas; sourceTree = "<group>"; };
 		E8B7F4992FB335DD0007E34A /* BadgeKit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = BadgeKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -32,6 +37,7 @@
 		E8B7F48F2FB335DD0007E34A = {
 			isa = PBXGroup;
 			children = (
+				E86AB1162FE97EE200546E10 /* Carpetas */,
 				E8B7F49B2FB335DD0007E34A /* BadgeKit */,
 				E8B7F49A2FB335DD0007E34A /* Products */,
 			);
@@ -120,6 +126,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E86AB1172FE97EE200546E10 /* Carpetas in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

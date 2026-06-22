@@ -208,6 +208,16 @@ final class FolderIconRenderer {
     private func folderAssetURL(asset: FolderAsset, size: Int) -> URL? {
         let fileName = "\(asset.filePrefix)\(size)"
 
+        let bundle = Bundle(for: BundleToken.self)
+
+        if let url = bundle.url(
+            forResource: fileName,
+            withExtension: "png",
+            subdirectory: "Carpetas/\(asset.directoryName)"
+        ) {
+            return url
+        }
+
         if let url = Bundle.main.url(
             forResource: fileName,
             withExtension: "png",
@@ -517,3 +527,5 @@ final class FolderIconRenderer {
         )
     }
 }
+
+private final class BundleToken {}
