@@ -1,44 +1,43 @@
 //
 //  FolderAppearanceResolver.swift
-//  BadgeApp
+//  BadgeKit
 //
-//  Created by David Vilches on 19/05/2026.
+//  Created by David Vilches on 22/06/2026.
 //
 
 import AppKit
-import BadgeKit
 
-final class FolderAppearanceResolver {
+public final class FolderAppearanceResolver {
     private let visualCustomizationReader: FolderVisualCustomizationReader
 
-    init(visualCustomizationReader: FolderVisualCustomizationReader) {
+    public init(visualCustomizationReader: FolderVisualCustomizationReader) {
         self.visualCustomizationReader = visualCustomizationReader
     }
     
-    func colorInfo(fromUserTagsData data: Data?) -> (name: String, color: NSColor)? {
+    public func colorInfo(fromUserTagsData data: Data?) -> (name: String, color: NSColor)? {
         visualCustomizationReader.colorInfo(fromUserTagsData: data)
     }
     
-    func folderColor(named name: String) -> NSColor? {
+    public func folderColor(named name: String) -> NSColor? {
         visualCustomizationReader.folderColor(named: name)
     }
     
-    func symbolXattrNames(from names: [String]) -> [String] {
+    public func symbolXattrNames(from names: [String]) -> [String] {
         visualCustomizationReader.symbolXattrNames(from: names)
     }
     
-    func symbolInfo(fromData data: Data?) -> FolderSymbolInfo? {
+    public func symbolInfo(fromData data: Data?) -> FolderSymbolInfo? {
         visualCustomizationReader.symbolInfo(fromData: data)
     }
     
-    func symbolXattrNames(
+    public func symbolXattrNames(
         at path: String,
         xattrNamesProvider: (String) -> [String]
     ) -> [String] {
         symbolXattrNames(from: xattrNamesProvider(path))
     }
     
-    func symbolInfo(
+    public func symbolInfo(
         at path: String,
         backupVisualCustomizationXattrs: [String: Data]?,
         xattrNamesProvider: (String) -> [String],
@@ -63,7 +62,7 @@ final class FolderAppearanceResolver {
         return FolderSymbolInfo(systemName: nil, text: nil)
     }
     
-    func colorInfo(
+    public func colorInfo(
         at path: String,
         folderMetadata: FolderAppearanceMetadata?,
         backupVisualCustomizationXattrs: [String: Data]?,
@@ -93,7 +92,7 @@ final class FolderAppearanceResolver {
         return nil
     }
     
-    func visualCustomizationXattrs(
+    public func visualCustomizationXattrs(
         at path: String,
         isDirectoryProvider: (String) -> Bool,
         xattrNamesProvider: (String) -> [String],
@@ -112,4 +111,5 @@ final class FolderAppearanceResolver {
         }
     }
 }
+
 
