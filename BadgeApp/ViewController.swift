@@ -162,9 +162,17 @@ class ViewController: NSViewController, NSTextFieldDelegate {
     }
 
     private func folderCustomizationColorInfo(at path: String) -> (name: String, color: NSColor)? {
-        folderAppearanceResolver.colorInfo(
+        let metadata = badgeAppFolderMetadata(at: path).map {
+            FolderAppearanceMetadata(
+                colorName: $0.colorName,
+                symbolName: $0.symbolName,
+                symbolText: $0.symbolText
+            )
+        }
+
+        return folderAppearanceResolver.colorInfo(
             at: path,
-            folderMetadata: badgeAppFolderMetadata(at: path),
+            folderMetadata: metadata,
             backupVisualCustomizationXattrs: iconBackupRecord(for: path)?.visualCustomizationXattrs,
             xattrDataProvider: { [weak self] name, path in
                 self?.xattrData(named: name, at: path)
@@ -1044,23 +1052,12 @@ class ViewController: NSViewController, NSTextFieldDelegate {
         badge: NSImage,
         badgeSize: NSSize
     ) -> NSImage {
-        folderAppearanceResolver.badgedFolderIcon(
-            for: item,
-            badge: badge,
-            badgeSize: badgeSize,
-            customRenderedFolderIconProvider: { [weak self] item, badge in
-                self?.customRenderedFolderIcon(for: item, badge: badge)
-            },
-            makeBadgedIconProvider: { [weak self] originalIcon, badge, badgeSize in
-                guard let self else { return originalIcon }
-
-                return self.makeBadgedIcon(
-                    originalIcon: originalIcon,
-                    badge: badge,
-                    badgeSize: badgeSize
-                )
-            }
-        )
+        customRenderedFolderIcon(for: item, badge: badge) ??
+            makeBadgedIcon(
+                originalIcon: item.icon,
+                badge: badge,
+                badgeSize: badgeSize
+            )
     }
     
     private func applyBadgeToFolder(

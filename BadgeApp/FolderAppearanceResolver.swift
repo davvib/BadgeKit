@@ -65,7 +65,7 @@ final class FolderAppearanceResolver {
     
     func colorInfo(
         at path: String,
-        folderMetadata: BadgeAppFolderMetadata?,
+        folderMetadata: FolderAppearanceMetadata?,
         backupVisualCustomizationXattrs: [String: Data]?,
         xattrDataProvider: (String, String) -> Data?
     ) -> (name: String, color: NSColor)? {
@@ -110,22 +110,6 @@ final class FolderAppearanceResolver {
         return names.reduce(into: [String: Data]()) { result, name in
             result[name] = xattrDataProvider(name, path)
         }
-    }
-    
-    func badgedFolderIcon(
-        for item: DroppedItem,
-        badge: NSImage,
-        badgeSize: NSSize,
-        customRenderedFolderIconProvider: (DroppedItem, NSImage) -> NSImage?,
-        makeBadgedIconProvider: (NSImage, NSImage, NSSize) -> NSImage
-    ) -> NSImage {
-
-        customRenderedFolderIconProvider(item, badge) ??
-            makeBadgedIconProvider(
-                item.icon,
-                badge,
-                badgeSize
-            )
     }
 }
 
