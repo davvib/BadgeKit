@@ -31,6 +31,7 @@ class ViewController: NSViewController, NSTextFieldDelegate {
     private let quickLookIconProvider = QuickLookIconProvider()
     private let badgeItemVisualStateUpdater = BadgeItemVisualStateUpdater()
     private let badgeKitRenderer = BadgeKitRenderer()
+    private let folderCustomizationPreparer = FolderCustomizationPreparer()
     private lazy var finderInfoStore = FinderInfoStore(xattrStore: xattrStore)
     
     private lazy var badgeItemLoadService = BadgeItemLoadService(
@@ -108,13 +109,6 @@ class ViewController: NSViewController, NSTextFieldDelegate {
     
     private lazy var folderAppearanceResolver = FolderAppearanceResolver(
         visualCustomizationReader: folderVisualCustomizationReader
-    )
-    
-    private lazy var folderIconPreparationService = FolderIconPreparationService(
-        visualCustomizationRestorer: folderVisualCustomizationRestorer,
-        finderIconApplier: finderIconApplier,
-        finderIconFileStore: finderIconFileStore,
-        finderInfoStore: finderInfoStore
     )
 
     override func loadView() {
@@ -420,12 +414,7 @@ class ViewController: NSViewController, NSTextFieldDelegate {
     }
 
     private func resetFolderToPlainIconBeforeApplying(at path: String) {
-        folderIconPreparationService.resetFolderToPlainIconBeforeApplying(
-            at: path,
-            isDirectoryProvider: { [weak self] path in
-                self?.isDirectory(at: path) ?? false
-            }
-        )
+        folderCustomizationPreparer.prepareFolderForCustomIcon(at: path)
     }
 
     private func badgeAppFolderMetadata(at path: String) -> BadgeAppFolderMetadata? {
