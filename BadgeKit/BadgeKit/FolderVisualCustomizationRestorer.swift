@@ -6,13 +6,12 @@
 //
 
 import Foundation
-import BadgeKit
 
-final class FolderVisualCustomizationRestorer {
+public final class FolderVisualCustomizationRestorer {
     private let xattrStore: XattrStore
     private let reader: FolderVisualCustomizationReader
 
-    init(
+    public init(
         xattrStore: XattrStore,
         reader: FolderVisualCustomizationReader
     ) {
@@ -20,7 +19,7 @@ final class FolderVisualCustomizationRestorer {
         self.reader = reader
     }
 
-    func removeVisualCustomizationXattrs(at path: String) {
+    public func removeVisualCustomizationXattrs(at path: String) {
         let names = reader.visualCustomizationXattrNames(
             from: xattrStore.names(at: path)
         )
@@ -33,7 +32,7 @@ final class FolderVisualCustomizationRestorer {
         }
     }
 
-    func restoreVisualCustomizationXattrs(_ xattrs: [String: Data]?, to path: String) {
+    public func restoreVisualCustomizationXattrs(_ xattrs: [String: Data]?, to path: String) {
         guard let xattrs else {
             return
         }

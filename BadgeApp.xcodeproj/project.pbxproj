@@ -18,7 +18,6 @@
 		E820F3812FBC54E60082601E /* BadgeItemLoadService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E820F3802FBC54E60082601E /* BadgeItemLoadService.swift */; };
 		E821EDAF2FBC9D53009E8B86 /* BadgeItemLoadDependencies.swift in Sources */ = {isa = PBXBuildFile; fileRef = E821EDAE2FBC9D53009E8B86 /* BadgeItemLoadDependencies.swift */; };
 		E82ED8582FBA470400AF785D /* BadgeApplyService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E82ED8572FBA470400AF785D /* BadgeApplyService.swift */; };
-		E84BA81D2FB9CFD50073F897 /* FolderVisualCustomizationRestorer.swift in Sources */ = {isa = PBXBuildFile; fileRef = E84BA81C2FB9CFD50073F897 /* FolderVisualCustomizationRestorer.swift */; };
 		E855C0712FBAFD4C00A31357 /* BadgeRemovalService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E855C0702FBAFD4C00A31357 /* BadgeRemovalService.swift */; };
 		E855C0732FBB057F00A31357 /* BadgeItemVisualStateUpdater.swift in Sources */ = {isa = PBXBuildFile; fileRef = E855C0722FBB057F00A31357 /* BadgeItemVisualStateUpdater.swift */; };
 		E88E3C8E2FB39390008D1CEE /* BadgeKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E88E3C8D2FB39390008D1CEE /* BadgeKit.framework */; };
@@ -44,7 +43,6 @@
 		E820F3802FBC54E60082601E /* BadgeItemLoadService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BadgeItemLoadService.swift; sourceTree = "<group>"; };
 		E821EDAE2FBC9D53009E8B86 /* BadgeItemLoadDependencies.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BadgeItemLoadDependencies.swift; sourceTree = "<group>"; };
 		E82ED8572FBA470400AF785D /* BadgeApplyService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BadgeApplyService.swift; sourceTree = "<group>"; };
-		E84BA81C2FB9CFD50073F897 /* FolderVisualCustomizationRestorer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FolderVisualCustomizationRestorer.swift; sourceTree = "<group>"; };
 		E855C0702FBAFD4C00A31357 /* BadgeRemovalService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BadgeRemovalService.swift; sourceTree = "<group>"; };
 		E855C0722FBB057F00A31357 /* BadgeItemVisualStateUpdater.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BadgeItemVisualStateUpdater.swift; sourceTree = "<group>"; };
 		E88E3C8D2FB39390008D1CEE /* BadgeKit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = BadgeKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -86,7 +84,6 @@
 				E8BBD84A2FB784A600CEA502 /* BadgeAppBadgeState.swift */,
 				E8BBD84E2FB790DD00CEA502 /* BadgePreviewMessageProvider.swift */,
 				E8BBD8502FB793F100CEA502 /* PreviewCacheInvalidator.swift */,
-				E84BA81C2FB9CFD50073F897 /* FolderVisualCustomizationRestorer.swift */,
 				E8A31E042FBA14B5006C3519 /* IconBackupService.swift */,
 				E82ED8572FBA470400AF785D /* BadgeApplyService.swift */,
 				E855C0702FBAFD4C00A31357 /* BadgeRemovalService.swift */,
@@ -206,7 +203,6 @@
 				E820F37F2FBC54380082601E /* BadgeItemLoadResult.swift in Sources */,
 				E8FCC5732FB5CC6400E08322 /* CustomBadgeRecord.swift in Sources */,
 				E8BBD84B2FB784A600CEA502 /* BadgeAppBadgeState.swift in Sources */,
-				E84BA81D2FB9CFD50073F897 /* FolderVisualCustomizationRestorer.swift in Sources */,
 				E8BBD8512FB793F100CEA502 /* PreviewCacheInvalidator.swift in Sources */,
 				BC49A789C66E60045BDF57CA /* ViewController.swift in Sources */,
 				323AAF3CA008E1622A98AF09 /* main.swift in Sources */,
