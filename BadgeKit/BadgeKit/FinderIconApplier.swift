@@ -7,20 +7,23 @@
 
 import Cocoa
 
-final class FinderIconApplier {
-    func applyIcon(_ icon: NSImage, to path: String) -> Bool {
+public final class FinderIconApplier {
+    public init(){
+    }
+    
+    public func applyIcon(_ icon: NSImage, to path: String) -> Bool {
         NSWorkspace.shared.setIcon(icon, forFile: path, options: [])
     }
 
-    func clearIcon(at path: String) -> Bool {
+    public func clearIcon(at path: String) -> Bool {
         NSWorkspace.shared.setIcon(nil, forFile: path, options: [])
     }
 
-    func notifyFileSystemChanged(at path: String) {
+    public func notifyFileSystemChanged(at path: String) {
         NSWorkspace.shared.noteFileSystemChanged(path)
     }
 
-    func notifyFileAndParentChanged(at path: String) {
+    public func notifyFileAndParentChanged(at path: String) {
         NSWorkspace.shared.noteFileSystemChanged(path)
         NSWorkspace.shared.noteFileSystemChanged((path as NSString).deletingLastPathComponent)
     }
