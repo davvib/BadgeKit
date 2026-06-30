@@ -7,8 +7,11 @@
 
 import Foundation
 
-final class FileIdentityResolver {
-    func resolvedBookmark(
+public final class FileIdentityResolver {
+    public init() {
+    }
+    
+    public func resolvedBookmark(
         from bookmarkData: Data,
         allowingStale: Bool = false
     ) -> (url: URL, isStale: Bool)? {
@@ -35,13 +38,13 @@ final class FileIdentityResolver {
         return nil
     }
 
-    func resourceIdentifier(for url: URL) -> (any NSCopying & NSSecureCoding & NSObjectProtocol)? {
+    public func resourceIdentifier(for url: URL) -> (any NSCopying & NSSecureCoding & NSObjectProtocol)? {
         try? url.resourceValues(
             forKeys: [.fileResourceIdentifierKey]
         ).fileResourceIdentifier
     }
 
-    func resourceIdentifierString(for url: URL) -> String? {
+    public func resourceIdentifierString(for url: URL) -> String? {
         guard let identifier = resourceIdentifier(for: url) else {
             return nil
         }
