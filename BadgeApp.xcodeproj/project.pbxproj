@@ -17,22 +17,14 @@
 		E820F37F2FBC54380082601E /* BadgeItemLoadResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = E820F37E2FBC54380082601E /* BadgeItemLoadResult.swift */; };
 		E820F3812FBC54E60082601E /* BadgeItemLoadService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E820F3802FBC54E60082601E /* BadgeItemLoadService.swift */; };
 		E821EDAF2FBC9D53009E8B86 /* BadgeItemLoadDependencies.swift in Sources */ = {isa = PBXBuildFile; fileRef = E821EDAE2FBC9D53009E8B86 /* BadgeItemLoadDependencies.swift */; };
-		E82ED8542FBA38E700AF785D /* QuickLookIconProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = E82ED8532FBA38E700AF785D /* QuickLookIconProvider.swift */; };
-		E82ED8562FBA3B6300AF785D /* BadgeBaseIconResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = E82ED8552FBA3B6300AF785D /* BadgeBaseIconResolver.swift */; };
 		E82ED8582FBA470400AF785D /* BadgeApplyService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E82ED8572FBA470400AF785D /* BadgeApplyService.swift */; };
-		E8346DE62FB5F04A00070BEB /* IconBackupRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8346DE52FB5F04A00070BEB /* IconBackupRecord.swift */; };
-		E84BA7FF2FB9A4380073F897 /* FinderIconFileStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = E84BA7FE2FB9A4380073F897 /* FinderIconFileStore.swift */; };
-		E84BA8012FB9A6CB0073F897 /* FinderInfoStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = E84BA8002FB9A6CB0073F897 /* FinderInfoStore.swift */; };
-		E84BA8032FB9B7FF0073F897 /* FinderIconStateReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = E84BA8022FB9B7FF0073F897 /* FinderIconStateReader.swift */; };
 		E84BA81D2FB9CFD50073F897 /* FolderVisualCustomizationRestorer.swift in Sources */ = {isa = PBXBuildFile; fileRef = E84BA81C2FB9CFD50073F897 /* FolderVisualCustomizationRestorer.swift */; };
 		E84BA81F2FB9D3010073F897 /* FinderIconApplier.swift in Sources */ = {isa = PBXBuildFile; fileRef = E84BA81E2FB9D3010073F897 /* FinderIconApplier.swift */; };
 		E84BA8212FB9D7DE0073F897 /* FileIdentityResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = E84BA8202FB9D7DE0073F897 /* FileIdentityResolver.swift */; };
 		E855C0712FBAFD4C00A31357 /* BadgeRemovalService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E855C0702FBAFD4C00A31357 /* BadgeRemovalService.swift */; };
 		E855C0732FBB057F00A31357 /* BadgeItemVisualStateUpdater.swift in Sources */ = {isa = PBXBuildFile; fileRef = E855C0722FBB057F00A31357 /* BadgeItemVisualStateUpdater.swift */; };
-		E88972082FB92B1100DE0F1A /* XattrStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = E88972072FB92B1100DE0F1A /* XattrStore.swift */; };
 		E88E3C8E2FB39390008D1CEE /* BadgeKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E88E3C8D2FB39390008D1CEE /* BadgeKit.framework */; };
 		E8A31E052FBA14B5006C3519 /* IconBackupService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8A31E042FBA14B5006C3519 /* IconBackupService.swift */; };
-		E8B127AB2FB5F99600A0B2B6 /* IconBackupStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8B127AA2FB5F99600A0B2B6 /* IconBackupStore.swift */; };
 		E8BBD8452FB77FB600CEA502 /* IconBackupTrashLocator.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8BBD8442FB77FB600CEA502 /* IconBackupTrashLocator.swift */; };
 		E8BBD8472FB7812E00CEA502 /* IconBackupRetentionPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8BBD8462FB7812E00CEA502 /* IconBackupRetentionPolicy.swift */; };
 		E8BBD8492FB7848F00CEA502 /* BadgeAppFolderMetadata.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8BBD8482FB7848F00CEA502 /* BadgeAppFolderMetadata.swift */; };
@@ -40,7 +32,6 @@
 		E8BBD84D2FB7876900CEA502 /* BadgeAppMetadataStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8BBD84C2FB7876900CEA502 /* BadgeAppMetadataStore.swift */; };
 		E8BBD84F2FB790DD00CEA502 /* BadgePreviewMessageProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8BBD84E2FB790DD00CEA502 /* BadgePreviewMessageProvider.swift */; };
 		E8BBD8512FB793F100CEA502 /* PreviewCacheInvalidator.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8BBD8502FB793F100CEA502 /* PreviewCacheInvalidator.swift */; };
-		E8D341C22FBDD70600389850 /* FolderIconPreparationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8D341C12FBDD70600389850 /* FolderIconPreparationService.swift */; };
 		E8FCC5732FB5CC6400E08322 /* CustomBadgeRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8FCC5722FB5CC6400E08322 /* CustomBadgeRecord.swift */; };
 		E8FCC5752FB5CD9100E08322 /* CustomBadgeStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8FCC5742FB5CD9100E08322 /* CustomBadgeStore.swift */; };
 /* End PBXBuildFile section */
@@ -56,22 +47,14 @@
 		E820F37E2FBC54380082601E /* BadgeItemLoadResult.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BadgeItemLoadResult.swift; sourceTree = "<group>"; };
 		E820F3802FBC54E60082601E /* BadgeItemLoadService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BadgeItemLoadService.swift; sourceTree = "<group>"; };
 		E821EDAE2FBC9D53009E8B86 /* BadgeItemLoadDependencies.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BadgeItemLoadDependencies.swift; sourceTree = "<group>"; };
-		E82ED8532FBA38E700AF785D /* QuickLookIconProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickLookIconProvider.swift; sourceTree = "<group>"; };
-		E82ED8552FBA3B6300AF785D /* BadgeBaseIconResolver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BadgeBaseIconResolver.swift; sourceTree = "<group>"; };
 		E82ED8572FBA470400AF785D /* BadgeApplyService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BadgeApplyService.swift; sourceTree = "<group>"; };
-		E8346DE52FB5F04A00070BEB /* IconBackupRecord.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IconBackupRecord.swift; sourceTree = "<group>"; };
-		E84BA7FE2FB9A4380073F897 /* FinderIconFileStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FinderIconFileStore.swift; sourceTree = "<group>"; };
-		E84BA8002FB9A6CB0073F897 /* FinderInfoStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FinderInfoStore.swift; sourceTree = "<group>"; };
-		E84BA8022FB9B7FF0073F897 /* FinderIconStateReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FinderIconStateReader.swift; sourceTree = "<group>"; };
 		E84BA81C2FB9CFD50073F897 /* FolderVisualCustomizationRestorer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FolderVisualCustomizationRestorer.swift; sourceTree = "<group>"; };
 		E84BA81E2FB9D3010073F897 /* FinderIconApplier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FinderIconApplier.swift; sourceTree = "<group>"; };
 		E84BA8202FB9D7DE0073F897 /* FileIdentityResolver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileIdentityResolver.swift; sourceTree = "<group>"; };
 		E855C0702FBAFD4C00A31357 /* BadgeRemovalService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BadgeRemovalService.swift; sourceTree = "<group>"; };
 		E855C0722FBB057F00A31357 /* BadgeItemVisualStateUpdater.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BadgeItemVisualStateUpdater.swift; sourceTree = "<group>"; };
-		E88972072FB92B1100DE0F1A /* XattrStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = XattrStore.swift; sourceTree = "<group>"; };
 		E88E3C8D2FB39390008D1CEE /* BadgeKit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = BadgeKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		E8A31E042FBA14B5006C3519 /* IconBackupService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IconBackupService.swift; sourceTree = "<group>"; };
-		E8B127AA2FB5F99600A0B2B6 /* IconBackupStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IconBackupStore.swift; sourceTree = "<group>"; };
 		E8BBD8442FB77FB600CEA502 /* IconBackupTrashLocator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IconBackupTrashLocator.swift; sourceTree = "<group>"; };
 		E8BBD8462FB7812E00CEA502 /* IconBackupRetentionPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IconBackupRetentionPolicy.swift; sourceTree = "<group>"; };
 		E8BBD8482FB7848F00CEA502 /* BadgeAppFolderMetadata.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BadgeAppFolderMetadata.swift; sourceTree = "<group>"; };
@@ -79,7 +62,6 @@
 		E8BBD84C2FB7876900CEA502 /* BadgeAppMetadataStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BadgeAppMetadataStore.swift; sourceTree = "<group>"; };
 		E8BBD84E2FB790DD00CEA502 /* BadgePreviewMessageProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BadgePreviewMessageProvider.swift; sourceTree = "<group>"; };
 		E8BBD8502FB793F100CEA502 /* PreviewCacheInvalidator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreviewCacheInvalidator.swift; sourceTree = "<group>"; };
-		E8D341C12FBDD70600389850 /* FolderIconPreparationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FolderIconPreparationService.swift; sourceTree = "<group>"; };
 		E8FCC5722FB5CC6400E08322 /* CustomBadgeRecord.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomBadgeRecord.swift; sourceTree = "<group>"; };
 		E8FCC5742FB5CD9100E08322 /* CustomBadgeStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomBadgeStore.swift; sourceTree = "<group>"; };
 		EC4A915536D5735AEA9042F1 /* DroppedItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DroppedItem.swift; sourceTree = "<group>"; };
@@ -108,24 +90,16 @@
 				E8BBD84C2FB7876900CEA502 /* BadgeAppMetadataStore.swift */,
 				E8FCC5722FB5CC6400E08322 /* CustomBadgeRecord.swift */,
 				E8FCC5742FB5CD9100E08322 /* CustomBadgeStore.swift */,
-				E8346DE52FB5F04A00070BEB /* IconBackupRecord.swift */,
-				E8B127AA2FB5F99600A0B2B6 /* IconBackupStore.swift */,
 				E8BBD8442FB77FB600CEA502 /* IconBackupTrashLocator.swift */,
 				E8BBD8462FB7812E00CEA502 /* IconBackupRetentionPolicy.swift */,
 				E8BBD8482FB7848F00CEA502 /* BadgeAppFolderMetadata.swift */,
 				E8BBD84A2FB784A600CEA502 /* BadgeAppBadgeState.swift */,
 				E8BBD84E2FB790DD00CEA502 /* BadgePreviewMessageProvider.swift */,
 				E8BBD8502FB793F100CEA502 /* PreviewCacheInvalidator.swift */,
-				E88972072FB92B1100DE0F1A /* XattrStore.swift */,
-				E84BA7FE2FB9A4380073F897 /* FinderIconFileStore.swift */,
-				E84BA8002FB9A6CB0073F897 /* FinderInfoStore.swift */,
-				E84BA8022FB9B7FF0073F897 /* FinderIconStateReader.swift */,
 				E84BA81C2FB9CFD50073F897 /* FolderVisualCustomizationRestorer.swift */,
 				E84BA81E2FB9D3010073F897 /* FinderIconApplier.swift */,
 				E84BA8202FB9D7DE0073F897 /* FileIdentityResolver.swift */,
 				E8A31E042FBA14B5006C3519 /* IconBackupService.swift */,
-				E82ED8532FBA38E700AF785D /* QuickLookIconProvider.swift */,
-				E82ED8552FBA3B6300AF785D /* BadgeBaseIconResolver.swift */,
 				E82ED8572FBA470400AF785D /* BadgeApplyService.swift */,
 				E855C0702FBAFD4C00A31357 /* BadgeRemovalService.swift */,
 				E855C0722FBB057F00A31357 /* BadgeItemVisualStateUpdater.swift */,
@@ -133,7 +107,6 @@
 				E820F37E2FBC54380082601E /* BadgeItemLoadResult.swift */,
 				E820F3802FBC54E60082601E /* BadgeItemLoadService.swift */,
 				E821EDAE2FBC9D53009E8B86 /* BadgeItemLoadDependencies.swift */,
-				E8D341C12FBDD70600389850 /* FolderIconPreparationService.swift */,
 			);
 			path = BadgeApp;
 			sourceTree = "<group>";
@@ -193,7 +166,7 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
-				LastUpgradeCheck = 2650;
+				LastUpgradeCheck = 2660;
 			};
 			buildConfigurationList = 374592D913CD5B121C7E6847 /* Build configuration list for PBXProject "BadgeApp" */;
 			developmentRegion = en;
@@ -230,38 +203,29 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				E8D341C22FBDD70600389850 /* FolderIconPreparationService.swift in Sources */,
 				E8BBD8492FB7848F00CEA502 /* BadgeAppFolderMetadata.swift in Sources */,
 				E84BA81F2FB9D3010073F897 /* FinderIconApplier.swift in Sources */,
 				E8FCC5752FB5CD9100E08322 /* CustomBadgeStore.swift in Sources */,
 				E8BBD8472FB7812E00CEA502 /* IconBackupRetentionPolicy.swift in Sources */,
 				E855C0732FBB057F00A31357 /* BadgeItemVisualStateUpdater.swift in Sources */,
-				E82ED8542FBA38E700AF785D /* QuickLookIconProvider.swift in Sources */,
-				E82ED8562FBA3B6300AF785D /* BadgeBaseIconResolver.swift in Sources */,
-				E8B127AB2FB5F99600A0B2B6 /* IconBackupStore.swift in Sources */,
-				E84BA7FF2FB9A4380073F897 /* FinderIconFileStore.swift in Sources */,
 				E82ED8582FBA470400AF785D /* BadgeApplyService.swift in Sources */,
 				E8BBD84D2FB7876900CEA502 /* BadgeAppMetadataStore.swift in Sources */,
 				04C7CE624A6761B239E365B7 /* AppDelegate.swift in Sources */,
-				E84BA8032FB9B7FF0073F897 /* FinderIconStateReader.swift in Sources */,
 				E855C0712FBAFD4C00A31357 /* BadgeRemovalService.swift in Sources */,
 				E84BA8212FB9D7DE0073F897 /* FileIdentityResolver.swift in Sources */,
 				E8BBD84F2FB790DD00CEA502 /* BadgePreviewMessageProvider.swift in Sources */,
 				E818004D2FBB940C00DF574F /* BadgeAppMetadataRepository.swift in Sources */,
 				AE01D87ED777FA1E17460A7C /* DropZoneView.swift in Sources */,
 				E821EDAF2FBC9D53009E8B86 /* BadgeItemLoadDependencies.swift in Sources */,
-				E88972082FB92B1100DE0F1A /* XattrStore.swift in Sources */,
 				3D8858C9BAB351A705ABDAFB /* DroppedItem.swift in Sources */,
 				E820F37F2FBC54380082601E /* BadgeItemLoadResult.swift in Sources */,
 				E8FCC5732FB5CC6400E08322 /* CustomBadgeRecord.swift in Sources */,
 				E8BBD84B2FB784A600CEA502 /* BadgeAppBadgeState.swift in Sources */,
 				E84BA81D2FB9CFD50073F897 /* FolderVisualCustomizationRestorer.swift in Sources */,
 				E8BBD8512FB793F100CEA502 /* PreviewCacheInvalidator.swift in Sources */,
-				E84BA8012FB9A6CB0073F897 /* FinderInfoStore.swift in Sources */,
 				E8BBD8452FB77FB600CEA502 /* IconBackupTrashLocator.swift in Sources */,
 				BC49A789C66E60045BDF57CA /* ViewController.swift in Sources */,
 				323AAF3CA008E1622A98AF09 /* main.swift in Sources */,
-				E8346DE62FB5F04A00070BEB /* IconBackupRecord.swift in Sources */,
 				E8A31E052FBA14B5006C3519 /* IconBackupService.swift in Sources */,
 				E820F3812FBC54E60082601E /* BadgeItemLoadService.swift in Sources */,
 			);

@@ -19,11 +19,11 @@ public final class BadgeBaseIconResolver {
         self.finderIconStateReader = finderIconStateReader
     }
     
-    func defaultFolderIcon() -> NSImage {
+    public func defaultFolderIcon() -> NSImage {
         quickLookIconProvider.defaultFolderIcon()
     }
     
-    func quickLookIcon(
+    public func quickLookIcon(
         for path: String,
         fallbackIcon: NSImage,
         completion: @escaping (NSImage) -> Void
@@ -35,11 +35,11 @@ public final class BadgeBaseIconResolver {
         )
     }
     
-    func fallbackIcon(for path: String) -> NSImage {
+    public func fallbackIcon(for path: String) -> NSImage {
         quickLookIconProvider.fallbackIcon(for: path)
     }
     
-    func iconForPreviewingBadge(
+    public func iconForPreviewingBadge(
         path: String,
         isDirectory: Bool,
         hasAppBadge: Bool,
@@ -67,7 +67,7 @@ public final class BadgeBaseIconResolver {
         }
     }
     
-    func iconForApplyingBadge(
+    public func iconForApplyingBadge(
         path: String,
         isDirectory: Bool,
         hasAppBadge: Bool,

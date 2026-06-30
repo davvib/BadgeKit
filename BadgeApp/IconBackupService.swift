@@ -6,6 +6,7 @@
 //
 
 import Cocoa
+import BadgeKit
 
 final class IconBackupService {
     private let backupStore: IconBackupStore

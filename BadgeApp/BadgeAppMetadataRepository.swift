@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import BadgeKit
 
 final class BadgeAppMetadataRepository {
     private let metadataStore: BadgeAppMetadataStore

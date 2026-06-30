@@ -8,38 +8,38 @@
 import Foundation
 import Cocoa
 
-struct StoredIconBackupRecord {
-    let record: IconBackupRecord
-    let recordURL: URL
+public struct StoredIconBackupRecord {
+    public let record: IconBackupRecord
+    public let recordURL: URL
 }
 
-final class IconBackupStore {
+public final class IconBackupStore {
     private let fileManager: FileManager
 
-    init(fileManager: FileManager = .default) {
+    public init(fileManager: FileManager = .default) {
         self.fileManager = fileManager
     }
 
-    func backupsDirectory() -> URL? {
+    public func backupsDirectory() -> URL? {
         fileManager
             .urls(for: .applicationSupportDirectory, in: .userDomainMask)
             .first?
             .appendingPathComponent("BadgeApp/IconBackups")
     }
 
-    func recordsDirectory() -> URL? {
+    public func recordsDirectory() -> URL? {
         backupsDirectory()?.appendingPathComponent("Records")
     }
 
-    func imagesDirectory() -> URL? {
+    public func imagesDirectory() -> URL? {
         backupsDirectory()?.appendingPathComponent("Images")
     }
 
-    func recordURL(for id: String) -> URL? {
+    public func recordURL(for id: String) -> URL? {
         recordsDirectory()?.appendingPathComponent(id).appendingPathExtension("json")
     }
     
-    func record(withID id: String) -> IconBackupRecord? {
+    public func record(withID id: String) -> IconBackupRecord? {
         guard let recordURL = recordURL(for: id),
               let data = try? Data(contentsOf: recordURL) else {
             return nil
@@ -48,7 +48,7 @@ final class IconBackupStore {
         return try? JSONDecoder().decode(IconBackupRecord.self, from: data)
     }
     
-    func previewOrOriginalIcon(for record: IconBackupRecord) -> NSImage? {
+    public func previewOrOriginalIcon(for record: IconBackupRecord) -> NSImage? {
         guard let imagesDir = imagesDirectory() else {
             return nil
         }
@@ -66,7 +66,7 @@ final class IconBackupStore {
         return NSImage(contentsOf: imagesDir.appendingPathComponent(iconFileName))
     }
     
-    func prepareStorageDirectories() throws -> (backupsDir: URL, recordsDir: URL, imagesDir: URL) {
+    public func prepareStorageDirectories() throws -> (backupsDir: URL, recordsDir: URL, imagesDir: URL) {
         guard let backupsDir = backupsDirectory(),
               let recordsDir = recordsDirectory(),
               let imagesDir = imagesDirectory() else {
@@ -80,7 +80,7 @@ final class IconBackupStore {
         return (backupsDir, recordsDir, imagesDir)
     }
 
-    func writeRecord(_ record: IconBackupRecord) throws {
+    public func writeRecord(_ record: IconBackupRecord) throws {
         guard let recordURL = recordURL(for: record.id) else {
             throw CocoaError(.fileNoSuchFile)
         }
@@ -89,7 +89,7 @@ final class IconBackupStore {
         try data.write(to: recordURL)
     }
     
-    func writeTIFFIcon(_ icon: NSImage, fileName: String) throws {
+    public func writeTIFFIcon(_ icon: NSImage, fileName: String) throws {
         guard let imagesDir = imagesDirectory(),
               let tiffData = icon.tiffRepresentation else {
             return
@@ -98,7 +98,7 @@ final class IconBackupStore {
         try tiffData.write(to: imagesDir.appendingPathComponent(fileName))
     }
     
-    func originalIcon(for record: IconBackupRecord) -> NSImage? {
+    public func originalIcon(for record: IconBackupRecord) -> NSImage? {
         guard record.hadCustomIcon,
               let iconFileName = record.iconFileName,
               let imagesDir = imagesDirectory() else {
@@ -108,7 +108,7 @@ final class IconBackupStore {
         return NSImage(contentsOf: imagesDir.appendingPathComponent(iconFileName))
     }
     
-    func storedRecords() -> [StoredIconBackupRecord] {
+    public func storedRecords() -> [StoredIconBackupRecord] {
         guard let recordsDir = recordsDirectory(),
               let recordURLs = try? fileManager.contentsOfDirectory(
                 at: recordsDir,
@@ -131,7 +131,7 @@ final class IconBackupStore {
         }
     }
     
-    func deleteBackupFiles(for record: IconBackupRecord) {
+    public func deleteBackupFiles(for record: IconBackupRecord) {
         if let recordURL = recordURL(for: record.id) {
             try? fileManager.removeItem(at: recordURL)
         }

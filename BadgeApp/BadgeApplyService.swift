@@ -6,6 +6,7 @@
 //
 
 import Cocoa
+import BadgeKit
 
 final class BadgeApplyService {
     private let finderIconApplier: FinderIconApplier

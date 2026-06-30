@@ -10,6 +10,9 @@ import QuickLookThumbnailing
 import UniformTypeIdentifiers
 
 public final class QuickLookIconProvider {
+    public init() {
+    }
+    
     public func fallbackIcon(for path: String) -> NSImage {
         NSWorkspace.shared.icon(forFile: path)
     }

@@ -8,6 +8,9 @@
 import Foundation
 
 public final class XattrStore {
+    public init() {
+    }
+    
     public func names(at path: String) -> [String] {
         path.withCString { pathPointer in
             let size = listxattr(pathPointer, nil, 0, 0)

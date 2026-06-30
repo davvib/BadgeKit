@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import BadgeKit
 
 final class IconBackupRetentionPolicy {
     private let fileManager: FileManager
