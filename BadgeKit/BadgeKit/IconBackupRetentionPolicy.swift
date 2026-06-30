@@ -6,13 +6,12 @@
 //
 
 import Foundation
-import BadgeKit
 
-final class IconBackupRetentionPolicy {
+public final class IconBackupRetentionPolicy {
     private let fileManager: FileManager
     private let trashLocator: IconBackupTrashLocator
 
-    init(
+    public init(
         fileManager: FileManager = .default,
         trashLocator: IconBackupTrashLocator = IconBackupTrashLocator()
     ) {
@@ -20,7 +19,7 @@ final class IconBackupRetentionPolicy {
         self.trashLocator = trashLocator
     }
 
-    func shouldKeep(
+    public func shouldKeep(
         record: IconBackupRecord,
         resolvedURL: URL?
     ) -> Bool {

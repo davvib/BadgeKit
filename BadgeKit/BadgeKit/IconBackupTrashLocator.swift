@@ -7,10 +7,10 @@
 
 import Foundation
 
-final class IconBackupTrashLocator {
+public final class IconBackupTrashLocator {
     private let fileManager: FileManager
 
-    init(fileManager: FileManager = .default) {
+    public init(fileManager: FileManager = .default) {
         self.fileManager = fileManager
     }
 
