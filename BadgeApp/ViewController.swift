@@ -420,6 +420,12 @@ class ViewController: NSViewController, NSTextFieldDelegate {
     private func badgeAppFolderMetadata(at path: String) -> BadgeAppFolderMetadata? {
         badgeAppMetadataRepository.folderMetadata(at: path)
     }
+    
+    private func hasBadgeAppState(at path: String) -> Bool {
+        badgeAppFolderMetadata(at: path) != nil ||
+        badgeAppBadgeState(at: path) != nil ||
+        badgeAppBackupID(at: path) != nil
+    }
 
     private func badgeAppBadgeState(at path: String) -> BadgeAppBadgeState? {
         badgeAppMetadataRepository.badgeState(at: path)
@@ -1187,18 +1193,7 @@ class ViewController: NSViewController, NSTextFieldDelegate {
 
     @objc func removeBadge() {
         for item in items {
-            let hadBadgeAppState = badgeRemovalService.hasBadgeAppState(
-                at: item.path,
-                folderMetadataProvider: { [weak self] path in
-                    self?.badgeAppFolderMetadata(at: path)
-                },
-                badgeStateProvider: { [weak self] path in
-                    self?.badgeAppBadgeState(at: path)
-                },
-                backupIDProvider: { [weak self] path in
-                    self?.badgeAppBackupID(at: path)
-                }
-            )
+            let hadBadgeAppState = hasBadgeAppState(at: item.path)
 
             let removalResult = badgeRemovalService.removeBadge(
                 at: item.path,
@@ -1210,8 +1205,8 @@ class ViewController: NSViewController, NSTextFieldDelegate {
                     self?.restoreBadgeAppFolderVisualStateIfAvailable(for: path) ?? false
                 },
                 fallbackCleaner: { [weak self] path in
-                    self?.badgeRemovalService.clearBadgeAppFallbackState(at: path)
-                    self?.badgeRemovalService.cleanBadgeAppMetadata(
+                    self?.badgeRemovalService.clearFallbackIconState(at: path)
+                    self?.badgeRemovalService.cleanAppliedBadgeMetadata(
                         at: path,
                         folderMetadataRemover: { [weak self] path in
                             self?.removeBadgeAppFolderMetadata(at: path)
@@ -1231,10 +1226,10 @@ class ViewController: NSViewController, NSTextFieldDelegate {
                 refreshRestoredVisualState(for: item)
                 reloadPreviewIconAfterRemoval(for: item)
 
-            case .restoredBadgeAppVisualState:
+            case .restoredCustomVisualState:
                 refreshRestoredVisualState(for: item)
 
-            case .clearedBadgeAppFallback:
+            case .clearedFallbackIconState:
                 item.folderColorName = nil
                 item.folderColor = nil
                 item.folderSymbolName = nil

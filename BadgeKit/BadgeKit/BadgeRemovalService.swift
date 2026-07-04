@@ -6,39 +6,27 @@
 //
 
 import Cocoa
-import BadgeKit
 
-enum BadgeRemovalResult {
+public enum BadgeRemovalResult {
     case restoredOriginal
-    case restoredBadgeAppVisualState
-    case clearedBadgeAppFallback
+    case restoredCustomVisualState
+    case clearedFallbackIconState
     case unchanged
 }
 
-final class BadgeRemovalService {
+public final class BadgeRemovalService {
     private let finderIconApplier: FinderIconApplier
 
-    init(finderIconApplier: FinderIconApplier) {
+    public init(finderIconApplier: FinderIconApplier) {
         self.finderIconApplier = finderIconApplier
     }
     
-    func clearBadgeAppFallbackState(at path: String) {
+    public func clearFallbackIconState(at path: String) {
         _ = finderIconApplier.clearIcon(at: path)
         finderIconApplier.notifyFileSystemChanged(at: path)
     }
     
-    func hasBadgeAppState(
-        at path: String,
-        folderMetadataProvider: (String) -> BadgeAppFolderMetadata?,
-        badgeStateProvider: (String) -> BadgeAppBadgeState?,
-        backupIDProvider: (String) -> String?
-    ) -> Bool {
-        badgeStateProvider(path) != nil ||
-        folderMetadataProvider(path) != nil ||
-        backupIDProvider(path) != nil
-    }
-    
-    func cleanBadgeAppMetadata(
+    public func cleanAppliedBadgeMetadata(
         at path: String,
         folderMetadataRemover: (String) -> Void,
         badgeStateRemover: (String) -> Void,
@@ -49,7 +37,7 @@ final class BadgeRemovalService {
         backupIDRemover(path)
     }
     
-    func removeBadge(
+    public func removeBadge(
         at path: String,
         hasBadgeAppState: Bool,
         restoreOriginalIconState: (String) -> Bool,
@@ -61,12 +49,12 @@ final class BadgeRemovalService {
         }
 
         if restoreBadgeAppFolderVisualState(path) {
-            return .restoredBadgeAppVisualState
+            return .restoredCustomVisualState
         }
 
         if hasBadgeAppState {
             fallbackCleaner(path)
-            return .clearedBadgeAppFallback
+            return .clearedFallbackIconState
         }
 
         return .unchanged
