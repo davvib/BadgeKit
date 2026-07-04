@@ -6,9 +6,8 @@
 //
 
 import Cocoa
-import BadgeKit
 
-final class IconBackupService {
+ public final class IconBackupService {
     private let backupStore: IconBackupStore
     private let retentionPolicy: IconBackupRetentionPolicy
     private let fileIdentityResolver: FileIdentityResolver
@@ -16,7 +15,7 @@ final class IconBackupService {
     private let finderIconApplier: FinderIconApplier
     private let visualCustomizationRestorer: FolderVisualCustomizationRestorer
 
-    init(
+    public init(
         backupStore: IconBackupStore,
         retentionPolicy: IconBackupRetentionPolicy,
         fileIdentityResolver: FileIdentityResolver,
@@ -32,7 +31,7 @@ final class IconBackupService {
         self.visualCustomizationRestorer = visualCustomizationRestorer
     }
     
-    func shouldKeepStoredBackup(_ record: IconBackupRecord) -> Bool {
+     public func shouldKeepStoredBackup(_ record: IconBackupRecord) -> Bool {
         let resolvedURL = fileIdentityResolver.resolvedBookmark(
             from: record.bookmarkData,
             allowingStale: true
@@ -44,7 +43,7 @@ final class IconBackupService {
         )
     }
     
-    func record(withID id: String) -> IconBackupRecord? {
+     public func record(withID id: String) -> IconBackupRecord? {
         backupStore.record(withID: id)
     }
     
@@ -59,7 +58,7 @@ final class IconBackupService {
         return record.originalPath == path
     }
     
-    func record(
+     public func record(
         for path: String,
         backupIDProvider: (String) -> String?
     ) -> IconBackupRecord? {
@@ -72,7 +71,7 @@ final class IconBackupService {
         return record
     }
     
-    func cleanupStoredBackups() {
+     public func cleanupStoredBackups() {
         for storedRecord in backupStore.storedRecords() {
             if shouldKeepStoredBackup(storedRecord.record) {
                 continue
@@ -82,7 +81,7 @@ final class IconBackupService {
         }
     }
     
-    func saveOriginalIconState(
+     public func saveOriginalIconState(
         path: String,
         visualCustomizationXattrs: [String: Data],
         hasCustomVisualState: Bool,
@@ -145,7 +144,7 @@ final class IconBackupService {
         }
     }
     
-    func restoreOriginalIconStateIfAvailable(
+     public func restoreOriginalIconStateIfAvailable(
         for path: String,
         backupIDProvider: (String) -> String?,
         metadataCleaner: (String) -> Void
