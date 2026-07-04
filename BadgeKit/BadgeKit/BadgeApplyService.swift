@@ -6,15 +6,14 @@
 //
 
 import Cocoa
-import BadgeKit
 
-final class BadgeApplyService {
+public final class BadgeApplyService {
     private let finderIconApplier: FinderIconApplier
     private let finderInfoStore: FinderInfoStore
     private let visualCustomizationRestorer: FolderVisualCustomizationRestorer
     private let iconBackupService: IconBackupService
 
-    init(
+    public init(
         finderIconApplier: FinderIconApplier,
         finderInfoStore: FinderInfoStore,
         visualCustomizationRestorer: FolderVisualCustomizationRestorer,
@@ -26,7 +25,7 @@ final class BadgeApplyService {
         self.iconBackupService = iconBackupService
     }
     
-    func writeBadgedIcon(
+    public func writeBadgedIcon(
         _ icon: NSImage,
         to path: String,
         restoreOriginalOnFailure: Bool,
@@ -57,7 +56,7 @@ final class BadgeApplyService {
         return didApply
     }
     
-    func applyBadgedIcon(
+    public func applyBadgedIcon(
         _ icon: NSImage,
         to path: String,
         backupRecord: IconBackupRecord?,
