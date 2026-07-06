@@ -1241,6 +1241,10 @@ class ViewController: NSViewController, NSTextFieldDelegate {
             case .unchanged:
                 refreshCurrentVisualState(for: item)
                 reloadPreviewIconAfterRemoval(for: item)
+                
+            @unknown default:
+                assertionFailure("Unhandled BadgeRemovalResult case")
+                refreshCurrentVisualState(for: item)
             }
         }
 
