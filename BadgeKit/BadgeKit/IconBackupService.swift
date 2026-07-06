@@ -143,6 +143,25 @@ import Cocoa
             print("Error backing up original icon state: \(error)")
         }
     }
+     
+     public func saveOriginalIconStateIfNeeded(
+         path: String,
+         backupIDProvider: (String) -> String?,
+         visualCustomizationXattrs: [String: Data],
+         hasCustomVisualState: Bool,
+         workspaceIcon: NSImage,
+         backupIDWriter: (String, String) -> Void
+     ) {
+         guard backupIDProvider(path) == nil else { return }
+
+         saveOriginalIconState(
+             path: path,
+             visualCustomizationXattrs: visualCustomizationXattrs,
+             hasCustomVisualState: hasCustomVisualState,
+             workspaceIcon: workspaceIcon,
+             backupIDWriter: backupIDWriter
+         )
+     }
     
      public func restoreOriginalIconStateIfAvailable(
         for path: String,
