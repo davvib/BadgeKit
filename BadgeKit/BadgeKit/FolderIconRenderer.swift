@@ -237,9 +237,9 @@ final class FolderIconRenderer {
     }
 
     private func asset(for colorName: String?) -> FolderAsset? {
-        guard let colorName else { return nil }
+        let effectiveColorName = colorName ?? "blue"
 
-        switch normalized(colorName) {
+        switch normalized(effectiveColorName) {
         case "roja", "rojo", "red":
             return FolderAsset(directoryName: "Rojo png", filePrefix: "Rojo")
         case "naranja", "orange":

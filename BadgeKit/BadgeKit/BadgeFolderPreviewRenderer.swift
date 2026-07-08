@@ -9,6 +9,7 @@ import Cocoa
 
 final class BadgeFolderPreviewRenderer {
     private let folderRenderer: FolderIconRenderer
+    private let defaultFolderColor = NSColor.systemBlue
 
     init(folderRenderer: FolderIconRenderer = FolderIconRenderer()) {
         self.folderRenderer = folderRenderer
@@ -23,11 +24,11 @@ final class BadgeFolderPreviewRenderer {
         badgeSize: NSSize,
         badgeOffset: NSPoint
     ) -> NSImage? {
-        guard let fallbackColor else { return nil }
+        let resolvedFallbackColor = fallbackColor ?? defaultFolderColor
 
         return folderRenderer.renderFolderIcon(
             colorName: colorName,
-            fallbackColor: fallbackColor,
+            fallbackColor: resolvedFallbackColor,
             symbolName: symbolName,
             symbolText: symbolText,
             badge: badge,
@@ -45,11 +46,11 @@ final class BadgeFolderPreviewRenderer {
         badgeSize: NSSize,
         badgeOffset: NSPoint
     ) -> NSImage? {
-        guard let fallbackColor else { return nil }
+        let resolvedFallbackColor = fallbackColor ?? defaultFolderColor
 
         return folderRenderer.renderPreviewFolderIcon(
             colorName: colorName,
-            fallbackColor: fallbackColor,
+            fallbackColor: resolvedFallbackColor,
             symbolName: symbolName,
             symbolText: symbolText,
             badge: badge,
