@@ -16,6 +16,8 @@ final class FolderIconRenderer {
     private let symbolRect = NSRect(x: 308, y: 286, width: 408, height: 300)
     private let assetFrontRect = NSRect(x: 32, y: 42, width: 984, height: 704)
     private let assetSymbolRect = NSRect(x: 214.50, y: 236.00, width: 597.50, height: 421.50)
+    private let placementResolver = BadgePlacementResolver()
+    
     private var folderAssetImageCache: [String: NSImage] = [:]
     private var trimmedImageCache: [ObjectIdentifier: NSImage] = [:]
 
@@ -96,18 +98,11 @@ final class FolderIconRenderer {
 
     func badgeRect(colorName: String?, badgeSize: NSSize, badgeOffset: NSPoint) -> NSRect {
         let anchorRect = asset(for: colorName) == nil ? frontRect : assetFrontRect
-        let badgeScale = min(anchorRect.width, anchorRect.height) / 48
-        let size = NSSize(
-            width: badgeSize.width * badgeScale,
-            height: badgeSize.height * badgeScale
-        )
-
-        return NSRect(
-            x: anchorRect.maxX - size.width + badgeOffset.x,
-            y: anchorRect.minY + badgeOffset.y,
-            width: size.width,
-            height: size.height
-        )
+        return placementResolver.placement(
+            from: anchorRect,
+            badgeSize: badgeSize,
+            badgeOffset: badgeOffset
+        ).logicalRect
     }
 
     func badgeOffset(
@@ -116,15 +111,16 @@ final class FolderIconRenderer {
         placingBadgeCenterAt center: NSPoint
     ) -> NSPoint {
         let anchorRect = asset(for: colorName) == nil ? frontRect : assetFrontRect
-        let badgeScale = min(anchorRect.width, anchorRect.height) / 48
-        let size = NSSize(
-            width: badgeSize.width * badgeScale,
-            height: badgeSize.height * badgeScale
+
+        let placement = placementResolver.placement(
+            from: anchorRect,
+            badgeSize: badgeSize,
+            badgeOffset: .zero
         )
 
         return NSPoint(
-            x: center.x - (anchorRect.maxX - size.width / 2),
-            y: center.y - (anchorRect.minY + size.height / 2)
+            x: center.x - placement.logicalRect.midX,
+            y: center.y - placement.logicalRect.midY
         )
     }
 
@@ -396,18 +392,13 @@ final class FolderIconRenderer {
     private func drawBadge(_ badge: NSImage?, in anchorRect: NSRect, badgeSize: NSSize, badgeOffset: NSPoint, scale: CGFloat) {
         guard let badge else { return }
 
-        let frontRect = scaled(anchorRect, scale: scale)
-        let badgeScale = min(frontRect.width, frontRect.height) / (48 * scale)
-        let size = NSSize(
-            width: badgeSize.width * badgeScale * scale,
-            height: badgeSize.height * badgeScale * scale
+        let logicalPlacement = placementResolver.placement(
+            from: anchorRect,
+            badgeSize: badgeSize,
+            badgeOffset: badgeOffset
         )
-        let rect = NSRect(
-            x: frontRect.maxX - size.width + badgeOffset.x * scale,
-            y: frontRect.minY + badgeOffset.y * scale,
-            width: size.width,
-            height: size.height
-        )
+
+        let rect = scaled(logicalPlacement.logicalRect, scale: scale)
 
         drawTrimmed(image: badge, in: rect)
     }

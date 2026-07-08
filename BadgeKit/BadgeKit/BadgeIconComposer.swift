@@ -10,13 +10,16 @@ import Cocoa
 final class BadgeIconComposer {
     private let iconSizes: [Int]
     private let canvasPixelSize: CGFloat
+    private let placementResolver: BadgePlacementResolver
 
     init(
         iconSizes: [Int] = [16, 32, 64, 128, 256, 512, 1024],
-        canvasPixelSize: CGFloat = 1024
+        canvasPixelSize: CGFloat = 1024,
+        placementResolver: BadgePlacementResolver = BadgePlacementResolver()
     ) {
         self.iconSizes = iconSizes
         self.canvasPixelSize = canvasPixelSize
+        self.placementResolver = placementResolver
     }
 
     func makeBadgedIcon(
@@ -65,19 +68,14 @@ final class BadgeIconComposer {
                 fraction: 1.0
             )
 
-            let scale = min(iconRect.width, iconRect.height) / 48.0
-            let canvasScale = min(canvasSize.width, canvasSize.height) / canvasPixelSize
-            let scaledBadgeSize = NSSize(
-                width: badgeSize.width * scale,
-                height: badgeSize.height * scale
+            let logicalPlacement = placementResolver.placement(
+                from: iconRect,
+                badgeSize: badgeSize,
+                badgeOffset: badgeOffset
             )
 
-            let badgeRect = NSRect(
-                x: iconRect.maxX - scaledBadgeSize.width + badgeOffset.x * canvasScale,
-                y: iconRect.minY + badgeOffset.y * canvasScale,
-                width: scaledBadgeSize.width,
-                height: scaledBadgeSize.height
-            )
+            let scale = iconSize / canvasPixelSize
+            let badgeRect = scaled(logicalPlacement.logicalRect, scale: scale)
 
             badge.draw(
                 in: badgeRect,
@@ -91,6 +89,15 @@ final class BadgeIconComposer {
         }
 
         return newIcon
+    }
+    
+    private func scaled(_ rect: NSRect, scale: CGFloat) -> NSRect {
+        NSRect(
+            x: rect.origin.x * scale,
+            y: rect.origin.y * scale,
+            width: rect.width * scale,
+            height: rect.height * scale
+        )
     }
 
     private func aspectFitRect(for image: NSImage, in bounds: NSRect) -> NSRect {

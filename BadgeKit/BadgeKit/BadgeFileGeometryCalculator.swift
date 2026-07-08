@@ -9,6 +9,7 @@ import Cocoa
 
 final class BadgeFileGeometryCalculator {
     private let canvasSize: CGFloat
+    private let placementResolver: BadgePlacementResolver
     
     private struct AlphaBoundsCacheKey: Hashable {
         let imageID: ObjectIdentifier
@@ -34,8 +35,12 @@ final class BadgeFileGeometryCalculator {
         )
     }
 
-    init(canvasSize: CGFloat = 1024) {
+    init(
+        canvasSize: CGFloat = 1024,
+        placementResolver: BadgePlacementResolver = BadgePlacementResolver()
+    ) {
         self.canvasSize = canvasSize
+        self.placementResolver = placementResolver
     }
 
     func badgeRect(
@@ -45,18 +50,12 @@ final class BadgeFileGeometryCalculator {
     ) -> NSRect {
         let canvasRect = NSRect(x: 0, y: 0, width: canvasSize, height: canvasSize)
         let iconRect = aspectFitRect(for: icon, in: canvasRect)
-        let scale = min(iconRect.width, iconRect.height) / 48.0
-        let scaledBadgeSize = NSSize(
-            width: badgeSize.width * scale,
-            height: badgeSize.height * scale
-        )
 
-        return NSRect(
-            x: iconRect.maxX - scaledBadgeSize.width + badgeOffset.x,
-            y: iconRect.minY + badgeOffset.y,
-            width: scaledBadgeSize.width,
-            height: scaledBadgeSize.height
-        )
+        return placementResolver.placement(
+            from: iconRect,
+            badgeSize: badgeSize,
+            badgeOffset: badgeOffset
+        ).logicalRect
     }
 
     func badgeOffset(
