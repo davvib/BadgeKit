@@ -11,15 +11,18 @@ final class BadgeIconComposer {
     private let iconSizes: [Int]
     private let canvasPixelSize: CGFloat
     private let placementResolver: BadgePlacementResolver
+    private let filePreviewNormalizer: FilePreviewNormalizer
 
     init(
         iconSizes: [Int] = [16, 32, 64, 128, 256, 512, 1024],
         canvasPixelSize: CGFloat = 1024,
-        placementResolver: BadgePlacementResolver = BadgePlacementResolver()
+        placementResolver: BadgePlacementResolver = BadgePlacementResolver(),
+        filePreviewNormalizer: FilePreviewNormalizer = FilePreviewNormalizer()
     ) {
         self.iconSizes = iconSizes
         self.canvasPixelSize = canvasPixelSize
         self.placementResolver = placementResolver
+        self.filePreviewNormalizer = filePreviewNormalizer
     }
 
     func makeBadgedIcon(
@@ -28,7 +31,24 @@ final class BadgeIconComposer {
         badgeSize: NSSize,
         badgeOffset: NSPoint
     ) -> NSImage {
+        let normalizedOriginalIcon = filePreviewNormalizer.normalizedPreview(from: originalIcon)
         let newIcon = NSImage(size: NSSize(width: canvasPixelSize, height: canvasPixelSize))
+
+        let logicalCanvasSize = NSSize(
+            width: canvasPixelSize,
+            height: canvasPixelSize
+        )
+
+        let logicalIconRect = aspectFitRect(
+            for: normalizedOriginalIcon,
+            in: NSRect(origin: .zero, size: logicalCanvasSize)
+        )
+
+        let logicalPlacement = placementResolver.placement(
+            from: logicalIconRect,
+            badgeSize: badgeSize,
+            badgeOffset: badgeOffset
+        )
 
         for iconSize in iconSizes {
             guard let bitmap = NSBitmapImageRep(
@@ -56,26 +76,24 @@ final class BadgeIconComposer {
             context.imageInterpolation = .high
             context.shouldAntialias = true
 
-            let iconRect = aspectFitRect(
-                for: originalIcon,
-                in: NSRect(origin: .zero, size: canvasSize)
+            let scale = iconSize / canvasPixelSize
+
+            let iconRect = scaled(
+                logicalIconRect,
+                scale: scale
             )
 
-            originalIcon.draw(
+            normalizedOriginalIcon.draw(
                 in: iconRect,
                 from: .zero,
                 operation: .copy,
                 fraction: 1.0
             )
 
-            let logicalPlacement = placementResolver.placement(
-                from: iconRect,
-                badgeSize: badgeSize,
-                badgeOffset: badgeOffset
+            let badgeRect = scaled(
+                logicalPlacement.logicalRect,
+                scale: scale
             )
-
-            let scale = iconSize / canvasPixelSize
-            let badgeRect = scaled(logicalPlacement.logicalRect, scale: scale)
 
             badge.draw(
                 in: badgeRect,
@@ -87,7 +105,7 @@ final class BadgeIconComposer {
             NSGraphicsContext.restoreGraphicsState()
             newIcon.addRepresentation(bitmap)
         }
-
+        
         return newIcon
     }
     
