@@ -22,17 +22,23 @@ final class BadgePlacementResolver {
     private let baseBadgeDivisor: CGFloat
     private let folderBadgeScale: CGFloat
     private let fileBadgeScale: CGFloat
+    private let folderBadgeOffsetAdjustment: CGPoint
+    private let fileBadgeOffsetAdjustment: CGPoint
 
     init(
         canvasSize: CGFloat = 1024,
         baseBadgeDivisor: CGFloat = 48,
         folderBadgeScale: CGFloat = 1.0,
-        fileBadgeScale: CGFloat = 0.75
+        fileBadgeScale: CGFloat = 0.75,
+        folderBadgeOffsetAdjustment: CGPoint = CGPoint(x: -40, y: 100),
+        fileBadgeOffsetAdjustment: CGPoint = .zero
     ) {
         self.canvasSize = canvasSize
         self.baseBadgeDivisor = baseBadgeDivisor
         self.folderBadgeScale = folderBadgeScale
         self.fileBadgeScale = fileBadgeScale
+        self.folderBadgeOffsetAdjustment = folderBadgeOffsetAdjustment
+        self.fileBadgeOffsetAdjustment = fileBadgeOffsetAdjustment
     }
 
     func placement(
@@ -79,6 +85,15 @@ final class BadgePlacementResolver {
                 return fileBadgeScale
             }
         }()
+        
+        let kindOffsetAdjustment: CGPoint = {
+            switch kind {
+            case .folder:
+                return folderBadgeOffsetAdjustment
+            case .file:
+                return fileBadgeOffsetAdjustment
+            }
+        }()
 
         let badgeScale = min(sizeAnchorRect.width, sizeAnchorRect.height) / baseBadgeDivisor
 
@@ -88,8 +103,8 @@ final class BadgePlacementResolver {
         )
 
         let logicalRect = CGRect(
-            x: positionAnchorRect.maxX - size.width + badgeOffset.x,
-            y: positionAnchorRect.minY + badgeOffset.y,
+            x: positionAnchorRect.maxX - size.width + badgeOffset.x + kindOffsetAdjustment.x,
+            y: positionAnchorRect.minY + badgeOffset.y + kindOffsetAdjustment.y,
             width: size.width,
             height: size.height
         )

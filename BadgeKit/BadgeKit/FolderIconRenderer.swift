@@ -98,8 +98,11 @@ final class FolderIconRenderer {
 
     func badgeRect(colorName: String?, badgeSize: NSSize, badgeOffset: NSPoint) -> NSRect {
         let anchorRect = asset(for: colorName) == nil ? frontRect : assetFrontRect
+
         return placementResolver.placement(
-            from: anchorRect,
+            kind: .folder,
+            positionAnchorRect: anchorRect,
+            sizeAnchorRect: anchorRect,
             badgeSize: badgeSize,
             badgeOffset: badgeOffset
         ).logicalRect
@@ -393,7 +396,9 @@ final class FolderIconRenderer {
         guard let badge else { return }
 
         let logicalPlacement = placementResolver.placement(
-            from: anchorRect,
+            kind: .folder,
+            positionAnchorRect: anchorRect,
+            sizeAnchorRect: anchorRect,
             badgeSize: badgeSize,
             badgeOffset: badgeOffset
         )
