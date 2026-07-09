@@ -12,16 +12,27 @@
 
 import CoreGraphics
 
+enum BadgePlacementKind {
+    case folder
+    case file
+}
+
 final class BadgePlacementResolver {
     private let canvasSize: CGFloat
     private let baseBadgeDivisor: CGFloat
+    private let folderBadgeScale: CGFloat
+    private let fileBadgeScale: CGFloat
 
     init(
         canvasSize: CGFloat = 1024,
-        baseBadgeDivisor: CGFloat = 48
+        baseBadgeDivisor: CGFloat = 48,
+        folderBadgeScale: CGFloat = 1.0,
+        fileBadgeScale: CGFloat = 0.75
     ) {
         self.canvasSize = canvasSize
         self.baseBadgeDivisor = baseBadgeDivisor
+        self.folderBadgeScale = folderBadgeScale
+        self.fileBadgeScale = fileBadgeScale
     }
 
     func placement(
@@ -47,6 +58,45 @@ final class BadgePlacementResolver {
         return BadgePlacement(
             canvasSize: canvasSize,
             anchorRect: anchorRect,
+            logicalRect: logicalRect,
+            visibleRect: visibleRectResolver(logicalRect)
+        )
+    }
+    
+    func placement(
+        kind: BadgePlacementKind,
+        positionAnchorRect: CGRect,
+        sizeAnchorRect: CGRect,
+        badgeSize: CGSize,
+        badgeOffset: CGPoint,
+        visibleRectResolver: (CGRect) -> CGRect = { $0 }
+    ) -> BadgePlacement {
+        let kindScale: CGFloat = {
+            switch kind {
+            case .folder:
+                return folderBadgeScale
+            case .file:
+                return fileBadgeScale
+            }
+        }()
+
+        let badgeScale = min(sizeAnchorRect.width, sizeAnchorRect.height) / baseBadgeDivisor
+
+        let size = CGSize(
+            width: badgeSize.width * badgeScale * kindScale,
+            height: badgeSize.height * badgeScale * kindScale
+        )
+
+        let logicalRect = CGRect(
+            x: positionAnchorRect.maxX - size.width + badgeOffset.x,
+            y: positionAnchorRect.minY + badgeOffset.y,
+            width: size.width,
+            height: size.height
+        )
+
+        return BadgePlacement(
+            canvasSize: canvasSize,
+            anchorRect: positionAnchorRect,
             logicalRect: logicalRect,
             visibleRect: visibleRectResolver(logicalRect)
         )

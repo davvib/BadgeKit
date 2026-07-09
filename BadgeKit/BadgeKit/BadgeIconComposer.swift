@@ -31,7 +31,8 @@ final class BadgeIconComposer {
         badgeSize: NSSize,
         badgeOffset: NSPoint
     ) -> NSImage {
-        let normalizedOriginalIcon = filePreviewNormalizer.normalizedPreview(from: originalIcon)
+        let normalizedPreview = filePreviewNormalizer.normalizedPreview(from: originalIcon)
+        let normalizedOriginalIcon = normalizedPreview.image
         let newIcon = NSImage(size: NSSize(width: canvasPixelSize, height: canvasPixelSize))
 
         let logicalCanvasSize = NSSize(
@@ -39,13 +40,17 @@ final class BadgeIconComposer {
             height: canvasPixelSize
         )
 
-        let logicalIconRect = aspectFitRect(
+        let imageDrawRect = aspectFitRect(
             for: normalizedOriginalIcon,
             in: NSRect(origin: .zero, size: logicalCanvasSize)
         )
 
+        let badgeAnchorRect = normalizedPreview.contentRect
+
         let logicalPlacement = placementResolver.placement(
-            from: logicalIconRect,
+            kind: .file,
+            positionAnchorRect: badgeAnchorRect,
+            sizeAnchorRect: NSRect(origin: .zero, size: logicalCanvasSize),
             badgeSize: badgeSize,
             badgeOffset: badgeOffset
         )
@@ -79,7 +84,7 @@ final class BadgeIconComposer {
             let scale = iconSize / canvasPixelSize
 
             let iconRect = scaled(
-                logicalIconRect,
+                imageDrawRect,
                 scale: scale
             )
 
@@ -141,6 +146,20 @@ final class BadgeIconComposer {
             y: bounds.midY - size.height / 2,
             width: size.width,
             height: size.height
+        )
+    }
+    
+    private func scaleRect(_ rect: NSRect, by scale: CGFloat) -> NSRect {
+        let newSize = NSSize(
+            width: rect.width * scale,
+            height: rect.height * scale
+        )
+
+        return NSRect(
+            x: rect.midX - newSize.width / 2,
+            y: rect.midY - newSize.height / 2,
+            width: newSize.width,
+            height: newSize.height
         )
     }
 }

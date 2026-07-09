@@ -12,19 +12,26 @@
 
 import AppKit
 
+struct NormalizedFilePreview {
+    let image: NSImage
+    let contentRect: NSRect
+}
+
 final class FilePreviewNormalizer {
     private let canvasSize: CGFloat
     private let cornerRadiusRatio: CGFloat
+    private let contentScale: CGFloat
 
     init(
         canvasSize: CGFloat = 1024,
-        cornerRadiusRatio: CGFloat = 0.08
+        cornerRadiusRatio: CGFloat = 0.08,
+        contentScale: CGFloat = 0.90
     ) {
         self.canvasSize = canvasSize
         self.cornerRadiusRatio = cornerRadiusRatio
+        self.contentScale = contentScale
     }
-
-    func normalizedPreview(from image: NSImage) -> NSImage {
+    func normalizedPreview(from image: NSImage) -> NormalizedFilePreview {
         let canvas = NSSize(width: canvasSize, height: canvasSize)
         let normalizedImage = NSImage(size: canvas)
 
@@ -37,11 +44,16 @@ final class FilePreviewNormalizer {
             for: image,
             in: canvasRect
         )
+        
+        let scaledImageRect = scaleRect(
+            imageRect,
+            by: contentScale
+        )
 
-        let radius = min(imageRect.width, imageRect.height) * cornerRadiusRatio
-
+        let radius = min(scaledImageRect.width, scaledImageRect.height) * cornerRadiusRatio
+        
         let clippingPath = NSBezierPath(
-            roundedRect: imageRect,
+            roundedRect: scaledImageRect,
             xRadius: radius,
             yRadius: radius
         )
@@ -49,7 +61,7 @@ final class FilePreviewNormalizer {
         clippingPath.addClip()
 
         image.draw(
-            in: imageRect,
+            in: scaledImageRect,
             from: .zero,
             operation: .sourceOver,
             fraction: 1.0
@@ -57,7 +69,10 @@ final class FilePreviewNormalizer {
 
         normalizedImage.unlockFocus()
 
-        return normalizedImage
+        return NormalizedFilePreview(
+            image: normalizedImage,
+            contentRect: scaledImageRect
+        )
     }
 
     private func aspectFitRect(for image: NSImage, in bounds: NSRect) -> NSRect {
@@ -83,6 +98,20 @@ final class FilePreviewNormalizer {
             y: bounds.midY - size.height / 2,
             width: size.width,
             height: size.height
+        )
+    }
+    
+    private func scaleRect(_ rect: NSRect, by scale: CGFloat) -> NSRect {
+        let newSize = NSSize(
+            width: rect.width * scale,
+            height: rect.height * scale
+        )
+
+        return NSRect(
+            x: rect.midX - newSize.width / 2,
+            y: rect.midY - newSize.height / 2,
+            width: newSize.width,
+            height: newSize.height
         )
     }
 }
