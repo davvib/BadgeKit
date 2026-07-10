@@ -82,7 +82,7 @@ public final class BadgeBaseIconResolver {
         }
 
         if hasAppBadge, isDirectory {
-            completion(defaultFolderIcon())
+            completion(fallbackIcon)
             return
         }
 

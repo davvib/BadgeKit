@@ -12,17 +12,20 @@ final class BadgeIconComposer {
     private let canvasPixelSize: CGFloat
     private let placementResolver: BadgePlacementResolver
     private let filePreviewNormalizer: FilePreviewNormalizer
+    private let badgeImageNormalizer: BadgeImageNormalizer
 
     init(
         iconSizes: [Int] = [16, 32, 64, 128, 256, 512, 1024],
         canvasPixelSize: CGFloat = 1024,
         placementResolver: BadgePlacementResolver = BadgePlacementResolver(),
-        filePreviewNormalizer: FilePreviewNormalizer = FilePreviewNormalizer()
+        filePreviewNormalizer: FilePreviewNormalizer = FilePreviewNormalizer(),
+        badgeImageNormalizer: BadgeImageNormalizer = BadgeImageNormalizer()
     ) {
         self.iconSizes = iconSizes
         self.canvasPixelSize = canvasPixelSize
         self.placementResolver = placementResolver
         self.filePreviewNormalizer = filePreviewNormalizer
+        self.badgeImageNormalizer = badgeImageNormalizer
     }
 
     func makeBadgedIcon(
@@ -110,10 +113,106 @@ final class BadgeIconComposer {
             NSGraphicsContext.restoreGraphicsState()
             newIcon.addRepresentation(bitmap)
         }
-        
+
         return newIcon
     }
-    
+
+    func makeBadgedSystemIcon(
+        originalIcon: NSImage,
+        badge: NSImage,
+        badgeSize: NSSize,
+        badgeOffset: NSPoint,
+        kind: BadgePlacementKind
+    ) -> NSImage {
+        let newIcon = NSImage(
+            size: NSSize(
+                width: canvasPixelSize,
+                height: canvasPixelSize
+            )
+        )
+
+        let logicalCanvasSize = NSSize(
+            width: canvasPixelSize,
+            height: canvasPixelSize
+        )
+
+        let imageDrawRect = NSRect(
+            origin: .zero,
+            size: logicalCanvasSize
+        )
+
+        let badgeAnchorRect = placementResolver.systemIconAnchorRect(
+            kind: kind,
+            canvasRect: imageDrawRect
+        )
+
+        let logicalPlacement = placementResolver.placement(
+            kind: kind,
+            positionAnchorRect: badgeAnchorRect,
+            sizeAnchorRect: badgeAnchorRect,
+            badgeSize: badgeSize,
+            badgeOffset: badgeOffset
+        )
+
+        let badgeToDraw = badgeImageNormalizer.trimmed(badge) ?? badge
+
+        for iconSize in iconSizes {
+            guard let bitmap = NSBitmapImageRep(
+                bitmapDataPlanes: nil,
+                pixelsWide: iconSize,
+                pixelsHigh: iconSize,
+                bitsPerSample: 8,
+                samplesPerPixel: 4,
+                hasAlpha: true,
+                isPlanar: false,
+                colorSpaceName: .deviceRGB,
+                bytesPerRow: 0,
+                bitsPerPixel: 0
+            ),
+            let context = NSGraphicsContext(bitmapImageRep: bitmap) else {
+                continue
+            }
+
+            let representationSize = CGFloat(iconSize)
+            let canvasSize = NSSize(
+                width: representationSize,
+                height: representationSize
+            )
+
+            bitmap.size = canvasSize
+
+            NSGraphicsContext.saveGraphicsState()
+            NSGraphicsContext.current = context
+
+            context.cgContext.clear(
+                CGRect(origin: .zero, size: canvasSize)
+            )
+            context.imageInterpolation = .high
+            context.shouldAntialias = true
+
+            let scale = representationSize / canvasPixelSize
+
+            originalIcon.draw(
+                in: scaled(imageDrawRect, scale: scale),
+                from: .zero,
+                operation: .copy,
+                fraction: 1.0
+            )
+
+            badgeToDraw.draw(
+                in: scaled(logicalPlacement.logicalRect, scale: scale),
+                from: .zero,
+                operation: .sourceOver,
+                fraction: 1.0
+            )
+
+            NSGraphicsContext.restoreGraphicsState()
+            newIcon.addRepresentation(bitmap)
+        }
+
+        return newIcon
+    }
+
     private func scaled(_ rect: NSRect, scale: CGFloat) -> NSRect {
         NSRect(
             x: rect.origin.x * scale,
@@ -148,7 +247,7 @@ final class BadgeIconComposer {
             height: size.height
         )
     }
-    
+
     private func scaleRect(_ rect: NSRect, by scale: CGFloat) -> NSRect {
         let newSize = NSSize(
             width: rect.width * scale,

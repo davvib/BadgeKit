@@ -30,7 +30,35 @@ public final class BadgeKitRenderer {
             badgeOffset: configuration.offset
         )
     }
-    
+
+    public func renderSystemIcon(
+        baseIcon: NSImage,
+        badge: NSImage,
+        configuration: BadgeConfiguration
+    ) -> NSImage {
+        composer.makeBadgedSystemIcon(
+            originalIcon: baseIcon,
+            badge: badge,
+            badgeSize: configuration.size,
+            badgeOffset: configuration.offset,
+            kind: .file
+        )
+    }
+
+    public func renderFolderSystemIcon(
+        baseIcon: NSImage,
+        badge: NSImage,
+        configuration: BadgeConfiguration
+    ) -> NSImage {
+        composer.makeBadgedSystemIcon(
+            originalIcon: baseIcon,
+            badge: badge,
+            badgeSize: configuration.size,
+            badgeOffset: configuration.offset,
+            kind: .folder
+        )
+    }
+
     public func makePreviewCacheKey(
         baseIcon: NSImage,
         badge: NSImage,
@@ -49,7 +77,7 @@ public final class BadgeKitRenderer {
             folderSymbolText: folderSymbolText
         )
     }
-    
+
     public func renderPreviewIcon(
         baseIcon: NSImage,
         folderColorName: String?,
@@ -72,7 +100,7 @@ public final class BadgeKitRenderer {
             fallbackRenderer: fallbackRenderer
         )
     }
-    
+
     public func renderFolderIcon(
         colorName: String?,
         fallbackColor: NSColor?,
@@ -110,7 +138,7 @@ public final class BadgeKitRenderer {
             badgeOffset: configuration.offset
         )
     }
-    
+
     public func badgeGeometry(
         isDirectory: Bool,
         folderColorName: String?,
@@ -127,7 +155,7 @@ public final class BadgeKitRenderer {
             badgeOffset: configuration.offset
         )
     }
-    
+
     public func badgeOffset(
         isDirectory: Bool,
         folderColorName: String?,
@@ -143,7 +171,7 @@ public final class BadgeKitRenderer {
             placingBadgeCenterAt: center
         )
     }
-    
+
     public func logicalBadgeCenter(
         forVisibleCenter visibleCenter: CGPoint,
         isDirectory: Bool,

@@ -24,6 +24,7 @@ final class BadgePlacementResolver {
     private let fileBadgeScale: CGFloat
     private let folderBadgeOffsetAdjustment: CGPoint
     private let fileBadgeOffsetAdjustment: CGPoint
+    private let folderBadgeReferenceDimension: CGFloat
 
     init(
         canvasSize: CGFloat = 1024,
@@ -31,7 +32,8 @@ final class BadgePlacementResolver {
         folderBadgeScale: CGFloat = 1.0,
         fileBadgeScale: CGFloat = 0.75,
         folderBadgeOffsetAdjustment: CGPoint = CGPoint(x: -40, y: 100),
-        fileBadgeOffsetAdjustment: CGPoint = .zero
+        fileBadgeOffsetAdjustment: CGPoint = .zero,
+        folderBadgeReferenceDimension: CGFloat = 704
     ) {
         self.canvasSize = canvasSize
         self.baseBadgeDivisor = baseBadgeDivisor
@@ -39,6 +41,30 @@ final class BadgePlacementResolver {
         self.fileBadgeScale = fileBadgeScale
         self.folderBadgeOffsetAdjustment = folderBadgeOffsetAdjustment
         self.fileBadgeOffsetAdjustment = fileBadgeOffsetAdjustment
+        self.folderBadgeReferenceDimension = folderBadgeReferenceDimension
+    }
+
+    func systemIconAnchorRect(
+        kind: BadgePlacementKind,
+        canvasRect: CGRect
+    ) -> CGRect {
+        switch kind {
+        case .folder:
+            let scale = min(
+                canvasRect.width / canvasSize,
+                canvasRect.height / canvasSize
+            )
+
+            return CGRect(
+                x: canvasRect.minX + 32 * scale,
+                y: canvasRect.minY + 42 * scale,
+                width: 984 * scale,
+                height: 704 * scale
+            )
+
+        case .file:
+            return canvasRect
+        }
     }
 
     func placement(
@@ -68,7 +94,7 @@ final class BadgePlacementResolver {
             visibleRect: visibleRectResolver(logicalRect)
         )
     }
-    
+
     func placement(
         kind: BadgePlacementKind,
         positionAnchorRect: CGRect,
@@ -85,7 +111,7 @@ final class BadgePlacementResolver {
                 return fileBadgeScale
             }
         }()
-        
+
         let kindOffsetAdjustment: CGPoint = {
             switch kind {
             case .folder:

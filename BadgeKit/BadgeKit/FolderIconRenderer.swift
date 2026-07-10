@@ -1,9 +1,13 @@
 import Cocoa
 
 final class FolderIconRenderer {
-    
-    init() { }
-    
+
+    init(
+        badgeImageNormalizer: BadgeImageNormalizer = BadgeImageNormalizer()
+    ) {
+        self.badgeImageNormalizer = badgeImageNormalizer
+    }
+
     private struct FolderAsset {
         let directoryName: String
         let filePrefix: String
@@ -17,7 +21,8 @@ final class FolderIconRenderer {
     private let assetFrontRect = NSRect(x: 32, y: 42, width: 984, height: 704)
     private let assetSymbolRect = NSRect(x: 214.50, y: 236.00, width: 597.50, height: 421.50)
     private let placementResolver = BadgePlacementResolver()
-    
+    private let badgeImageNormalizer: BadgeImageNormalizer
+
     private var folderAssetImageCache: [String: NSImage] = [:]
     private var trimmedImageCache: [ObjectIdentifier: NSImage] = [:]
 
@@ -448,7 +453,7 @@ final class FolderIconRenderer {
             return cachedImage
         }
 
-        guard let trimmedImage = trimmedImage(image) else {
+        guard let trimmedImage = badgeImageNormalizer.trimmed(image) else {
             return nil
         }
 
@@ -456,61 +461,9 @@ final class FolderIconRenderer {
         return trimmedImage
     }
 
-    private func trimmedImage(_ image: NSImage) -> NSImage? {
-        guard let cgImage = image.cgImage(forProposedRect: nil, context: nil, hints: nil),
-              let bounds = alphaBounds(in: cgImage),
-              let cropped = cgImage.cropping(to: bounds) else {
-            return nil
-        }
 
-        return NSImage(cgImage: cropped, size: NSSize(width: bounds.width, height: bounds.height))
-    }
 
-    private func alphaBounds(in image: CGImage) -> CGRect? {
-        let width = image.width
-        let height = image.height
-        var pixels = [UInt8](repeating: 0, count: width * height * 4)
 
-        guard let context = CGContext(
-            data: &pixels,
-            width: width,
-            height: height,
-            bitsPerComponent: 8,
-            bytesPerRow: width * 4,
-            space: CGColorSpaceCreateDeviceRGB(),
-            bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue
-        ) else {
-            return nil
-        }
-
-        context.draw(image, in: CGRect(x: 0, y: 0, width: width, height: height))
-
-        var minX = width
-        var minY = height
-        var maxX = -1
-        var maxY = -1
-
-        for y in 0..<height {
-            for x in 0..<width {
-                let alpha = pixels[(y * width + x) * 4 + 3]
-                if alpha > 5 {
-                    minX = min(minX, x)
-                    minY = min(minY, y)
-                    maxX = max(maxX, x)
-                    maxY = max(maxY, y)
-                }
-            }
-        }
-
-        guard maxX >= minX, maxY >= minY else { return nil }
-
-        return CGRect(
-            x: minX,
-            y: minY,
-            width: maxX - minX + 1,
-            height: maxY - minY + 1
-        )
-    }
 
     private func adjusted(_ color: NSColor, brightness delta: CGFloat) -> NSColor {
         guard let color = color.usingColorSpace(.deviceRGB) else { return color }
