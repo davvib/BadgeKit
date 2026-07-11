@@ -187,19 +187,6 @@ class ViewController: NSViewController, NSTextFieldDelegate {
         )
     }
 
-    private func folderSymbolXattrNames(at path: String) -> [String] {
-        folderAppearanceResolver.symbolXattrNames(
-            at: path,
-            xattrNamesProvider: { [weak self] path in
-                self?.xattrNames(at: path) ?? []
-            }
-        )
-    }
-
-    private func folderSymbolXattrNames(in names: [String]) -> [String] {
-        folderAppearanceResolver.symbolXattrNames(from: names)
-    }
-
     private func customRenderedFolderIcon(for item: DroppedItem, badge: NSImage? = nil) -> NSImage? {
         badgeKitRenderer.renderFolderIcon(
             colorName: item.folderColorName,
@@ -263,10 +250,6 @@ class ViewController: NSViewController, NSTextFieldDelegate {
         item.cachedPreviewIcon = previewIcon
 
         return previewIcon
-    }
-
-    func previewBadgeRect(for item: DroppedItem) -> NSRect? {
-        previewBadgeGeometry(for: item)?.logicalRect
     }
 
     func previewBadgeGeometry(for item: DroppedItem) -> BadgeGeometry? {
@@ -403,10 +386,6 @@ class ViewController: NSViewController, NSTextFieldDelegate {
                 self?.xattrData(named: name, at: path)
             }
         )
-    }
-
-    private func removeFolderVisualCustomizationXattrs(at path: String) {
-        folderVisualCustomizationRestorer.removeVisualCustomizationXattrs(at: path)
     }
 
     private func clearFinderCustomIconState(at path: String) {
