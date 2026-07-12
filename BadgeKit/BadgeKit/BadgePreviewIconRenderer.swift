@@ -10,7 +10,9 @@ import Cocoa
 final class BadgePreviewIconRenderer {
     private let folderPreviewRenderer: BadgeFolderPreviewRenderer
 
-    init(folderPreviewRenderer: BadgeFolderPreviewRenderer = BadgeFolderPreviewRenderer()) {
+    init(
+        folderPreviewRenderer: BadgeFolderPreviewRenderer = BadgeFolderPreviewRenderer()
+    ) {
         self.folderPreviewRenderer = folderPreviewRenderer
     }
 
@@ -21,8 +23,7 @@ final class BadgePreviewIconRenderer {
         folderSymbolName: String?,
         folderSymbolText: String?,
         badge: NSImage,
-        badgeSize: NSSize,
-        badgeOffset: NSPoint,
+        configuration: BadgeConfiguration,
         fallbackRenderer: (NSImage, NSImage, NSSize) -> NSImage
     ) -> NSImage {
         folderPreviewRenderer.renderPreview(
@@ -31,8 +32,11 @@ final class BadgePreviewIconRenderer {
             symbolName: folderSymbolName,
             symbolText: folderSymbolText,
             badge: badge,
-            badgeSize: badgeSize,
-            badgeOffset: badgeOffset
-        ) ?? fallbackRenderer(baseIcon, badge, badgeSize)
+            configuration: configuration
+        ) ?? fallbackRenderer(
+            baseIcon,
+            badge,
+            configuration.size
+        )
     }
 }

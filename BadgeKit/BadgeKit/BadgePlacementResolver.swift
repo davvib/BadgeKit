@@ -67,22 +67,110 @@ final class BadgePlacementResolver {
         }
     }
 
+    private func origin(
+        for position: BadgePosition,
+        in anchorRect: CGRect,
+        badgeSize: CGSize
+    ) -> CGPoint {
+        switch position {
+        case .topLeading:
+            return CGPoint(
+                x: anchorRect.minX,
+                y: anchorRect.maxY - badgeSize.height
+            )
+
+        case .topTrailing:
+            return CGPoint(
+                x: anchorRect.maxX - badgeSize.width,
+                y: anchorRect.maxY - badgeSize.height
+            )
+
+        case .center:
+            return CGPoint(
+                x: anchorRect.midX - badgeSize.width / 2,
+                y: anchorRect.midY - badgeSize.height / 2
+            )
+
+        case .bottomLeading:
+            return CGPoint(
+                x: anchorRect.minX,
+                y: anchorRect.minY
+            )
+
+        case .bottomTrailing:
+            return CGPoint(
+                x: anchorRect.maxX - badgeSize.width,
+                y: anchorRect.minY
+            )
+        }
+    }
+
+    private func offsetAdjustment(
+        kind: BadgePlacementKind,
+        position: BadgePosition
+    ) -> CGPoint {
+        let baseAdjustment: CGPoint
+
+        switch kind {
+        case .folder:
+            baseAdjustment = folderBadgeOffsetAdjustment
+
+        case .file:
+            baseAdjustment = fileBadgeOffsetAdjustment
+        }
+
+        switch position {
+        case .topLeading:
+            return CGPoint(
+                x: -baseAdjustment.x,
+                y: -baseAdjustment.y
+            )
+
+        case .topTrailing:
+            return CGPoint(
+                x: baseAdjustment.x,
+                y: -baseAdjustment.y
+            )
+
+        case .center:
+            return .zero
+
+        case .bottomLeading:
+            return CGPoint(
+                x: -baseAdjustment.x,
+                y: baseAdjustment.y
+            )
+
+        case .bottomTrailing:
+            return baseAdjustment
+        }
+    }
+
     func placement(
         from anchorRect: CGRect,
         badgeSize: CGSize,
         badgeOffset: CGPoint,
+        position: BadgePosition = .bottomTrailing,
         visibleRectResolver: (CGRect) -> CGRect = { $0 }
     ) -> BadgePlacement {
-        let badgeScale = min(anchorRect.width, anchorRect.height) / baseBadgeDivisor
+        let badgeScale =
+            min(anchorRect.width, anchorRect.height) /
+            baseBadgeDivisor
 
         let size = CGSize(
             width: badgeSize.width * badgeScale,
             height: badgeSize.height * badgeScale
         )
 
+        let baseOrigin = origin(
+            for: position,
+            in: anchorRect,
+            badgeSize: size
+        )
+
         let logicalRect = CGRect(
-            x: anchorRect.maxX - size.width + badgeOffset.x,
-            y: anchorRect.minY + badgeOffset.y,
+            x: baseOrigin.x + badgeOffset.x,
+            y: baseOrigin.y + badgeOffset.y,
             width: size.width,
             height: size.height
         )
@@ -101,36 +189,46 @@ final class BadgePlacementResolver {
         sizeAnchorRect: CGRect,
         badgeSize: CGSize,
         badgeOffset: CGPoint,
+        position: BadgePosition = .bottomTrailing,
         visibleRectResolver: (CGRect) -> CGRect = { $0 }
     ) -> BadgePlacement {
         let kindScale: CGFloat = {
             switch kind {
             case .folder:
                 return folderBadgeScale
+
             case .file:
                 return fileBadgeScale
             }
         }()
 
-        let kindOffsetAdjustment: CGPoint = {
-            switch kind {
-            case .folder:
-                return folderBadgeOffsetAdjustment
-            case .file:
-                return fileBadgeOffsetAdjustment
-            }
-        }()
-
-        let badgeScale = min(sizeAnchorRect.width, sizeAnchorRect.height) / baseBadgeDivisor
+        let badgeScale =
+            min(sizeAnchorRect.width, sizeAnchorRect.height) /
+            baseBadgeDivisor
 
         let size = CGSize(
             width: badgeSize.width * badgeScale * kindScale,
             height: badgeSize.height * badgeScale * kindScale
         )
 
+        let baseOrigin = origin(
+            for: position,
+            in: positionAnchorRect,
+            badgeSize: size
+        )
+
+        let kindAdjustment = offsetAdjustment(
+            kind: kind,
+            position: position
+        )
+
         let logicalRect = CGRect(
-            x: positionAnchorRect.maxX - size.width + badgeOffset.x + kindOffsetAdjustment.x,
-            y: positionAnchorRect.minY + badgeOffset.y + kindOffsetAdjustment.y,
+            x: baseOrigin.x
+                + badgeOffset.x
+                + kindAdjustment.x,
+            y: baseOrigin.y
+                + badgeOffset.y
+                + kindAdjustment.y,
             width: size.width,
             height: size.height
         )

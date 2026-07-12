@@ -32,8 +32,7 @@ final class FolderIconRenderer {
         symbolName: String?,
         symbolText: String?,
         badge: NSImage?,
-        badgeSize: NSSize,
-        badgeOffset: NSPoint
+        configuration: BadgeConfiguration
     ) -> NSImage {
         renderFolderIcon(
             colorName: colorName,
@@ -41,8 +40,7 @@ final class FolderIconRenderer {
             symbolName: symbolName,
             symbolText: symbolText,
             badge: badge,
-            badgeSize: badgeSize,
-            badgeOffset: badgeOffset,
+            configuration: configuration,
             sizes: iconSizes
         )
     }
@@ -53,8 +51,7 @@ final class FolderIconRenderer {
         symbolName: String?,
         symbolText: String?,
         badge: NSImage?,
-        badgeSize: NSSize,
-        badgeOffset: NSPoint
+        configuration: BadgeConfiguration
     ) -> NSImage {
         renderFolderIcon(
             colorName: colorName,
@@ -62,8 +59,7 @@ final class FolderIconRenderer {
             symbolName: symbolName,
             symbolText: symbolText,
             badge: badge,
-            badgeSize: badgeSize,
-            badgeOffset: badgeOffset,
+            configuration: configuration,
             sizes: [512]
         )
     }
@@ -74,8 +70,7 @@ final class FolderIconRenderer {
         symbolName: String?,
         symbolText: String?,
         badge: NSImage?,
-        badgeSize: NSSize,
-        badgeOffset: NSPoint,
+        configuration: BadgeConfiguration,
         sizes: [Int]
     ) -> NSImage {
         let folderAsset = asset(for: colorName)
@@ -89,8 +84,7 @@ final class FolderIconRenderer {
                 symbolName: symbolName,
                 symbolText: symbolText,
                 badge: badge,
-                badgeSize: badgeSize,
-                badgeOffset: badgeOffset
+                configuration: configuration
             ) else {
                 continue
             }
@@ -139,8 +133,7 @@ final class FolderIconRenderer {
         symbolName: String?,
         symbolText: String?,
         badge: NSImage?,
-        badgeSize: NSSize,
-        badgeOffset: NSPoint
+        configuration: BadgeConfiguration
     ) -> NSBitmapImageRep? {
         guard let bitmap = NSBitmapImageRep(
             bitmapDataPlanes: nil,
@@ -169,11 +162,21 @@ final class FolderIconRenderer {
 
         if let folderAsset, drawFolderAsset(folderAsset, size: size, in: canvas) {
             drawFolderSymbol(systemName: symbolName, text: symbolText, in: assetSymbolRect, scale: scale)
-            drawBadge(badge, in: assetFrontRect, badgeSize: badgeSize, badgeOffset: badgeOffset, scale: scale)
+            drawBadge(
+                badge,
+                in: assetFrontRect,
+                configuration: configuration,
+                scale: scale
+            )
         } else {
             drawFallbackFolderBase(color: fallbackColor, scale: scale)
             drawFolderSymbol(systemName: symbolName, text: symbolText, in: symbolRect, scale: scale)
-            drawBadge(badge, in: frontRect, badgeSize: badgeSize, badgeOffset: badgeOffset, scale: scale)
+            drawBadge(
+                badge,
+                in: frontRect,
+                configuration: configuration,
+                scale: scale
+            )
         }
 
         NSGraphicsContext.restoreGraphicsState()
@@ -397,15 +400,21 @@ final class FolderIconRenderer {
         attributedText.draw(in: textRect)
     }
 
-    private func drawBadge(_ badge: NSImage?, in anchorRect: NSRect, badgeSize: NSSize, badgeOffset: NSPoint, scale: CGFloat) {
+    private func drawBadge(
+        _ badge: NSImage?,
+        in anchorRect: NSRect,
+        configuration: BadgeConfiguration,
+        scale: CGFloat
+    ) {
         guard let badge else { return }
 
         let logicalPlacement = placementResolver.placement(
             kind: .folder,
             positionAnchorRect: anchorRect,
             sizeAnchorRect: anchorRect,
-            badgeSize: badgeSize,
-            badgeOffset: badgeOffset
+            badgeSize: configuration.size,
+            badgeOffset: configuration.offset,
+            position: configuration.position
         )
 
         let rect = scaled(logicalPlacement.logicalRect, scale: scale)

@@ -32,7 +32,8 @@ final class BadgeIconComposer {
         originalIcon: NSImage,
         badge: NSImage,
         badgeSize: NSSize,
-        badgeOffset: NSPoint
+        badgeOffset: NSPoint,
+        badgePosition: BadgePosition
     ) -> NSImage {
         let normalizedPreview = filePreviewNormalizer.normalizedPreview(from: originalIcon)
         let normalizedOriginalIcon = normalizedPreview.image
@@ -55,7 +56,8 @@ final class BadgeIconComposer {
             positionAnchorRect: badgeAnchorRect,
             sizeAnchorRect: NSRect(origin: .zero, size: logicalCanvasSize),
             badgeSize: badgeSize,
-            badgeOffset: badgeOffset
+            badgeOffset: badgeOffset,
+            position: badgePosition
         )
 
         for iconSize in iconSizes {
@@ -122,6 +124,7 @@ final class BadgeIconComposer {
         badge: NSImage,
         badgeSize: NSSize,
         badgeOffset: NSPoint,
+        badgePosition: BadgePosition,
         kind: BadgePlacementKind
     ) -> NSImage {
         let newIcon = NSImage(
@@ -151,7 +154,8 @@ final class BadgeIconComposer {
             positionAnchorRect: badgeAnchorRect,
             sizeAnchorRect: badgeAnchorRect,
             badgeSize: badgeSize,
-            badgeOffset: badgeOffset
+            badgeOffset: badgeOffset,
+            position: badgePosition
         )
 
         let badgeToDraw = badgeImageNormalizer.trimmed(badge) ?? badge

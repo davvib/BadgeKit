@@ -27,7 +27,8 @@ public final class BadgeKitRenderer {
             originalIcon: baseIcon,
             badge: badge,
             badgeSize: configuration.size,
-            badgeOffset: configuration.offset
+            badgeOffset: configuration.offset,
+            badgePosition: configuration.position
         )
     }
 
@@ -41,6 +42,7 @@ public final class BadgeKitRenderer {
             badge: badge,
             badgeSize: configuration.size,
             badgeOffset: configuration.offset,
+            badgePosition: configuration.position,
             kind: .file
         )
     }
@@ -55,6 +57,7 @@ public final class BadgeKitRenderer {
             badge: badge,
             badgeSize: configuration.size,
             badgeOffset: configuration.offset,
+            badgePosition: configuration.position,
             kind: .folder
         )
     }
@@ -95,8 +98,7 @@ public final class BadgeKitRenderer {
             folderSymbolName: folderSymbolName,
             folderSymbolText: folderSymbolText,
             badge: badge,
-            badgeSize: configuration.size,
-            badgeOffset: configuration.offset,
+            configuration: configuration,
             fallbackRenderer: fallbackRenderer
         )
     }
@@ -115,8 +117,7 @@ public final class BadgeKitRenderer {
             symbolName: symbolName,
             symbolText: symbolText,
             badge: badge,
-            badgeSize: configuration.size,
-            badgeOffset: configuration.offset
+            configuration: configuration
         )
     }
 
@@ -134,8 +135,7 @@ public final class BadgeKitRenderer {
             symbolName: symbolName,
             symbolText: symbolText,
             badge: badge,
-            badgeSize: configuration.size,
-            badgeOffset: configuration.offset
+            configuration: configuration
         )
     }
 

@@ -21,8 +21,7 @@ final class BadgeFolderPreviewRenderer {
         symbolName: String?,
         symbolText: String?,
         badge: NSImage?,
-        badgeSize: NSSize,
-        badgeOffset: NSPoint
+        configuration: BadgeConfiguration
     ) -> NSImage? {
         let resolvedFallbackColor = fallbackColor ?? defaultFolderColor
 
@@ -32,8 +31,7 @@ final class BadgeFolderPreviewRenderer {
             symbolName: symbolName,
             symbolText: symbolText,
             badge: badge,
-            badgeSize: badgeSize,
-            badgeOffset: badgeOffset
+            configuration: configuration
         )
     }
 
@@ -43,8 +41,7 @@ final class BadgeFolderPreviewRenderer {
         symbolName: String?,
         symbolText: String?,
         badge: NSImage?,
-        badgeSize: NSSize,
-        badgeOffset: NSPoint
+        configuration: BadgeConfiguration
     ) -> NSImage? {
         let resolvedFallbackColor = fallbackColor ?? defaultFolderColor
 
@@ -54,8 +51,7 @@ final class BadgeFolderPreviewRenderer {
             symbolName: symbolName,
             symbolText: symbolText,
             badge: badge,
-            badgeSize: badgeSize,
-            badgeOffset: badgeOffset
+            configuration: configuration
         )
     }
 }
