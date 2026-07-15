@@ -35,6 +35,22 @@ final class BadgeIconComposer {
         badgeOffset: NSPoint,
         badgePosition: BadgePosition
     ) -> NSImage {
+        makeBadgedIcon(
+            originalIcon: originalIcon,
+            badgeVisual: BadgeVisual(artwork: badge),
+            badgeSize: badgeSize,
+            badgeOffset: badgeOffset,
+            badgePosition: badgePosition
+        )
+    }
+
+    func makeBadgedIcon(
+        originalIcon: NSImage,
+        badgeVisual: BadgeVisual,
+        badgeSize: NSSize,
+        badgeOffset: NSPoint,
+        badgePosition: BadgePosition
+    ) -> NSImage {
         let normalizedPreview = filePreviewNormalizer.normalizedPreview(from: originalIcon)
         let normalizedOriginalIcon = normalizedPreview.image
         let newIcon = NSImage(size: NSSize(width: canvasPixelSize, height: canvasPixelSize))
@@ -105,12 +121,7 @@ final class BadgeIconComposer {
                 scale: scale
             )
 
-            badge.draw(
-                in: badgeRect,
-                from: .zero,
-                operation: .sourceOver,
-                fraction: 1.0
-            )
+            drawBadgeVisual(badgeVisual, in: badgeRect)
 
             NSGraphicsContext.restoreGraphicsState()
             newIcon.addRepresentation(bitmap)
@@ -122,6 +133,24 @@ final class BadgeIconComposer {
     func makeBadgedSystemIcon(
         originalIcon: NSImage,
         badge: NSImage,
+        badgeSize: NSSize,
+        badgeOffset: NSPoint,
+        badgePosition: BadgePosition,
+        kind: BadgePlacementKind
+    ) -> NSImage {
+        makeBadgedSystemIcon(
+            originalIcon: originalIcon,
+            badgeVisual: BadgeVisual(artwork: badge),
+            badgeSize: badgeSize,
+            badgeOffset: badgeOffset,
+            badgePosition: badgePosition,
+            kind: kind
+        )
+    }
+
+    func makeBadgedSystemIcon(
+        originalIcon: NSImage,
+        badgeVisual: BadgeVisual,
         badgeSize: NSSize,
         badgeOffset: NSPoint,
         badgePosition: BadgePosition,
@@ -158,7 +187,9 @@ final class BadgeIconComposer {
             position: badgePosition
         )
 
-        let badgeToDraw = badgeImageNormalizer.trimmed(badge) ?? badge
+        let badgeToDraw = badgeVisual.contactShadow == nil
+            ? trimmedSystemBadgeVisual(badgeVisual)
+            : badgeVisual
 
         for iconSize in iconSizes {
             guard let bitmap = NSBitmapImageRep(
@@ -203,11 +234,9 @@ final class BadgeIconComposer {
                 fraction: 1.0
             )
 
-            badgeToDraw.draw(
-                in: scaled(logicalPlacement.logicalRect, scale: scale),
-                from: .zero,
-                operation: .sourceOver,
-                fraction: 1.0
+            drawBadgeVisual(
+                badgeToDraw,
+                in: scaled(logicalPlacement.logicalRect, scale: scale)
             )
 
             NSGraphicsContext.restoreGraphicsState()
@@ -215,6 +244,87 @@ final class BadgeIconComposer {
         }
 
         return newIcon
+    }
+
+    private func trimmedSystemBadgeVisual(_ badgeVisual: BadgeVisual) -> BadgeVisual {
+        guard badgeVisual.contactShadow != nil else {
+            return BadgeVisual(
+                artwork: badgeImageNormalizer.trimmed(badgeVisual.artwork) ?? badgeVisual.artwork
+            )
+        }
+
+        return badgeImageNormalizer.alignedTrimmed(badgeVisual) ?? badgeVisual
+    }
+
+    private func drawBadgeVisual(_ badgeVisual: BadgeVisual, in rect: NSRect) {
+        if badgeVisual.contactShadow != nil,
+           let layers = badgeImageNormalizer.alignedBadgeLayers(badgeVisual) {
+            drawAlignedBadgeLayers(layers, in: rect)
+            return
+        }
+
+        if let contactShadow = badgeVisual.contactShadow,
+           badgeVisual.contactShadowOpacity > 0 {
+            contactShadow.draw(
+                in: rect,
+                from: .zero,
+                operation: .sourceOver,
+                fraction: badgeVisual.contactShadowOpacity
+            )
+        }
+
+        badgeVisual.artwork.draw(
+            in: rect,
+            from: .zero,
+            operation: .sourceOver,
+            fraction: 1.0
+        )
+    }
+
+    private func drawAlignedBadgeLayers(
+        _ layers: BadgeImageNormalizer.AlignedBadgeLayers,
+        in rect: NSRect
+    ) {
+        let drawRect = aspectFitRect(for: layers.artwork, in: rect)
+
+        if let contactShadow = layers.contactShadow,
+           layers.contactShadowOpacity > 0 {
+            contactShadow.draw(
+                in: fullCanvasDestination(for: layers, artworkDrawRect: drawRect),
+                from: .zero,
+                operation: .sourceOver,
+                fraction: layers.contactShadowOpacity
+            )
+        }
+
+        layers.artwork.draw(
+            in: drawRect,
+            from: .zero,
+            operation: .sourceOver,
+            fraction: 1.0
+        )
+    }
+
+    private func fullCanvasDestination(
+        for layers: BadgeImageNormalizer.AlignedBadgeLayers,
+        artworkDrawRect: NSRect
+    ) -> NSRect {
+        let bounds = layers.artworkBoundsInOriginalCanvas
+        let canvasSize = layers.originalCanvasSize
+        guard bounds.width > 0, bounds.height > 0 else { return artworkDrawRect }
+
+        let scale = min(
+            artworkDrawRect.width / bounds.width,
+            artworkDrawRect.height / bounds.height
+        )
+        let bottomOffset = canvasSize.height - bounds.maxY
+
+        return NSRect(
+            x: artworkDrawRect.minX - bounds.minX * scale,
+            y: artworkDrawRect.minY - bottomOffset * scale,
+            width: canvasSize.width * scale,
+            height: canvasSize.height * scale
+        )
     }
 
     private func scaled(_ rect: NSRect, scale: CGFloat) -> NSRect {

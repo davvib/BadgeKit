@@ -187,37 +187,37 @@ class ViewController: NSViewController, NSTextFieldDelegate {
         )
     }
 
-    private func customRenderedFolderIcon(for item: DroppedItem, badge: NSImage? = nil) -> NSImage? {
+    private func customRenderedFolderIcon(for item: DroppedItem, badgeVisual: BadgeVisual? = nil) -> NSImage? {
         badgeKitRenderer.renderFolderIcon(
             colorName: item.folderColorName,
             fallbackColor: item.folderColor,
             symbolName: item.folderSymbolName,
             symbolText: item.folderSymbolText,
-            badge: badge,
+            badgeVisual: badgeVisual,
             configuration: currentBadgeConfiguration
         )
     }
 
-    private func customRenderedFolderPreview(for item: DroppedItem, badge: NSImage? = nil) -> NSImage? {
+    private func customRenderedFolderPreview(for item: DroppedItem, badgeVisual: BadgeVisual? = nil) -> NSImage? {
         badgeKitRenderer.renderFolderPreview(
             colorName: item.folderColorName,
             fallbackColor: item.folderColor,
             symbolName: item.folderSymbolName,
             symbolText: item.folderSymbolText,
-            badge: badge,
+            badgeVisual: badgeVisual,
             configuration: currentBadgeConfiguration
         )
     }
 
     func previewIcon(for item: DroppedItem) -> NSImage {
         guard item.showsBadgePreview,
-              let badge = appDelegate.selectedBadge else {
+              let badgeVisual = appDelegate.selectedBadgeVisual else {
             return customRenderedFolderPreview(for: item) ?? item.icon
         }
 
         let previewKey = badgeKitRenderer.makePreviewCacheKey(
             baseIcon: item.baseIconForPreview ?? item.icon,
-            badge: badge,
+            badgeVisual: badgeVisual,
             configuration: currentBadgeConfiguration,
             folderColorName: item.folderColorName,
             folderSymbolName: item.folderSymbolName,
@@ -235,13 +235,13 @@ class ViewController: NSViewController, NSTextFieldDelegate {
             folderColor: item.folderColor,
             folderSymbolName: item.folderSymbolName,
             folderSymbolText: item.folderSymbolText,
-            badge: badge,
+            badgeVisual: badgeVisual,
             configuration: currentBadgeConfiguration,
             fallbackRenderer: { [weak self] baseIcon, badge, badgeSize in
                 guard let self else { return baseIcon }
                 return self.makeBadgedIcon(
                     originalIcon: baseIcon,
-                    badge: badge,
+                    badgeVisual: badgeVisual,
                     badgeSize: badgeSize
                 )
             }
@@ -254,7 +254,7 @@ class ViewController: NSViewController, NSTextFieldDelegate {
 
     func previewBadgeGeometry(for item: DroppedItem) -> BadgeGeometry? {
         guard item.showsBadgePreview,
-              let badge = appDelegate.selectedBadge else {
+              let badgeVisual = appDelegate.selectedBadgeVisual else {
             return nil
         }
 
@@ -262,7 +262,7 @@ class ViewController: NSViewController, NSTextFieldDelegate {
             isDirectory: item.isDirectory,
             folderColorName: item.folderColorName,
             baseIcon: item.baseIconForPreview ?? item.icon,
-            badge: badge,
+            badge: badgeVisual.artwork,
             configuration: currentBadgeConfiguration
         )
     }
@@ -282,7 +282,7 @@ class ViewController: NSViewController, NSTextFieldDelegate {
     }
 
     func placePreviewBadgeVisibleCenter(_ center: NSPoint, for item: DroppedItem) {
-        guard let badge = appDelegate.selectedBadge else {
+        guard let badgeVisual = appDelegate.selectedBadgeVisual else {
             placePreviewBadgeCenter(center, for: item)
             return
         }
@@ -291,7 +291,7 @@ class ViewController: NSViewController, NSTextFieldDelegate {
             forVisibleCenter: center,
             isDirectory: item.isDirectory,
             baseIcon: item.baseIconForPreview ?? item.icon,
-            badge: badge,
+            badge: badgeVisual.artwork,
             configuration: currentBadgeConfiguration
         )
 
@@ -697,23 +697,27 @@ class ViewController: NSViewController, NSTextFieldDelegate {
         alert.messageText = "Seleccionar Badge"
         alert.informativeText = "Elige un icono del sistema o personalizado"
 
-        var icons: [(name: NSImage.Name, label: String, isCustom: Bool, path: String?)] = [
-            (NSImage.folderName, "Carpeta", false, nil),
-            (NSImage.homeTemplateName, "Home", false, nil),
-            (NSImage.trashFullName, "Papelera", false, nil),
-            (NSImage.infoName, "Info", false, nil),
-            (NSImage.cautionName, "Advertencia", false, nil),
-            (NSImage.stopProgressFreestandingTemplateName, "Stop", false, nil),
-            (NSImage.refreshTemplateName, "Refresh", false, nil)
+        var icons: [(name: NSImage.Name?, label: String, isCustom: Bool, path: String?, visual: BadgeVisual?)] = [
+            (NSImage.folderName, "Carpeta", false, nil, nil),
+            (NSImage.homeTemplateName, "Home", false, nil, nil),
+            (NSImage.trashFullName, "Papelera", false, nil, nil),
+            (NSImage.infoName, "Info", false, nil, nil),
+            (NSImage.cautionName, "Advertencia", false, nil, nil),
+            (NSImage.stopProgressFreestandingTemplateName, "Stop", false, nil, nil),
+            (NSImage.refreshTemplateName, "Refresh", false, nil, nil)
         ]
 
+        if let pinVisual = BadgeBuiltInVisuals.pin {
+            icons.append((nil, "Chincheta", false, nil, pinVisual))
+        }
+
         for custom in customBadges {
-            icons.append((name: custom.name, label: custom.label, isCustom: true, path: custom.path))
+            icons.append((name: custom.name, label: custom.label, isCustom: true, path: custom.path, visual: nil))
         }
 
         let accessory = NSPopUpButton(frame: NSRect(x: 0, y: 0, width: 200, height: 25))
-        for (_, label, _, _) in icons {
-            accessory.addItem(withTitle: label)
+        for icon in icons {
+            accessory.addItem(withTitle: icon.label)
         }
         alert.accessoryView = accessory
 
@@ -723,10 +727,12 @@ class ViewController: NSViewController, NSTextFieldDelegate {
         if alert.runModal() == .alertFirstButtonReturn {
             let idx = accessory.indexOfSelectedItem
             let selected = icons[idx]
-            if selected.isCustom, let path = selected.path {
+            if let visual = selected.visual {
+                appDelegate.selectedBadgeVisual = visual
+            } else if selected.isCustom, let path = selected.path {
                 appDelegate.selectedBadge = NSImage(contentsOfFile: path)
-            } else {
-                appDelegate.selectedBadge = NSImage(named: selected.name)
+            } else if let name = selected.name {
+                appDelegate.selectedBadge = NSImage(named: name)
             }
             if let button = view.viewWithTag(100) as? NSButton {
                 button.image = appDelegate.selectedBadge
@@ -967,7 +973,7 @@ class ViewController: NSViewController, NSTextFieldDelegate {
     }
 
     @objc func applyBadge() {
-        guard let badge = appDelegate.selectedBadge else { return }
+        guard let badgeVisual = appDelegate.selectedBadgeVisual else { return }
         guard shouldApplyBadgeOverCustomIcons() else { return }
 
         let badgeSize = NSSize(width: appDelegate.badgeSize, height: appDelegate.badgeSize)
@@ -978,7 +984,7 @@ class ViewController: NSViewController, NSTextFieldDelegate {
             if isDirectory(at: item.path) {
                 applyBadgeToFolder(
                     item: item,
-                    badge: badge,
+                    badgeVisual: badgeVisual,
                     badgeSize: badgeSize
                 )
                 continue
@@ -986,7 +992,7 @@ class ViewController: NSViewController, NSTextFieldDelegate {
 
             applyBadgeToFile(
                 item: item,
-                badge: badge,
+                badgeVisual: badgeVisual,
                 badgeSize: badgeSize
             )
         }
@@ -996,7 +1002,7 @@ class ViewController: NSViewController, NSTextFieldDelegate {
 
     private func applyBadgeToFile(
         item: DroppedItem,
-        badge: NSImage,
+        badgeVisual: BadgeVisual,
         badgeSize: NSSize
     ) {
         iconForApplyingBadge(to: item.path) { [weak self] originalIcon in
@@ -1005,7 +1011,7 @@ class ViewController: NSViewController, NSTextFieldDelegate {
 
                 let newIcon = self.makeBadgedIcon(
                     originalIcon: originalIcon,
-                    badge: badge,
+                    badgeVisual: badgeVisual,
                     badgeSize: badgeSize
                 )
 
@@ -1023,25 +1029,25 @@ class ViewController: NSViewController, NSTextFieldDelegate {
     
     private func folderBadgedIcon(
         for item: DroppedItem,
-        badge: NSImage,
+        badgeVisual: BadgeVisual,
         badgeSize: NSSize
     ) -> NSImage {
-        customRenderedFolderIcon(for: item, badge: badge) ??
+        customRenderedFolderIcon(for: item, badgeVisual: badgeVisual) ??
             makeBadgedIcon(
                 originalIcon: item.icon,
-                badge: badge,
+                badgeVisual: badgeVisual,
                 badgeSize: badgeSize
             )
     }
     
     private func applyBadgeToFolder(
         item: DroppedItem,
-        badge: NSImage,
+        badgeVisual: BadgeVisual,
         badgeSize: NSSize
     ) {
         let newIcon = folderBadgedIcon(
             for: item,
-            badge: badge,
+            badgeVisual: badgeVisual,
             badgeSize: badgeSize
         )
 
@@ -1163,9 +1169,17 @@ class ViewController: NSViewController, NSTextFieldDelegate {
     }
 
     private func makeBadgedIcon(originalIcon: NSImage, badge: NSImage, badgeSize: NSSize) -> NSImage {
+        makeBadgedIcon(
+            originalIcon: originalIcon,
+            badgeVisual: BadgeVisual(artwork: badge),
+            badgeSize: badgeSize
+        )
+    }
+
+    private func makeBadgedIcon(originalIcon: NSImage, badgeVisual: BadgeVisual, badgeSize: NSSize) -> NSImage {
         badgeKitRenderer.renderPreview(
             baseIcon: originalIcon,
-            badge: badge,
+            badgeVisual: badgeVisual,
             configuration: currentBadgeConfiguration
         )
     }

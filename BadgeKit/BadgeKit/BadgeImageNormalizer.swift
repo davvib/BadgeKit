@@ -18,6 +18,14 @@ public struct NormalizedBadgeImage {
 }
 
 public final class BadgeImageNormalizer {
+    struct AlignedBadgeLayers {
+        let artwork: NSImage
+        let contactShadow: NSImage?
+        let contactShadowOpacity: CGFloat
+        let artworkBoundsInOriginalCanvas: CGRect
+        let originalCanvasSize: CGSize
+    }
+
     private let pixelSize: Int
 
     public init(pixelSize: Int = 1024) {
@@ -104,6 +112,38 @@ public final class BadgeImageNormalizer {
         return NSImage(
             cgImage: cropped,
             size: NSSize(width: bounds.width, height: bounds.height)
+        )
+    }
+
+    func alignedTrimmed(_ badgeVisual: BadgeVisual) -> BadgeVisual? {
+        alignedBadgeLayers(badgeVisual).map {
+            BadgeVisual(
+                artwork: $0.artwork,
+                contactShadow: $0.contactShadow,
+                contactShadowOpacity: $0.contactShadowOpacity
+            )
+        }
+    }
+
+    func alignedBadgeLayers(_ badgeVisual: BadgeVisual) -> AlignedBadgeLayers? {
+        guard let artworkImage = badgeVisual.artwork.cgImage(forProposedRect: nil, context: nil, hints: nil),
+              let bounds = alphaBounds(in: artworkImage),
+              let croppedArtwork = artworkImage.cropping(to: bounds) else {
+            return nil
+        }
+
+        let trimmedSize = NSSize(width: bounds.width, height: bounds.height)
+        let trimmedArtwork = NSImage(cgImage: croppedArtwork, size: trimmedSize)
+
+        return AlignedBadgeLayers(
+            artwork: trimmedArtwork,
+            contactShadow: badgeVisual.contactShadow,
+            contactShadowOpacity: badgeVisual.contactShadowOpacity,
+            artworkBoundsInOriginalCanvas: bounds,
+            originalCanvasSize: CGSize(
+                width: artworkImage.width,
+                height: artworkImage.height
+            )
         )
     }
 

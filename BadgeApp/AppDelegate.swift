@@ -1,9 +1,18 @@
 import Cocoa
+import BadgeKit
 
 class AppDelegate: NSObject, NSApplicationDelegate {
     var window: NSWindow!
     var badgeSize: CGFloat = 16
-    var selectedBadge: NSImage?
+    var selectedBadgeVisual: BadgeVisual?
+    var selectedBadge: NSImage? {
+        get {
+            selectedBadgeVisual?.artwork
+        }
+        set {
+            selectedBadgeVisual = newValue.map { BadgeVisual(artwork: $0) }
+        }
+    }
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         selectedBadge = NSImage(named: NSImage.folderName)
