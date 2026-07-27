@@ -52,6 +52,35 @@ final class BadgePreviewGeometryCoordinator {
             visibleRect: visibleRect
         )
     }
+
+    func geometry(
+        isDirectory: Bool,
+        folderColorName: String?,
+        icon: NSImage,
+        badgeSize: NSSize,
+        badgeOffset: NSPoint
+    ) -> BadgeGeometry {
+        let logicalRect: NSRect
+
+        if isDirectory {
+            logicalRect = folderRenderer.badgeRect(
+                colorName: folderColorName,
+                badgeSize: badgeSize,
+                badgeOffset: badgeOffset
+            )
+        } else {
+            logicalRect = fileGeometryCalculator.badgeRect(
+                for: icon,
+                badgeSize: badgeSize,
+                badgeOffset: badgeOffset
+            )
+        }
+
+        return BadgeGeometry(
+            logicalRect: logicalRect,
+            visibleRect: logicalRect
+        )
+    }
     
     func offset(
         isDirectory: Bool,
@@ -101,4 +130,3 @@ final class BadgePreviewGeometryCoordinator {
     }
     
 }
-

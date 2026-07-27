@@ -5,7 +5,7 @@ final class FolderIconRenderer {
     init(
         badgeImageNormalizer: BadgeImageNormalizer = BadgeImageNormalizer()
     ) {
-        self.badgeImageNormalizer = badgeImageNormalizer
+        self.badgeVisualDrawer = BadgeVisualDrawer(badgeImageNormalizer: badgeImageNormalizer)
     }
 
     private struct FolderAsset {
@@ -21,10 +21,9 @@ final class FolderIconRenderer {
     private let assetFrontRect = NSRect(x: 32, y: 42, width: 984, height: 704)
     private let assetSymbolRect = NSRect(x: 214.50, y: 236.00, width: 597.50, height: 421.50)
     private let placementResolver = BadgePlacementResolver()
-    private let badgeImageNormalizer: BadgeImageNormalizer
+    private let badgeVisualDrawer: BadgeVisualDrawer
 
     private var folderAssetImageCache: [String: NSImage] = [:]
-    private var trimmedImageCache: [ObjectIdentifier: NSImage] = [:]
 
     func renderFolderIcon(
         colorName: String?,
@@ -58,6 +57,27 @@ final class FolderIconRenderer {
             symbolName: symbolName,
             symbolText: symbolText,
             badgeVisual: badgeVisual,
+            badgeComposition: nil,
+            configuration: configuration,
+            sizes: iconSizes
+        )
+    }
+
+    func renderFolderIcon(
+        colorName: String?,
+        fallbackColor: NSColor,
+        symbolName: String?,
+        symbolText: String?,
+        badgeComposition: BadgeComposition?,
+        configuration: BadgeConfiguration
+    ) -> NSImage {
+        renderFolderIcon(
+            colorName: colorName,
+            fallbackColor: fallbackColor,
+            symbolName: symbolName,
+            symbolText: symbolText,
+            badgeVisual: nil,
+            badgeComposition: badgeComposition,
             configuration: configuration,
             sizes: iconSizes
         )
@@ -95,6 +115,27 @@ final class FolderIconRenderer {
             symbolName: symbolName,
             symbolText: symbolText,
             badgeVisual: badgeVisual,
+            badgeComposition: nil,
+            configuration: configuration,
+            sizes: [512]
+        )
+    }
+
+    func renderPreviewFolderIcon(
+        colorName: String?,
+        fallbackColor: NSColor,
+        symbolName: String?,
+        symbolText: String?,
+        badgeComposition: BadgeComposition?,
+        configuration: BadgeConfiguration
+    ) -> NSImage {
+        renderFolderIcon(
+            colorName: colorName,
+            fallbackColor: fallbackColor,
+            symbolName: symbolName,
+            symbolText: symbolText,
+            badgeVisual: nil,
+            badgeComposition: badgeComposition,
             configuration: configuration,
             sizes: [512]
         )
@@ -115,6 +156,7 @@ final class FolderIconRenderer {
             symbolName: symbolName,
             symbolText: symbolText,
             badgeVisual: badge.map { BadgeVisual(artwork: $0) },
+            badgeComposition: nil,
             configuration: configuration,
             sizes: sizes
         )
@@ -126,6 +168,7 @@ final class FolderIconRenderer {
         symbolName: String?,
         symbolText: String?,
         badgeVisual: BadgeVisual?,
+        badgeComposition: BadgeComposition? = nil,
         configuration: BadgeConfiguration,
         sizes: [Int]
     ) -> NSImage {
@@ -140,6 +183,7 @@ final class FolderIconRenderer {
                 symbolName: symbolName,
                 symbolText: symbolText,
                 badgeVisual: badgeVisual,
+                badgeComposition: badgeComposition,
                 configuration: configuration
             ) else {
                 continue
@@ -189,6 +233,7 @@ final class FolderIconRenderer {
         symbolName: String?,
         symbolText: String?,
         badgeVisual: BadgeVisual?,
+        badgeComposition: BadgeComposition?,
         configuration: BadgeConfiguration
     ) -> NSBitmapImageRep? {
         guard let bitmap = NSBitmapImageRep(
@@ -220,6 +265,7 @@ final class FolderIconRenderer {
             drawFolderSymbol(systemName: symbolName, text: symbolText, in: assetSymbolRect, scale: scale)
             drawBadge(
                 badgeVisual,
+                badgeComposition: badgeComposition,
                 in: assetFrontRect,
                 configuration: configuration,
                 scale: scale
@@ -229,6 +275,7 @@ final class FolderIconRenderer {
             drawFolderSymbol(systemName: symbolName, text: symbolText, in: symbolRect, scale: scale)
             drawBadge(
                 badgeVisual,
+                badgeComposition: badgeComposition,
                 in: frontRect,
                 configuration: configuration,
                 scale: scale
@@ -458,11 +505,12 @@ final class FolderIconRenderer {
 
     private func drawBadge(
         _ badgeVisual: BadgeVisual?,
+        badgeComposition: BadgeComposition?,
         in anchorRect: NSRect,
         configuration: BadgeConfiguration,
         scale: CGFloat
     ) {
-        guard let badgeVisual else { return }
+        guard badgeVisual != nil || badgeComposition != nil else { return }
 
         let logicalPlacement = placementResolver.placement(
             kind: .folder,
@@ -475,7 +523,15 @@ final class FolderIconRenderer {
 
         let rect = scaled(logicalPlacement.logicalRect, scale: scale)
 
-        drawTrimmed(badgeVisual: badgeVisual, in: rect)
+        if let badgeComposition {
+            badgeVisualDrawer.draw(
+                badgeComposition,
+                in: rect,
+                trimsArtworkWithoutShadow: true
+            )
+        } else if let badgeVisual {
+            drawTrimmed(badgeVisual: badgeVisual, in: rect)
+        }
     }
 
     private func scaled(_ rect: NSRect, scale: CGFloat) -> NSRect {
@@ -501,107 +557,13 @@ final class FolderIconRenderer {
         )
     }
 
-    private func drawTrimmed(image: NSImage, in rect: NSRect) {
-        guard let trimmedImage = cachedTrimmedImage(image) else {
-            let drawRect = aspectFitRect(for: image.size, in: rect)
-            image.draw(in: drawRect, from: .zero, operation: .sourceOver, fraction: 1.0)
-            return
-        }
-
-        let drawRect = aspectFitRect(for: trimmedImage.size, in: rect)
-        trimmedImage.draw(in: drawRect, from: .zero, operation: .sourceOver, fraction: 1.0)
-    }
-
     private func drawTrimmed(badgeVisual: BadgeVisual, in rect: NSRect) {
-        guard badgeVisual.contactShadow != nil else {
-            drawTrimmed(image: badgeVisual.artwork, in: rect)
-            return
-        }
-
-        guard let layers = badgeImageNormalizer.alignedBadgeLayers(badgeVisual) else {
-            let drawRect = aspectFitRect(for: badgeVisual.artwork.size, in: rect)
-            drawBadgeVisual(badgeVisual, in: drawRect)
-            return
-        }
-
-        let drawRect = aspectFitRect(for: layers.artwork.size, in: rect)
-
-        if let contactShadow = layers.contactShadow,
-           layers.contactShadowOpacity > 0 {
-            contactShadow.draw(
-                in: fullCanvasDestination(for: layers, artworkDrawRect: drawRect),
-                from: .zero,
-                operation: .sourceOver,
-                fraction: layers.contactShadowOpacity
-            )
-        }
-
-        layers.artwork.draw(
-            in: drawRect,
-            from: .zero,
-            operation: .sourceOver,
-            fraction: 1.0
-        )
-    }
-
-    private func drawBadgeVisual(_ badgeVisual: BadgeVisual, in rect: NSRect) {
-        if let contactShadow = badgeVisual.contactShadow,
-           badgeVisual.contactShadowOpacity > 0 {
-            contactShadow.draw(
-                in: rect,
-                from: .zero,
-                operation: .sourceOver,
-                fraction: badgeVisual.contactShadowOpacity
-            )
-        }
-
-        badgeVisual.artwork.draw(
+        badgeVisualDrawer.draw(
+            badgeVisual,
             in: rect,
-            from: .zero,
-            operation: .sourceOver,
-            fraction: 1.0
+            trimsArtworkWithoutShadow: true
         )
     }
-
-    private func fullCanvasDestination(
-        for layers: BadgeImageNormalizer.AlignedBadgeLayers,
-        artworkDrawRect: NSRect
-    ) -> NSRect {
-        let bounds = layers.artworkBoundsInOriginalCanvas
-        let canvasSize = layers.originalCanvasSize
-        guard bounds.width > 0, bounds.height > 0 else { return artworkDrawRect }
-
-        let scale = min(
-            artworkDrawRect.width / bounds.width,
-            artworkDrawRect.height / bounds.height
-        )
-        let bottomOffset = canvasSize.height - bounds.maxY
-
-        return NSRect(
-            x: artworkDrawRect.minX - bounds.minX * scale,
-            y: artworkDrawRect.minY - bottomOffset * scale,
-            width: canvasSize.width * scale,
-            height: canvasSize.height * scale
-        )
-    }
-
-    private func cachedTrimmedImage(_ image: NSImage) -> NSImage? {
-        let cacheKey = ObjectIdentifier(image)
-        if let cachedImage = trimmedImageCache[cacheKey] {
-            return cachedImage
-        }
-
-        guard let trimmedImage = badgeImageNormalizer.trimmed(image) else {
-            return nil
-        }
-
-        trimmedImageCache[cacheKey] = trimmedImage
-        return trimmedImage
-    }
-
-
-
-
 
     private func adjusted(_ color: NSColor, brightness delta: CGFloat) -> NSColor {
         guard let color = color.usingColorSpace(.deviceRGB) else { return color }

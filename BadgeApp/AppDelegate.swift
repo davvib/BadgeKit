@@ -5,12 +5,14 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     var window: NSWindow!
     var badgeSize: CGFloat = 16
     var selectedBadgeVisual: BadgeVisual?
+    var selectedBadgeComposition: BadgeComposition?
     var selectedBadge: NSImage? {
         get {
-            selectedBadgeVisual?.artwork
+            selectedBadgeVisual?.artwork ?? selectedBadgeComposition?.elements.last?.visual.artwork
         }
         set {
             selectedBadgeVisual = newValue.map { BadgeVisual(artwork: $0) }
+            selectedBadgeComposition = nil
         }
     }
 

@@ -44,6 +44,20 @@ public final class BadgeKitRenderer {
         )
     }
 
+    public func renderPreview(
+        baseIcon: NSImage,
+        badgeComposition: BadgeComposition,
+        configuration: BadgeConfiguration
+    ) -> NSImage {
+        composer.makeBadgedIcon(
+            originalIcon: baseIcon,
+            badgeComposition: badgeComposition,
+            badgeSize: configuration.size,
+            badgeOffset: configuration.offset,
+            badgePosition: configuration.position
+        )
+    }
+
     public func renderSystemIcon(
         baseIcon: NSImage,
         badge: NSImage,
@@ -71,6 +85,21 @@ public final class BadgeKitRenderer {
         )
     }
 
+    public func renderSystemIcon(
+        baseIcon: NSImage,
+        badgeComposition: BadgeComposition,
+        configuration: BadgeConfiguration
+    ) -> NSImage {
+        composer.makeBadgedSystemIcon(
+            originalIcon: baseIcon,
+            badgeComposition: badgeComposition,
+            badgeSize: configuration.size,
+            badgeOffset: configuration.offset,
+            badgePosition: configuration.position,
+            kind: .file
+        )
+    }
+
     public func renderFolderSystemIcon(
         baseIcon: NSImage,
         badge: NSImage,
@@ -91,6 +120,21 @@ public final class BadgeKitRenderer {
         composer.makeBadgedSystemIcon(
             originalIcon: baseIcon,
             badgeVisual: badgeVisual,
+            badgeSize: configuration.size,
+            badgeOffset: configuration.offset,
+            badgePosition: configuration.position,
+            kind: .folder
+        )
+    }
+
+    public func renderFolderSystemIcon(
+        baseIcon: NSImage,
+        badgeComposition: BadgeComposition,
+        configuration: BadgeConfiguration
+    ) -> NSImage {
+        composer.makeBadgedSystemIcon(
+            originalIcon: baseIcon,
+            badgeComposition: badgeComposition,
             badgeSize: configuration.size,
             badgeOffset: configuration.offset,
             badgePosition: configuration.position,
@@ -127,6 +171,26 @@ public final class BadgeKitRenderer {
         cacheKeyBuilder.makeKey(
             icon: baseIcon,
             badgeVisual: badgeVisual,
+            badgeSize: configuration.size.width,
+            badgeOffset: configuration.offset,
+            badgePosition: configuration.position,
+            folderColorName: folderColorName,
+            folderSymbolName: folderSymbolName,
+            folderSymbolText: folderSymbolText
+        )
+    }
+
+    public func makePreviewCacheKey(
+        baseIcon: NSImage,
+        badgeComposition: BadgeComposition,
+        configuration: BadgeConfiguration,
+        folderColorName: String?,
+        folderSymbolName: String?,
+        folderSymbolText: String?
+    ) -> String {
+        cacheKeyBuilder.makeKey(
+            icon: baseIcon,
+            badgeComposition: badgeComposition,
             badgeSize: configuration.size.width,
             badgeOffset: configuration.offset,
             badgePosition: configuration.position,
@@ -219,6 +283,36 @@ public final class BadgeKitRenderer {
         )
     }
 
+    public func renderPreviewIcon(
+        baseIcon: NSImage,
+        folderColorName: String?,
+        folderColor: NSColor?,
+        folderSymbolName: String?,
+        folderSymbolText: String?,
+        badgeComposition: BadgeComposition,
+        configuration: BadgeConfiguration
+    ) -> NSImage {
+        if folderColorName != nil ||
+            folderColor != nil ||
+            folderSymbolName != nil ||
+            folderSymbolText != nil {
+            return folderRenderer.renderPreviewFolderIcon(
+                colorName: folderColorName,
+                fallbackColor: folderColor ?? defaultFolderColor,
+                symbolName: folderSymbolName,
+                symbolText: folderSymbolText,
+                badgeComposition: badgeComposition,
+                configuration: configuration
+            )
+        }
+
+        return renderPreview(
+            baseIcon: baseIcon,
+            badgeComposition: badgeComposition,
+            configuration: configuration
+        )
+    }
+
     public func renderFolderIcon(
         colorName: String?,
         fallbackColor: NSColor?,
@@ -233,6 +327,26 @@ public final class BadgeKitRenderer {
             symbolName: symbolName,
             symbolText: symbolText,
             badgeVisual: badge.map { BadgeVisual(artwork: $0) },
+            configuration: configuration
+        )
+    }
+
+    public func renderFolderIcon(
+        colorName: String?,
+        fallbackColor: NSColor?,
+        symbolName: String?,
+        symbolText: String?,
+        badgeComposition: BadgeComposition?,
+        configuration: BadgeConfiguration
+    ) -> NSImage? {
+        let resolvedFallbackColor = fallbackColor ?? defaultFolderColor
+
+        return folderRenderer.renderFolderIcon(
+            colorName: colorName,
+            fallbackColor: resolvedFallbackColor,
+            symbolName: symbolName,
+            symbolText: symbolText,
+            badgeComposition: badgeComposition,
             configuration: configuration
         )
     }
@@ -280,6 +394,26 @@ public final class BadgeKitRenderer {
         fallbackColor: NSColor?,
         symbolName: String?,
         symbolText: String?,
+        badgeComposition: BadgeComposition?,
+        configuration: BadgeConfiguration
+    ) -> NSImage? {
+        let resolvedFallbackColor = fallbackColor ?? defaultFolderColor
+
+        return folderRenderer.renderPreviewFolderIcon(
+            colorName: colorName,
+            fallbackColor: resolvedFallbackColor,
+            symbolName: symbolName,
+            symbolText: symbolText,
+            badgeComposition: badgeComposition,
+            configuration: configuration
+        )
+    }
+
+    public func renderFolderPreview(
+        colorName: String?,
+        fallbackColor: NSColor?,
+        symbolName: String?,
+        symbolText: String?,
         badgeVisual: BadgeVisual?,
         configuration: BadgeConfiguration
     ) -> NSImage? {
@@ -307,6 +441,22 @@ public final class BadgeKitRenderer {
             folderColorName: folderColorName,
             icon: baseIcon,
             badge: badge,
+            badgeSize: configuration.size,
+            badgeOffset: configuration.offset
+        )
+    }
+
+    public func badgeGeometry(
+        isDirectory: Bool,
+        folderColorName: String?,
+        baseIcon: NSImage,
+        badgeComposition: BadgeComposition,
+        configuration: BadgeConfiguration
+    ) -> BadgeGeometry {
+        geometryCoordinator.geometry(
+            isDirectory: isDirectory,
+            folderColorName: folderColorName,
+            icon: baseIcon,
             badgeSize: configuration.size,
             badgeOffset: configuration.offset
         )
@@ -343,5 +493,19 @@ public final class BadgeKitRenderer {
             badgeSize: configuration.size,
             badgeOffset: configuration.offset
         )
+    }
+
+    public func logicalBadgeCenter(
+        forVisibleCenter visibleCenter: CGPoint,
+        isDirectory: Bool,
+        baseIcon: NSImage,
+        badgeComposition: BadgeComposition,
+        configuration: BadgeConfiguration
+    ) -> CGPoint {
+        guard !isDirectory else {
+            return visibleCenter
+        }
+
+        return visibleCenter
     }
 }

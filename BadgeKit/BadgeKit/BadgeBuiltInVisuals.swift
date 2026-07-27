@@ -7,29 +7,55 @@ import AppKit
 
 public enum BadgeBuiltInVisuals {
     public static var pin: BadgeVisual? {
+        visual(
+            artworkName: "Badge_Pin_Artwork",
+            contactShadowName: "Badge_Pin_ContactShadow",
+            missingArtworkMessage: "BadgeKit: missing built-in pin artwork resource",
+            missingContactShadowMessage: "BadgeKit: missing built-in pin contact shadow resource",
+            contactShadowOpacity: 1.0
+        )
+    }
+
+    public static var tag: BadgeVisual? {
+        visual(
+            artworkName: "Badge_Tag_Artwork",
+            contactShadowName: "Badge_Tag_ContactShadow",
+            missingArtworkMessage: "BadgeKit: missing built-in tag artwork resource",
+            missingContactShadowMessage: "BadgeKit: missing built-in tag contact shadow resource",
+            contactShadowOpacity: 1.0
+        )
+    }
+
+    private static func visual(
+        artworkName: String,
+        contactShadowName: String,
+        missingArtworkMessage: String,
+        missingContactShadowMessage: String,
+        contactShadowOpacity: CGFloat
+    ) -> BadgeVisual? {
         let bundle = Bundle(for: BundleToken.self)
 
         guard let artwork = image(
-            named: "Badge_Pin_Artwork",
+            named: artworkName,
             in: bundle
         ) else {
-            print("BadgeKit: missing built-in pin artwork resource")
+            print(missingArtworkMessage)
             return nil
         }
 
         let contactShadow = image(
-            named: "Badge_Pin_ContactShadow",
+            named: contactShadowName,
             in: bundle
         )
 
         if contactShadow == nil {
-            print("BadgeKit: missing built-in pin contact shadow resource")
+            print(missingContactShadowMessage)
         }
 
         return BadgeVisual(
             artwork: artwork,
             contactShadow: contactShadow,
-            contactShadowOpacity: 1.0
+            contactShadowOpacity: contactShadowOpacity
         )
     }
 
