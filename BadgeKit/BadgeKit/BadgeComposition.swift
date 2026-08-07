@@ -3,7 +3,17 @@
 //  BadgeKit
 //
 
-import CoreGraphics
+import AppKit
+
+public struct BadgeProxy {
+    public let image: NSImage
+    public let frameRelativeToLogicalRect: CGRect
+
+    public init(image: NSImage, frameRelativeToLogicalRect: CGRect) {
+        self.image = image
+        self.frameRelativeToLogicalRect = frameRelativeToLogicalRect
+    }
+}
 
 public struct BadgeCompositionElement {
     public let visual: BadgeVisual

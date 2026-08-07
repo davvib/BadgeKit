@@ -304,6 +304,36 @@ class ViewController: NSViewController, NSTextFieldDelegate {
         return previewIcon
     }
 
+    func previewBaseIcon(for item: DroppedItem) -> NSImage {
+        if item.isDirectory {
+            return customRenderedFolderPreview(for: item) ??
+                item.baseIconForPreview ??
+                item.icon
+        }
+
+        return item.baseIconForPreview ?? item.icon
+    }
+
+    func previewBadgeProxy(for item: DroppedItem) -> BadgeProxy? {
+        let trimsArtworkWithoutShadow = item.isDirectory
+
+        if let badgeComposition = appDelegate.selectedBadgeComposition {
+            return badgeKitRenderer.renderBadgeProxy(
+                badgeComposition: badgeComposition,
+                trimsArtworkWithoutShadow: trimsArtworkWithoutShadow
+            )
+        }
+
+        if let badgeVisual = appDelegate.selectedBadgeVisual {
+            return badgeKitRenderer.renderBadgeProxy(
+                badgeVisual: badgeVisual,
+                trimsArtworkWithoutShadow: trimsArtworkWithoutShadow
+            )
+        }
+
+        return nil
+    }
+
     func previewBadgeGeometry(for item: DroppedItem) -> BadgeGeometry? {
         guard item.showsBadgePreview else {
             return nil
@@ -332,7 +362,7 @@ class ViewController: NSViewController, NSTextFieldDelegate {
         return nil
     }
 
-    func placePreviewBadgeCenter(_ center: NSPoint, for item: DroppedItem) {
+    private func commitPreviewBadgeCenter(_ center: NSPoint, for item: DroppedItem) {
         let offset = badgeKitRenderer.badgeOffset(
             isDirectory: item.isDirectory,
             folderColorName: item.folderColorName,
@@ -340,16 +370,20 @@ class ViewController: NSViewController, NSTextFieldDelegate {
             configuration: currentBadgeConfiguration,
             placingBadgeCenterAt: center
         )
+        guard offset.x != badgeOffsetX || offset.y != badgeOffsetY else {
+            return
+        }
+
         badgeOffsetX = offset.x
         badgeOffsetY = offset.y
         badgeItemVisualStateUpdater.showPreview(for: item)
         dropZoneView.needsDisplay = true
     }
 
-    func placePreviewBadgeVisibleCenter(_ center: NSPoint, for item: DroppedItem) {
+    func commitPreviewBadgeVisibleCenter(_ center: NSPoint, for item: DroppedItem) {
         guard appDelegate.selectedBadgeVisual != nil ||
             appDelegate.selectedBadgeComposition != nil else {
-            placePreviewBadgeCenter(center, for: item)
+            commitPreviewBadgeCenter(center, for: item)
             return
         }
 
@@ -375,7 +409,7 @@ class ViewController: NSViewController, NSTextFieldDelegate {
             logicalCenter = center
         }
 
-        placePreviewBadgeCenter(logicalCenter, for: item)
+        commitPreviewBadgeCenter(logicalCenter, for: item)
     }
 
     private func refreshRestoredVisualState(for item: DroppedItem) {
@@ -900,7 +934,7 @@ class ViewController: NSViewController, NSTextFieldDelegate {
         appDelegate.badgeSize = newSize
 
         if let item = items.last, let badgeCenter {
-            placePreviewBadgeVisibleCenter(badgeCenter, for: item)
+            commitPreviewBadgeVisibleCenter(badgeCenter, for: item)
         } else {
             invalidatePreviewCaches()
             dropZoneView.needsDisplay = true

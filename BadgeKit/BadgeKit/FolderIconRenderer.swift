@@ -215,7 +215,9 @@ final class FolderIconRenderer {
         let anchorRect = asset(for: colorName) == nil ? frontRect : assetFrontRect
 
         let placement = placementResolver.placement(
-            from: anchorRect,
+            kind: .folder,
+            positionAnchorRect: anchorRect,
+            sizeAnchorRect: anchorRect,
             badgeSize: badgeSize,
             badgeOffset: .zero
         )

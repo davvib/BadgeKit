@@ -58,6 +58,26 @@ public final class BadgeKitRenderer {
         )
     }
 
+    public func renderBadgeProxy(
+        badgeVisual: BadgeVisual,
+        trimsArtworkWithoutShadow: Bool
+    ) -> BadgeProxy {
+        composer.makeBadgeProxy(
+            badgeVisual: badgeVisual,
+            trimsArtworkWithoutShadow: trimsArtworkWithoutShadow
+        )
+    }
+
+    public func renderBadgeProxy(
+        badgeComposition: BadgeComposition,
+        trimsArtworkWithoutShadow: Bool
+    ) -> BadgeProxy {
+        composer.makeBadgeProxy(
+            badgeComposition: badgeComposition,
+            trimsArtworkWithoutShadow: trimsArtworkWithoutShadow
+        )
+    }
+
     public func renderSystemIcon(
         baseIcon: NSImage,
         badge: NSImage,

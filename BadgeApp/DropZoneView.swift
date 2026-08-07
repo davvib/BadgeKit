@@ -4,11 +4,21 @@ import BadgeKit
 class DropZoneView: NSView {
     weak var viewController: ViewController!
     private let badgeHitSlop: CGFloat = 10
+    private let badgeDragThreshold: CGFloat = 3
     private var currentIconRect: NSRect = .zero
     private var currentBadgeRect: NSRect = .zero
     private var currentBadgeVisibleRect: NSRect = .zero
-    private var isDraggingBadge = false
-    private var badgeDragCenterOffset: NSPoint = .zero
+    private var badgeDragState: BadgeDragState?
+
+    private struct BadgeDragState {
+        let proxy: BadgeProxy
+        let initialLogicalRect: NSRect
+        let initialVisibleRect: NSRect
+        let cursorToVisibleCenterOffset: NSPoint
+        let mouseDownPoint: NSPoint
+        var currentVisibleCenter: NSPoint
+        var hasStarted: Bool
+    }
 
     override init(frame frameRect: NSRect) {
         super.init(frame: frameRect)
@@ -44,6 +54,10 @@ class DropZoneView: NSView {
         let badgeGeometry = badgeGeometryInView(for: item, iconRect: iconRect)
         currentBadgeRect = badgeGeometry?.logicalRect ?? .zero
         currentBadgeVisibleRect = badgeGeometry?.visibleRect ?? .zero
+        if let activeBadgeDragRects {
+            currentBadgeRect = activeBadgeDragRects.logicalRect
+            currentBadgeVisibleRect = activeBadgeDragRects.visibleRect
+        }
 
         drawItem(
             item: item,
@@ -80,9 +94,24 @@ class DropZoneView: NSView {
             selectionPath.stroke()
         }
 
-        let previewImage = viewController.previewIcon(for: item)
+        let previewImage = activeBadgeDragRects == nil
+            ? viewController.previewIcon(for: item)
+            : viewController.previewBaseIcon(for: item)
         let imageRect = item.isDirectory ? iconRect : aspectFitRect(for: previewImage, in: iconRect)
         previewImage.draw(in: imageRect, from: .zero, operation: .sourceOver, fraction: 1.0)
+
+        if let activeBadgeDragRects,
+           let badgeDragState {
+            badgeDragState.proxy.image.draw(
+                in: destinationRect(
+                    for: badgeDragState.proxy.frameRelativeToLogicalRect,
+                    relativeTo: activeBadgeDragRects.logicalRect
+                ),
+                from: .zero,
+                operation: .sourceOver,
+                fraction: 1.0
+            )
+        }
 
         let name = (item.path as NSString).lastPathComponent
         let attrs: [NSAttributedString.Key: Any] = [
@@ -195,6 +224,45 @@ class DropZoneView: NSView {
         )
     }
 
+    private func destinationRect(
+        for relativeFrame: CGRect,
+        relativeTo logicalRect: CGRect
+    ) -> CGRect {
+        CGRect(
+            x: logicalRect.minX + relativeFrame.minX * logicalRect.width,
+            y: logicalRect.minY + relativeFrame.minY * logicalRect.height,
+            width: relativeFrame.width * logicalRect.width,
+            height: relativeFrame.height * logicalRect.height
+        )
+    }
+
+    private var activeBadgeDragRects: BadgeGeometry? {
+        guard let badgeDragState,
+              badgeDragState.hasStarted else {
+            return nil
+        }
+
+        let initialVisibleCenter = NSPoint(
+            x: badgeDragState.initialVisibleRect.midX,
+            y: badgeDragState.initialVisibleRect.midY
+        )
+        let delta = NSPoint(
+            x: badgeDragState.currentVisibleCenter.x - initialVisibleCenter.x,
+            y: badgeDragState.currentVisibleCenter.y - initialVisibleCenter.y
+        )
+
+        return BadgeGeometry(
+            logicalRect: badgeDragState.initialLogicalRect.offsetBy(dx: delta.x, dy: delta.y),
+            visibleRect: badgeDragState.initialVisibleRect.offsetBy(dx: delta.x, dy: delta.y)
+        )
+    }
+
+    private func distance(from first: NSPoint, to second: NSPoint) -> CGFloat {
+        let dx = second.x - first.x
+        let dy = second.y - first.y
+        return sqrt(dx * dx + dy * dy)
+    }
+
     private func iconPoint(from viewPoint: NSPoint) -> NSPoint {
         let scale = 1024 / currentIconRect.width
         return NSPoint(
@@ -233,49 +301,101 @@ class DropZoneView: NSView {
         let badgeGeometry = badgeGeometryInView(for: item, iconRect: currentIconRect)
         currentBadgeRect = badgeGeometry?.logicalRect ?? .zero
         currentBadgeVisibleRect = badgeGeometry?.visibleRect ?? .zero
-        let badgeHitRect = currentBadgeVisibleRect.insetBy(dx: -badgeHitSlop, dy: -badgeHitSlop)
 
-        isDraggingBadge = !currentBadgeVisibleRect.isEmpty && badgeHitRect.contains(point)
         viewController.isPreviewSelected = currentIconRect.contains(point)
         if viewController.isPreviewSelected {
             window?.makeFirstResponder(self)
         }
 
-        if isDraggingBadge {
-            let pointInIcon = iconPoint(from: point)
-            let badgeCenter = iconPoint(from: NSPoint(x: currentBadgeVisibleRect.midX, y: currentBadgeVisibleRect.midY))
-            badgeDragCenterOffset = NSPoint(
-                x: badgeCenter.x - pointInIcon.x,
-                y: badgeCenter.y - pointInIcon.y
+        if let badgeGeometry,
+           let proxy = viewController.previewBadgeProxy(for: item) {
+            let proxyRect = destinationRect(
+                for: proxy.frameRelativeToLogicalRect,
+                relativeTo: badgeGeometry.logicalRect
             )
-            viewController.placePreviewBadgeVisibleCenter(badgeCenter, for: item)
+            let badgeHitRect = currentBadgeVisibleRect
+                .union(proxyRect)
+                .insetBy(dx: -badgeHitSlop, dy: -badgeHitSlop)
+
+            guard !currentBadgeVisibleRect.isEmpty,
+                  badgeHitRect.contains(point) else {
+                badgeDragState = nil
+                needsDisplay = true
+                return
+            }
+
+            let visibleCenter = NSPoint(
+                x: badgeGeometry.visibleRect.midX,
+                y: badgeGeometry.visibleRect.midY
+            )
+            badgeDragState = BadgeDragState(
+                proxy: proxy,
+                initialLogicalRect: badgeGeometry.logicalRect,
+                initialVisibleRect: badgeGeometry.visibleRect,
+                cursorToVisibleCenterOffset: NSPoint(
+                    x: visibleCenter.x - point.x,
+                    y: visibleCenter.y - point.y
+                ),
+                mouseDownPoint: point,
+                currentVisibleCenter: visibleCenter,
+                hasStarted: false
+            )
+        } else {
+            badgeDragState = nil
         }
 
         needsDisplay = true
     }
 
     override func mouseDragged(with event: NSEvent) {
-        guard isDraggingBadge,
-              let item = viewController.items.last,
+        guard var badgeDragState,
               !currentIconRect.isEmpty else {
             super.mouseDragged(with: event)
             return
         }
 
         let point = convert(event.locationInWindow, from: nil)
-        let pointInIcon = iconPoint(from: point)
-        viewController.placePreviewBadgeVisibleCenter(
-            NSPoint(
-                x: pointInIcon.x + badgeDragCenterOffset.x,
-                y: pointInIcon.y + badgeDragCenterOffset.y
-            ),
-            for: item
+        let currentVisibleCenter = NSPoint(
+            x: point.x + badgeDragState.cursorToVisibleCenterOffset.x,
+            y: point.y + badgeDragState.cursorToVisibleCenterOffset.y
         )
+
+        guard badgeDragState.hasStarted ||
+                distance(from: badgeDragState.mouseDownPoint, to: point) >= badgeDragThreshold else {
+            return
+        }
+
+        badgeDragState.hasStarted = true
+        badgeDragState.currentVisibleCenter = currentVisibleCenter
+        self.badgeDragState = badgeDragState
+        needsDisplay = true
     }
 
     override func mouseUp(with event: NSEvent) {
-        isDraggingBadge = false
-        badgeDragCenterOffset = .zero
+        defer {
+            badgeDragState = nil
+            needsDisplay = true
+        }
+
+        guard let badgeDragState,
+              badgeDragState.hasStarted,
+              let item = viewController.items.last,
+              !currentIconRect.isEmpty else {
+            return
+        }
+
+        let initialVisibleCenter = NSPoint(
+            x: badgeDragState.initialVisibleRect.midX,
+            y: badgeDragState.initialVisibleRect.midY
+        )
+        guard badgeDragState.currentVisibleCenter != initialVisibleCenter else {
+            return
+        }
+
+        viewController.commitPreviewBadgeVisibleCenter(
+            iconPoint(from: badgeDragState.currentVisibleCenter),
+            for: item
+        )
     }
 
     override func keyDown(with event: NSEvent) {
