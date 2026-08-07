@@ -11,9 +11,11 @@ final class BadgePreviewGeometryCoordinator {
     private let folderRenderer: FolderIconRenderer
     private let fileGeometryCalculator: BadgeFileGeometryCalculator
 
-    init() {
+    init(filePreviewNormalizer: FilePreviewNormalizer = FilePreviewNormalizer()) {
         self.folderRenderer = FolderIconRenderer()
-        self.fileGeometryCalculator = BadgeFileGeometryCalculator()
+        self.fileGeometryCalculator = BadgeFileGeometryCalculator(
+            filePreviewNormalizer: filePreviewNormalizer
+        )
     }
     
     func geometry(
@@ -22,7 +24,8 @@ final class BadgePreviewGeometryCoordinator {
         icon: NSImage,
         badge: NSImage,
         badgeSize: NSSize,
-        badgeOffset: NSPoint
+        badgeOffset: NSPoint,
+        position: BadgePosition
     ) -> BadgeGeometry {
         let logicalRect: NSRect
 
@@ -36,7 +39,8 @@ final class BadgePreviewGeometryCoordinator {
             logicalRect = fileGeometryCalculator.badgeRect(
                 for: icon,
                 badgeSize: badgeSize,
-                badgeOffset: badgeOffset
+                badgeOffset: badgeOffset,
+                position: position
             )
         }
 
@@ -58,7 +62,8 @@ final class BadgePreviewGeometryCoordinator {
         folderColorName: String?,
         icon: NSImage,
         badgeSize: NSSize,
-        badgeOffset: NSPoint
+        badgeOffset: NSPoint,
+        position: BadgePosition
     ) -> BadgeGeometry {
         let logicalRect: NSRect
 
@@ -72,7 +77,8 @@ final class BadgePreviewGeometryCoordinator {
             logicalRect = fileGeometryCalculator.badgeRect(
                 for: icon,
                 badgeSize: badgeSize,
-                badgeOffset: badgeOffset
+                badgeOffset: badgeOffset,
+                position: position
             )
         }
 
@@ -87,6 +93,7 @@ final class BadgePreviewGeometryCoordinator {
         folderColorName: String?,
         icon: NSImage,
         badgeSize: NSSize,
+        position: BadgePosition,
         placingBadgeCenterAt center: NSPoint
     ) -> NSPoint {
         if isDirectory {
@@ -100,6 +107,7 @@ final class BadgePreviewGeometryCoordinator {
         return fileGeometryCalculator.badgeOffset(
             for: icon,
             badgeSize: badgeSize,
+            position: position,
             placingBadgeCenterAt: center
         )
     }
@@ -110,7 +118,8 @@ final class BadgePreviewGeometryCoordinator {
         icon: NSImage,
         badge: NSImage,
         badgeSize: NSSize,
-        badgeOffset: NSPoint
+        badgeOffset: NSPoint,
+        position: BadgePosition
     ) -> NSPoint {
         guard !isDirectory else {
             return visibleCenter
@@ -119,7 +128,8 @@ final class BadgePreviewGeometryCoordinator {
         let currentRect = fileGeometryCalculator.badgeRect(
             for: icon,
             badgeSize: badgeSize,
-            badgeOffset: badgeOffset
+            badgeOffset: badgeOffset,
+            position: position
         )
 
         return fileGeometryCalculator.logicalCenter(

@@ -188,7 +188,9 @@ class ViewController: NSViewController, NSTextFieldDelegate {
     }
 
     private func customRenderedFolderIcon(for item: DroppedItem, badgeVisual: BadgeVisual? = nil) -> NSImage? {
-        badgeKitRenderer.renderFolderIcon(
+        guard item.isDirectory else { return nil }
+
+        return badgeKitRenderer.renderFolderIcon(
             colorName: item.folderColorName,
             fallbackColor: item.folderColor,
             symbolName: item.folderSymbolName,
@@ -199,7 +201,9 @@ class ViewController: NSViewController, NSTextFieldDelegate {
     }
 
     private func customRenderedFolderPreview(for item: DroppedItem, badgeVisual: BadgeVisual? = nil) -> NSImage? {
-        badgeKitRenderer.renderFolderPreview(
+        guard item.isDirectory else { return nil }
+
+        return badgeKitRenderer.renderFolderPreview(
             colorName: item.folderColorName,
             fallbackColor: item.folderColor,
             symbolName: item.folderSymbolName,
@@ -210,7 +214,9 @@ class ViewController: NSViewController, NSTextFieldDelegate {
     }
 
     private func customRenderedFolderIcon(for item: DroppedItem, badgeComposition: BadgeComposition?) -> NSImage? {
-        badgeKitRenderer.renderFolderIcon(
+        guard item.isDirectory else { return nil }
+
+        return badgeKitRenderer.renderFolderIcon(
             colorName: item.folderColorName,
             fallbackColor: item.folderColor,
             symbolName: item.folderSymbolName,
@@ -221,7 +227,9 @@ class ViewController: NSViewController, NSTextFieldDelegate {
     }
 
     private func customRenderedFolderPreview(for item: DroppedItem, badgeComposition: BadgeComposition?) -> NSImage? {
-        badgeKitRenderer.renderFolderPreview(
+        guard item.isDirectory else { return nil }
+
+        return badgeKitRenderer.renderFolderPreview(
             colorName: item.folderColorName,
             fallbackColor: item.folderColor,
             symbolName: item.folderSymbolName,
@@ -232,11 +240,14 @@ class ViewController: NSViewController, NSTextFieldDelegate {
     }
 
     func previewIcon(for item: DroppedItem) -> NSImage {
+        let baseIcon = item.baseIconForPreview ?? item.icon
+
         guard item.showsBadgePreview else {
-            return customRenderedFolderPreview(for: item) ?? item.icon
+            return item.isDirectory
+                ? customRenderedFolderPreview(for: item) ?? baseIcon
+                : baseIcon
         }
 
-        let baseIcon = item.baseIconForPreview ?? item.icon
         let previewKey: String
 
         if let badgeComposition = appDelegate.selectedBadgeComposition {
@@ -258,7 +269,9 @@ class ViewController: NSViewController, NSTextFieldDelegate {
                 folderSymbolText: item.folderSymbolText
             )
         } else {
-            return customRenderedFolderPreview(for: item) ?? item.icon
+            return item.isDirectory
+                ? customRenderedFolderPreview(for: item) ?? baseIcon
+                : baseIcon
         }
 
         if item.cachedPreviewKey == previewKey,
@@ -278,6 +291,7 @@ class ViewController: NSViewController, NSTextFieldDelegate {
                 )
         } else if let badgeVisual = appDelegate.selectedBadgeVisual {
             previewIcon = badgeKitRenderer.renderPreviewIcon(
+                isDirectory: item.isDirectory,
                 baseIcon: baseIcon,
                 folderColorName: item.folderColorName,
                 folderColor: item.folderColor,
@@ -295,7 +309,9 @@ class ViewController: NSViewController, NSTextFieldDelegate {
                 }
             )
         } else {
-            previewIcon = customRenderedFolderPreview(for: item) ?? item.icon
+            previewIcon = item.isDirectory
+                ? customRenderedFolderPreview(for: item) ?? baseIcon
+                : baseIcon
         }
 
         item.cachedPreviewKey = previewKey
@@ -311,7 +327,9 @@ class ViewController: NSViewController, NSTextFieldDelegate {
                 item.icon
         }
 
-        return item.baseIconForPreview ?? item.icon
+        return badgeKitRenderer.renderFilePreviewBase(
+            baseIcon: item.baseIconForPreview ?? item.icon
+        )
     }
 
     func previewBadgeProxy(for item: DroppedItem) -> BadgeProxy? {

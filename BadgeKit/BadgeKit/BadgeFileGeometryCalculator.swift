@@ -10,6 +10,7 @@ import Cocoa
 final class BadgeFileGeometryCalculator {
     private let canvasSize: CGFloat
     private let placementResolver: BadgePlacementResolver
+    private let filePreviewNormalizer: FilePreviewNormalizer
     
     private struct AlphaBoundsCacheKey: Hashable {
         let imageID: ObjectIdentifier
@@ -37,43 +38,63 @@ final class BadgeFileGeometryCalculator {
 
     init(
         canvasSize: CGFloat = 1024,
-        placementResolver: BadgePlacementResolver = BadgePlacementResolver()
+        placementResolver: BadgePlacementResolver = BadgePlacementResolver(),
+        filePreviewNormalizer: FilePreviewNormalizer = FilePreviewNormalizer()
     ) {
         self.canvasSize = canvasSize
         self.placementResolver = placementResolver
+        self.filePreviewNormalizer = filePreviewNormalizer
     }
 
     func badgeRect(
         for icon: NSImage,
         badgeSize: NSSize,
-        badgeOffset: NSPoint
+        badgeOffset: NSPoint,
+        position: BadgePosition
     ) -> NSRect {
-        let canvasRect = NSRect(x: 0, y: 0, width: canvasSize, height: canvasSize)
-        let iconRect = aspectFitRect(for: icon, in: canvasRect)
-
-        return placementResolver.placement(
-            from: iconRect,
+        placement(
+            for: icon,
             badgeSize: badgeSize,
-            badgeOffset: badgeOffset
+            badgeOffset: badgeOffset,
+            position: position
         ).logicalRect
     }
 
     func badgeOffset(
         for icon: NSImage,
         badgeSize: NSSize,
+        position: BadgePosition,
         placingBadgeCenterAt center: NSPoint
     ) -> NSPoint {
-        let canvasRect = NSRect(x: 0, y: 0, width: canvasSize, height: canvasSize)
-        let iconRect = aspectFitRect(for: icon, in: canvasRect)
-        let scale = min(iconRect.width, iconRect.height) / 48.0
-        let scaledBadgeSize = NSSize(
-            width: badgeSize.width * scale,
-            height: badgeSize.height * scale
+        let placement = placement(
+            for: icon,
+            badgeSize: badgeSize,
+            badgeOffset: .zero,
+            position: position
         )
 
         return NSPoint(
-            x: center.x - (iconRect.maxX - scaledBadgeSize.width / 2),
-            y: center.y - (iconRect.minY + scaledBadgeSize.height / 2)
+            x: center.x - placement.logicalRect.midX,
+            y: center.y - placement.logicalRect.midY
+        )
+    }
+
+    private func placement(
+        for icon: NSImage,
+        badgeSize: NSSize,
+        badgeOffset: NSPoint,
+        position: BadgePosition
+    ) -> BadgePlacement {
+        let canvasRect = NSRect(x: 0, y: 0, width: canvasSize, height: canvasSize)
+        let normalizedPreview = filePreviewNormalizer.normalizedPreview(from: icon)
+
+        return placementResolver.placement(
+            kind: .file,
+            positionAnchorRect: normalizedPreview.contentRect,
+            sizeAnchorRect: canvasRect,
+            badgeSize: badgeSize,
+            badgeOffset: badgeOffset,
+            position: position
         )
     }
 

@@ -17,6 +17,7 @@ final class BadgePreviewIconRenderer {
     }
 
     func renderPreviewIcon(
+        isDirectory: Bool,
         baseIcon: NSImage,
         folderColorName: String?,
         folderColor: NSColor?,
@@ -26,7 +27,11 @@ final class BadgePreviewIconRenderer {
         configuration: BadgeConfiguration,
         fallbackRenderer: (NSImage, NSImage, NSSize) -> NSImage
     ) -> NSImage {
-        folderPreviewRenderer.renderPreview(
+        guard isDirectory else {
+            return fallbackRenderer(baseIcon, badge, configuration.size)
+        }
+
+        return folderPreviewRenderer.renderPreview(
             colorName: folderColorName,
             fallbackColor: folderColor,
             symbolName: folderSymbolName,

@@ -9,14 +9,22 @@ import AppKit
 
 public final class BadgeKitRenderer {
 
-    private let composer = BadgeIconComposer()
+    private let filePreviewNormalizer: FilePreviewNormalizer
+    private let composer: BadgeIconComposer
     private let cacheKeyBuilder = BadgePreviewCacheKeyBuilder()
     private let previewIconRenderer = BadgePreviewIconRenderer()
     private let folderRenderer = FolderIconRenderer()
     private let defaultFolderColor = NSColor.systemBlue
-    private let geometryCoordinator = BadgePreviewGeometryCoordinator()
+    private let geometryCoordinator: BadgePreviewGeometryCoordinator
 
-    public init() {}
+    public init() {
+        let filePreviewNormalizer = FilePreviewNormalizer()
+        self.filePreviewNormalizer = filePreviewNormalizer
+        self.composer = BadgeIconComposer(filePreviewNormalizer: filePreviewNormalizer)
+        self.geometryCoordinator = BadgePreviewGeometryCoordinator(
+            filePreviewNormalizer: filePreviewNormalizer
+        )
+    }
 
     public func renderPreview(
         baseIcon: NSImage,
@@ -56,6 +64,10 @@ public final class BadgeKitRenderer {
             badgeOffset: configuration.offset,
             badgePosition: configuration.position
         )
+    }
+
+    public func renderFilePreviewBase(baseIcon: NSImage) -> NSImage {
+        filePreviewNormalizer.normalizedPreview(from: baseIcon).image
     }
 
     public func renderBadgeProxy(
@@ -221,6 +233,7 @@ public final class BadgeKitRenderer {
     }
 
     public func renderPreviewIcon(
+        isDirectory: Bool,
         baseIcon: NSImage,
         folderColorName: String?,
         folderColor: NSColor?,
@@ -231,6 +244,7 @@ public final class BadgeKitRenderer {
         fallbackRenderer: @escaping (NSImage, NSImage, NSSize) -> NSImage
     ) -> NSImage {
         renderPreviewIcon(
+            isDirectory: isDirectory,
             baseIcon: baseIcon,
             folderColorName: folderColorName,
             folderColor: folderColor,
@@ -243,6 +257,7 @@ public final class BadgeKitRenderer {
     }
 
     public func renderPreviewIcon(
+        isDirectory: Bool,
         baseIcon: NSImage,
         folderColorName: String?,
         folderColor: NSColor?,
@@ -252,8 +267,13 @@ public final class BadgeKitRenderer {
         configuration: BadgeConfiguration,
         fallbackRenderer: @escaping (NSImage, NSImage, NSSize) -> NSImage
     ) -> NSImage {
+        guard isDirectory else {
+            return fallbackRenderer(baseIcon, badgeVisual.artwork, configuration.size)
+        }
+
         if badgeVisual.contactShadow == nil {
             return previewIconRenderer.renderPreviewIcon(
+                isDirectory: isDirectory,
                 baseIcon: baseIcon,
                 folderColorName: folderColorName,
                 folderColor: folderColor,
@@ -276,6 +296,7 @@ public final class BadgeKitRenderer {
     }
 
     public func renderPreviewIcon(
+        isDirectory: Bool,
         baseIcon: NSImage,
         folderColorName: String?,
         folderColor: NSColor?,
@@ -285,6 +306,7 @@ public final class BadgeKitRenderer {
         configuration: BadgeConfiguration
     ) -> NSImage {
         renderPreviewIcon(
+            isDirectory: isDirectory,
             baseIcon: baseIcon,
             folderColorName: folderColorName,
             folderColor: folderColor,
@@ -304,6 +326,7 @@ public final class BadgeKitRenderer {
     }
 
     public func renderPreviewIcon(
+        isDirectory: Bool,
         baseIcon: NSImage,
         folderColorName: String?,
         folderColor: NSColor?,
@@ -312,10 +335,11 @@ public final class BadgeKitRenderer {
         badgeComposition: BadgeComposition,
         configuration: BadgeConfiguration
     ) -> NSImage {
-        if folderColorName != nil ||
+        if isDirectory &&
+            (folderColorName != nil ||
             folderColor != nil ||
             folderSymbolName != nil ||
-            folderSymbolText != nil {
+            folderSymbolText != nil) {
             return folderRenderer.renderPreviewFolderIcon(
                 colorName: folderColorName,
                 fallbackColor: folderColor ?? defaultFolderColor,
@@ -462,7 +486,8 @@ public final class BadgeKitRenderer {
             icon: baseIcon,
             badge: badge,
             badgeSize: configuration.size,
-            badgeOffset: configuration.offset
+            badgeOffset: configuration.offset,
+            position: configuration.position
         )
     }
 
@@ -478,7 +503,8 @@ public final class BadgeKitRenderer {
             folderColorName: folderColorName,
             icon: baseIcon,
             badgeSize: configuration.size,
-            badgeOffset: configuration.offset
+            badgeOffset: configuration.offset,
+            position: configuration.position
         )
     }
 
@@ -494,6 +520,7 @@ public final class BadgeKitRenderer {
             folderColorName: folderColorName,
             icon: baseIcon,
             badgeSize: configuration.size,
+            position: configuration.position,
             placingBadgeCenterAt: center
         )
     }
@@ -511,7 +538,8 @@ public final class BadgeKitRenderer {
             icon: baseIcon,
             badge: badge,
             badgeSize: configuration.size,
-            badgeOffset: configuration.offset
+            badgeOffset: configuration.offset,
+            position: configuration.position
         )
     }
 
