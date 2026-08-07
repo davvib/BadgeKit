@@ -398,18 +398,42 @@ class ViewController: NSViewController, NSTextFieldDelegate {
         dropZoneView.needsDisplay = true
     }
 
-    func commitPreviewBadgeVisibleCenter(_ center: NSPoint, for item: DroppedItem) {
+    private func constrainCurrentPreviewBadgeOffset(for item: DroppedItem) {
+        guard item.showsBadgePreview,
+              let geometry = previewBadgeGeometry(for: item) else {
+            return
+        }
+
+        commitPreviewBadgeVisibleCenter(
+            NSPoint(
+                x: geometry.visibleRect.midX,
+                y: geometry.visibleRect.midY
+            ),
+            for: item
+        )
+    }
+
+    func commitPreviewBadgeVisibleCenter(
+        _ center: NSPoint,
+        minimumRecoverableExtent: CGFloat? = nil,
+        for item: DroppedItem
+    ) {
         guard appDelegate.selectedBadgeVisual != nil ||
             appDelegate.selectedBadgeComposition != nil else {
             commitPreviewBadgeCenter(center, for: item)
             return
         }
 
+        let confinedCenter = confinedPreviewBadgeVisibleCenter(
+            center,
+            minimumRecoverableExtent: minimumRecoverableExtent,
+            for: item
+        )
         let logicalCenter: CGPoint
 
         if let badgeComposition = appDelegate.selectedBadgeComposition {
             logicalCenter = badgeKitRenderer.logicalBadgeCenter(
-                forVisibleCenter: center,
+                forVisibleCenter: confinedCenter,
                 isDirectory: item.isDirectory,
                 baseIcon: item.baseIconForPreview ?? item.icon,
                 badgeComposition: badgeComposition,
@@ -417,7 +441,7 @@ class ViewController: NSViewController, NSTextFieldDelegate {
             )
         } else if let badgeVisual = appDelegate.selectedBadgeVisual {
             logicalCenter = badgeKitRenderer.logicalBadgeCenter(
-                forVisibleCenter: center,
+                forVisibleCenter: confinedCenter,
                 isDirectory: item.isDirectory,
                 baseIcon: item.baseIconForPreview ?? item.icon,
                 badge: badgeVisual.artwork,
@@ -428,6 +452,72 @@ class ViewController: NSViewController, NSTextFieldDelegate {
         }
 
         commitPreviewBadgeCenter(logicalCenter, for: item)
+    }
+
+    private func confinedPreviewBadgeVisibleCenter(
+        _ visibleCenter: NSPoint,
+        minimumRecoverableExtent: CGFloat?,
+        for item: DroppedItem
+    ) -> NSPoint {
+        guard let geometry = previewBadgeGeometry(for: item) else {
+            return visibleCenter
+        }
+
+        let currentVisibleCenter = NSPoint(
+            x: geometry.visibleRect.midX,
+            y: geometry.visibleRect.midY
+        )
+        let delta = NSPoint(
+            x: visibleCenter.x - currentVisibleCenter.x,
+            y: visibleCenter.y - currentVisibleCenter.y
+        )
+        let candidateGeometry = BadgeGeometry(
+            logicalRect: geometry.logicalRect.offsetBy(dx: delta.x, dy: delta.y),
+            visibleRect: geometry.visibleRect.offsetBy(dx: delta.x, dy: delta.y)
+        )
+        let recoverabilityDelta = confinementDelta(
+            for: candidateGeometry.visibleRect,
+            in: NSRect(x: 0, y: 0, width: 1024, height: 1024),
+            minimumRecoverableExtent: minimumRecoverableExtent ??
+                dropZoneView.minimumRecoverableExtentInIconCoordinates()
+        )
+
+        return NSPoint(
+            x: visibleCenter.x + recoverabilityDelta.x,
+            y: visibleCenter.y + recoverabilityDelta.y
+        )
+    }
+
+    private func confinementDelta(
+        for recoverableRect: NSRect,
+        in containingRect: NSRect,
+        minimumRecoverableExtent: CGFloat
+    ) -> NSPoint {
+        let requiredWidth = min(
+            minimumRecoverableExtent,
+            containingRect.width,
+            recoverableRect.width
+        )
+        let requiredHeight = min(
+            minimumRecoverableExtent,
+            containingRect.height,
+            recoverableRect.height
+        )
+        var delta = NSPoint.zero
+
+        if recoverableRect.maxX < containingRect.minX + requiredWidth {
+            delta.x = containingRect.minX + requiredWidth - recoverableRect.maxX
+        } else if recoverableRect.minX > containingRect.maxX - requiredWidth {
+            delta.x = containingRect.maxX - requiredWidth - recoverableRect.minX
+        }
+
+        if recoverableRect.maxY < containingRect.minY + requiredHeight {
+            delta.y = containingRect.minY + requiredHeight - recoverableRect.maxY
+        } else if recoverableRect.minY > containingRect.maxY - requiredHeight {
+            delta.y = containingRect.maxY - requiredHeight - recoverableRect.minY
+        }
+
+        return delta
     }
 
     private func refreshRestoredVisualState(for item: DroppedItem) {
@@ -976,24 +1066,36 @@ class ViewController: NSViewController, NSTextFieldDelegate {
 
     @objc func moveBadgeLeft() {
         badgeOffsetX -= 2
+        if let item = items.last {
+            constrainCurrentPreviewBadgeOffset(for: item)
+        }
         invalidatePreviewCaches()
         dropZoneView.needsDisplay = true
     }
 
     @objc func moveBadgeRight() {
         badgeOffsetX += 2
+        if let item = items.last {
+            constrainCurrentPreviewBadgeOffset(for: item)
+        }
         invalidatePreviewCaches()
         dropZoneView.needsDisplay = true
     }
 
     @objc func moveBadgeUp() {
         badgeOffsetY += 2
+        if let item = items.last {
+            constrainCurrentPreviewBadgeOffset(for: item)
+        }
         invalidatePreviewCaches()
         dropZoneView.needsDisplay = true
     }
 
     @objc func moveBadgeDown() {
         badgeOffsetY -= 2
+        if let item = items.last {
+            constrainCurrentPreviewBadgeOffset(for: item)
+        }
         invalidatePreviewCaches()
         dropZoneView.needsDisplay = true
     }

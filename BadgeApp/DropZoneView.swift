@@ -5,6 +5,7 @@ class DropZoneView: NSView {
     weak var viewController: ViewController!
     private let badgeHitSlop: CGFloat = 10
     private let badgeDragThreshold: CGFloat = 3
+    private let minimumRecoverableExtent: CGFloat = 24
     private var currentIconRect: NSRect = .zero
     private var currentBadgeRect: NSRect = .zero
     private var currentBadgeVisibleRect: NSRect = .zero
@@ -236,12 +237,23 @@ class DropZoneView: NSView {
         )
     }
 
+    func minimumRecoverableExtentInIconCoordinates() -> CGFloat {
+        let iconRect = previewIconRect()
+        guard iconRect.width > 0 else { return minimumRecoverableExtent }
+
+        return minimumRecoverableExtent * 1024 / iconRect.width
+    }
+
     private var activeBadgeDragRects: BadgeGeometry? {
         guard let badgeDragState,
               badgeDragState.hasStarted else {
             return nil
         }
 
+        return dragRects(for: badgeDragState)
+    }
+
+    private func dragRects(for badgeDragState: BadgeDragState) -> BadgeGeometry {
         let initialVisibleCenter = NSPoint(
             x: badgeDragState.initialVisibleRect.midX,
             y: badgeDragState.initialVisibleRect.midY
@@ -254,6 +266,68 @@ class DropZoneView: NSView {
         return BadgeGeometry(
             logicalRect: badgeDragState.initialLogicalRect.offsetBy(dx: delta.x, dy: delta.y),
             visibleRect: badgeDragState.initialVisibleRect.offsetBy(dx: delta.x, dy: delta.y)
+        )
+    }
+
+    private func interactiveRect(
+        for geometry: BadgeGeometry,
+        proxy: BadgeProxy
+    ) -> NSRect {
+        geometry.visibleRect.union(
+            destinationRect(
+                for: proxy.frameRelativeToLogicalRect,
+                relativeTo: geometry.logicalRect
+            )
+        )
+    }
+
+    private func confinementDelta(
+        for recoverableRect: NSRect,
+        in containingRect: NSRect
+    ) -> NSPoint {
+        let requiredWidth = min(
+            minimumRecoverableExtent,
+            containingRect.width,
+            recoverableRect.width
+        )
+        let requiredHeight = min(
+            minimumRecoverableExtent,
+            containingRect.height,
+            recoverableRect.height
+        )
+        var delta = NSPoint.zero
+
+        if recoverableRect.maxX < containingRect.minX + requiredWidth {
+            delta.x = containingRect.minX + requiredWidth - recoverableRect.maxX
+        } else if recoverableRect.minX > containingRect.maxX - requiredWidth {
+            delta.x = containingRect.maxX - requiredWidth - recoverableRect.minX
+        }
+
+        if recoverableRect.maxY < containingRect.minY + requiredHeight {
+            delta.y = containingRect.minY + requiredHeight - recoverableRect.maxY
+        } else if recoverableRect.minY > containingRect.maxY - requiredHeight {
+            delta.y = containingRect.maxY - requiredHeight - recoverableRect.minY
+        }
+
+        return delta
+    }
+
+    private func confinedVisibleCenter(
+        _ visibleCenter: NSPoint,
+        for badgeDragState: BadgeDragState
+    ) -> NSPoint {
+        var candidateState = badgeDragState
+        candidateState.currentVisibleCenter = visibleCenter
+
+        let candidateGeometry = dragRects(for: candidateState)
+        let delta = confinementDelta(
+            for: candidateGeometry.visibleRect,
+            in: currentIconRect
+        )
+
+        return NSPoint(
+            x: visibleCenter.x + delta.x,
+            y: visibleCenter.y + delta.y
         )
     }
 
@@ -366,7 +440,10 @@ class DropZoneView: NSView {
         }
 
         badgeDragState.hasStarted = true
-        badgeDragState.currentVisibleCenter = currentVisibleCenter
+        badgeDragState.currentVisibleCenter = confinedVisibleCenter(
+            currentVisibleCenter,
+            for: badgeDragState
+        )
         self.badgeDragState = badgeDragState
         needsDisplay = true
     }
@@ -394,6 +471,7 @@ class DropZoneView: NSView {
 
         viewController.commitPreviewBadgeVisibleCenter(
             iconPoint(from: badgeDragState.currentVisibleCenter),
+            minimumRecoverableExtent: minimumRecoverableExtentInIconCoordinates(),
             for: item
         )
     }
