@@ -187,8 +187,30 @@ class ViewController: NSViewController, NSTextFieldDelegate {
         )
     }
 
+    private func isStandardFolder(_ item: DroppedItem) -> Bool {
+        item.isDirectory &&
+            item.folderColorName == nil &&
+            item.folderColor == nil &&
+            item.folderSymbolName == nil &&
+            item.folderSymbolText == nil
+    }
+
+    private func standardFolderBaseIcon(for item: DroppedItem) -> NSImage {
+        item.baseIconForPreview ?? item.icon
+    }
+
     private func customRenderedFolderIcon(for item: DroppedItem, badgeVisual: BadgeVisual? = nil) -> NSImage? {
         guard item.isDirectory else { return nil }
+
+        if isStandardFolder(item) {
+            guard let badgeVisual else { return nil }
+
+            return badgeKitRenderer.renderFolderSystemIcon(
+                baseIcon: standardFolderBaseIcon(for: item),
+                badgeVisual: badgeVisual,
+                configuration: currentBadgeConfiguration
+            )
+        }
 
         return badgeKitRenderer.renderFolderIcon(
             colorName: item.folderColorName,
@@ -203,6 +225,16 @@ class ViewController: NSViewController, NSTextFieldDelegate {
     private func customRenderedFolderPreview(for item: DroppedItem, badgeVisual: BadgeVisual? = nil) -> NSImage? {
         guard item.isDirectory else { return nil }
 
+        if isStandardFolder(item) {
+            guard let badgeVisual else { return nil }
+
+            return badgeKitRenderer.renderFolderSystemIcon(
+                baseIcon: standardFolderBaseIcon(for: item),
+                badgeVisual: badgeVisual,
+                configuration: currentBadgeConfiguration
+            )
+        }
+
         return badgeKitRenderer.renderFolderPreview(
             colorName: item.folderColorName,
             fallbackColor: item.folderColor,
@@ -216,6 +248,16 @@ class ViewController: NSViewController, NSTextFieldDelegate {
     private func customRenderedFolderIcon(for item: DroppedItem, badgeComposition: BadgeComposition?) -> NSImage? {
         guard item.isDirectory else { return nil }
 
+        if isStandardFolder(item) {
+            guard let badgeComposition else { return nil }
+
+            return badgeKitRenderer.renderFolderSystemIcon(
+                baseIcon: standardFolderBaseIcon(for: item),
+                badgeComposition: badgeComposition,
+                configuration: currentBadgeConfiguration
+            )
+        }
+
         return badgeKitRenderer.renderFolderIcon(
             colorName: item.folderColorName,
             fallbackColor: item.folderColor,
@@ -228,6 +270,16 @@ class ViewController: NSViewController, NSTextFieldDelegate {
 
     private func customRenderedFolderPreview(for item: DroppedItem, badgeComposition: BadgeComposition?) -> NSImage? {
         guard item.isDirectory else { return nil }
+
+        if isStandardFolder(item) {
+            guard let badgeComposition else { return nil }
+
+            return badgeKitRenderer.renderFolderSystemIcon(
+                baseIcon: standardFolderBaseIcon(for: item),
+                badgeComposition: badgeComposition,
+                configuration: currentBadgeConfiguration
+            )
+        }
 
         return badgeKitRenderer.renderFolderPreview(
             colorName: item.folderColorName,
@@ -290,24 +342,26 @@ class ViewController: NSViewController, NSTextFieldDelegate {
                     badgeSize: currentBadgeConfiguration.size
                 )
         } else if let badgeVisual = appDelegate.selectedBadgeVisual {
-            previewIcon = badgeKitRenderer.renderPreviewIcon(
-                isDirectory: item.isDirectory,
-                baseIcon: baseIcon,
-                folderColorName: item.folderColorName,
-                folderColor: item.folderColor,
-                folderSymbolName: item.folderSymbolName,
-                folderSymbolText: item.folderSymbolText,
-                badgeVisual: badgeVisual,
-                configuration: currentBadgeConfiguration,
-                fallbackRenderer: { [weak self] baseIcon, _, badgeSize in
-                    guard let self else { return baseIcon }
-                    return self.makeBadgedIcon(
-                        originalIcon: baseIcon,
-                        badgeVisual: badgeVisual,
-                        badgeSize: badgeSize
-                    )
-                }
-            )
+            previewIcon = item.isDirectory
+                ? customRenderedFolderPreview(for: item, badgeVisual: badgeVisual) ?? item.icon
+                : badgeKitRenderer.renderPreviewIcon(
+                    isDirectory: item.isDirectory,
+                    baseIcon: baseIcon,
+                    folderColorName: item.folderColorName,
+                    folderColor: item.folderColor,
+                    folderSymbolName: item.folderSymbolName,
+                    folderSymbolText: item.folderSymbolText,
+                    badgeVisual: badgeVisual,
+                    configuration: currentBadgeConfiguration,
+                    fallbackRenderer: { [weak self] baseIcon, _, badgeSize in
+                        guard let self else { return baseIcon }
+                        return self.makeBadgedIcon(
+                            originalIcon: baseIcon,
+                            badgeVisual: badgeVisual,
+                            badgeSize: badgeSize
+                        )
+                    }
+                )
         } else {
             previewIcon = item.isDirectory
                 ? customRenderedFolderPreview(for: item) ?? baseIcon
