@@ -47,8 +47,15 @@ public final class BadgeBaseIconResolver {
     ) {
         let fallbackIcon = fallbackIcon(for: path)
 
-        if hasAppBadge {
+        if hasAppBadge, isDirectory {
             completion(fallbackIcon, false)
+            return
+        }
+
+        if hasAppBadge {
+            quickLookIcon(for: path, fallbackIcon: fallbackIcon) { icon in
+                completion(icon, false)
+            }
             return
         }
 

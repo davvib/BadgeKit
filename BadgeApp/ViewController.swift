@@ -142,17 +142,21 @@ class ViewController: NSViewController, NSTextFieldDelegate {
     }
 
     private func backedUpIcon(for path: String) -> NSImage? {
-        guard shouldUseBackedUpIcon(for: path),
-              let record = iconBackupRecord(for: path) else {
+        guard let record = iconBackupRecord(for: path),
+              shouldUseBackedUpIcon(for: path, record: record) else {
             return nil
         }
 
         return iconBackupStore.previewOrOriginalIcon(for: record)
     }
 
-    private func shouldUseBackedUpIcon(for path: String) -> Bool {
-        finderIconStateReader.hasCustomVisualState(at: path) ||
-        hasFolderVisualCustomization(at: path)
+    private func shouldUseBackedUpIcon(for path: String, record: IconBackupRecord) -> Bool {
+        if isDirectory(at: path) {
+            return finderIconStateReader.hasCustomVisualState(at: path) ||
+            hasFolderVisualCustomization(at: path)
+        }
+
+        return record.hadCustomIcon
     }
 
     private func folderCustomizationColorInfo(at path: String) -> (name: String, color: NSColor)? {
@@ -1498,20 +1502,40 @@ class ViewController: NSViewController, NSTextFieldDelegate {
     }
 
     private func shouldApplyBadgeOverCustomIcons() -> Bool {
-        let itemsWithCustomIcon = items.filter {
-            hasCustomFinderIcon(at: $0.path) || hasFolderVisualCustomization(at: $0.path)
+        let customizedFolders = items.filter {
+            $0.isDirectory &&
+            (hasCustomFinderIcon(at: $0.path) || hasFolderVisualCustomization(at: $0.path))
         }
-        guard !itemsWithCustomIcon.isEmpty else { return true }
 
+        if !customizedFolders.isEmpty,
+           !confirmApplyingBadgeOverCustomizedFolders(customizedFolders) {
+            return false
+        }
+
+        let externalCustomFiles = items.filter {
+            !$0.isDirectory &&
+            hasCustomFinderIcon(at: $0.path) &&
+            !hasBadgeAppliedByBadgeApp(at: $0.path)
+        }
+
+        if !externalCustomFiles.isEmpty,
+           !confirmApplyingBadgeOverExternalCustomFiles(externalCustomFiles) {
+            return false
+        }
+
+        return true
+    }
+
+    private func confirmApplyingBadgeOverCustomizedFolders(_ customizedFolders: [DroppedItem]) -> Bool {
         let alert = NSAlert()
         alert.alertStyle = .warning
         alert.messageText = "Aplicar badge sobre carpetas personalizadas"
 
-        let names = itemsWithCustomIcon
+        let names = customizedFolders
             .prefix(5)
             .map { ($0.path as NSString).lastPathComponent }
             .joined(separator: "\n")
-        let remainingCount = itemsWithCustomIcon.count - min(itemsWithCustomIcon.count, 5)
+        let remainingCount = customizedFolders.count - min(customizedFolders.count, 5)
         let remainingText = remainingCount > 0 ? "\n...y \(remainingCount) más" : ""
 
         alert.informativeText = """
@@ -1520,6 +1544,31 @@ class ViewController: NSViewController, NSTextFieldDelegate {
         Para poder añadir badge y conservar el color, la app generará una carpeta propia inspirada en la de macOS. Puede verse algo diferente a la carpeta nativa del sistema.
 
         La app guardará una copia del estado actual y podrás restaurarlo con "Eliminar Badge".
+
+        \(names)\(remainingText)
+        """
+        alert.addButton(withTitle: "Aplicar Badge")
+        alert.addButton(withTitle: "Cancelar")
+
+        return alert.runModal() == .alertFirstButtonReturn
+    }
+
+    private func confirmApplyingBadgeOverExternalCustomFiles(_ externalCustomFiles: [DroppedItem]) -> Bool {
+        let alert = NSAlert()
+        alert.alertStyle = .warning
+        alert.messageText = "Aplicar badge sobre archivos con icono personalizado"
+
+        let names = externalCustomFiles
+            .prefix(5)
+            .map { ($0.path as NSString).lastPathComponent }
+            .joined(separator: "\n")
+        let remainingCount = externalCustomFiles.count - min(externalCustomFiles.count, 5)
+        let remainingText = remainingCount > 0 ? "\n...y \(remainingCount) más" : ""
+
+        alert.informativeText = """
+        Algunos archivos ya tienen un icono personalizado de macOS.
+
+        La app guardará una copia del estado actual y aplicará el badge sobre ese icono personalizado para conservarlo.
 
         \(names)\(remainingText)
         """
